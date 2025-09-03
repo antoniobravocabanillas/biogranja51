@@ -17,7 +17,26 @@ let cart = [];
 const itemsPerPage = 8;
 let currentPage = 1;
 
+// ==========================
+// Función de notificaciones
+// ==========================
+function showToast(message, type = "success") {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+
+  container.appendChild(toast);
+
+  // Eliminar después de la animación
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// ==========================
 // Render productos con paginación
+// ==========================
 function renderProducts() {
   const container = document.getElementById("products-container");
   container.innerHTML = "";
@@ -29,17 +48,20 @@ function renderProducts() {
     const card = document.createElement("div");
     card.classList.add("product-card");
     card.innerHTML = `
-      <div class="card-front">
-        <img src="${p.img}" alt="${p.name}">
-        <h3>${p.name}</h3>
-        <p>S/ ${p.price.toFixed(2)}</p>
-      </div>
-      <div class="card-back">
-        <h3>${p.name}</h3>
-        <p>${p.desc}</p>
-        <button onclick="addToCart('${p.name}', ${p.price})">Agregar al Carrito</button>
-      </div>
-    `;
+  <div class="card-inner">
+    <div class="card-front">
+      <img src="${p.img}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p>S/ ${p.price.toFixed(2)}</p>
+    </div>
+    <div class="card-back">
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <button onclick="addToCart('${p.name}', ${p.price})">Agregar al Carrito</button>
+    </div>
+  </div>
+`;
+
     container.appendChild(card);
   });
   renderPagination();
@@ -58,11 +80,18 @@ function renderPagination() {
   }
 }
 
+// ==========================
 // Carrito
+// ==========================
 function addToCart(name, price) {
   let item = cart.find(p => p.name === name);
-  if (item) item.quantity++;
-  else cart.push({ name, price, quantity: 1 });
+  if (item) {
+    item.quantity++;
+    showToast(`+1 ${name} agregado al carrito 🛒`);
+  } else {
+    cart.push({ name, price, quantity: 1 });
+    showToast(`${name} agregado al carrito 🛒`);
+  }
   updateCartCount();
 }
 
@@ -70,7 +99,18 @@ function changeQuantity(name, delta) {
   let item = cart.find(p => p.name === name);
   if (!item) return;
   item.quantity += delta;
-  if (item.quantity <= 0) cart = cart.filter(p => p.name !== name);
+
+  if (delta > 0) {
+    showToast(`+1 ${name} agregado 🛒`);
+  } else {
+    showToast(`-1 ${name} eliminado ❌`, "error");
+  }
+
+  if (item.quantity <= 0) {
+    cart = cart.filter(p => p.name !== name);
+    showToast(`${name} eliminado del carrito ❌`, "error");
+  }
+
   renderCartItems();
   updateCartCount();
 }
@@ -79,7 +119,9 @@ function updateCartCount() {
   document.getElementById("cart-count").textContent = cart.reduce((sum,i)=>sum+i.quantity,0);
 }
 
+// ==========================
 // Overlay carrito
+// ==========================
 function openCart() {
   renderCartItems();
   document.getElementById("cartOverlay").style.display = "flex";
@@ -110,7 +152,9 @@ function renderCartItems() {
   cartTotal.textContent = `Total: S/ ${total.toFixed(2)}`;
 }
 
+// ==========================
 // Checkout WhatsApp
+// ==========================
 document.getElementById("checkoutBtn").addEventListener("click", () => {
   if (!cart.length) { alert("Carrito vacío"); return; }
   let message = "Hola, quiero realizar el siguiente pedido:\n\n";
@@ -119,4 +163,7 @@ document.getElementById("checkoutBtn").addEventListener("click", () => {
   window.open(`https://wa.me/51936198468?text=${encodeURIComponent(message)}`, "_blank");
 });
 
+// ==========================
+// Inicializar
+// ==========================
 renderProducts();
