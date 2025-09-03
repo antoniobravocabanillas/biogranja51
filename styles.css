@@ -129,16 +129,15 @@ header nav a {
   background-color: var(--celeste);
 }
 #alimento{
-  background-color: var(--verde);
+  background-color: var(--amarillo);
 }
 #circulo{
-  background-color: var(--gris);
+  background-color: var(--verde);
 }
 
 /* ===== GRID DE PRODUCTOS ===== */
 #productos{
   text-align: center;
-  margin-bottom: 30px;
   background: #000;
   
   padding-top: 40px;
@@ -221,7 +220,8 @@ color: var(--verde);
 .pagination {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
+  margin:  0;
+  padding: 30px;
 
 }
 
