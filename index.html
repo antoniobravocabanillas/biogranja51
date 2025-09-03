@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioGranja 51</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <img src="/img/Recurso 19.png" alt="Logo BioGranja 51" class="logo">
+        <nav>
+            <a href="#inicio">Inicio</a>
+            <a href="#productos">Productos</a>
+        </nav>
+        <div class="cart-icon" onclick="openCart()">
+            🛒 <span id="cart-count">0</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section id="inicio" class="hero">
+            <div class="tittles-hero"> <h1 id="tittle-hero">Bienvenido a BioGranja 51</h1>
+            <h4 id="sub-tittle-hero">Donde la naturaleza se encuentra con la innovación</h4></div>
+            <p id="descripcion-hero">En un mundo donde la mayoría busca solo números y velocidad, en BioGranja 51 elegimos otro camino:
+                no aceleramos el crecimiento de nuestros pollos ni cuyes con hormonas ni químicos. <br><br>Criamos con
+                paciencia, respeto y ciencia.</p>
+            <div class="btns-diferenciador">
+                <button class="diferenciador" id="agua">Agua purificada</button>
+                <button class="diferenciador" id="alimento">Alimento Premium</button>
+                <button class="diferenciador" id="circulo">Círculo 360 BioGranja</button>
+            </div>
+        </section>
+
+        <!-- Productos -->
+        <section id="productos">
+            <h2>Nuestros Productos</h2>
+            <div class="product-grid" id="products-container">
+                <!-- Productos se generan con JS -->
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 BioGranja 51 - Sostenibilidad y frescura</p>
+    </footer>
+
+    <!-- Overlay Carrito -->
+    <div id="cartOverlay" class="cart-overlay">
+        <div class="cart-content">
+            <span class="close-btn" onclick="closeCart()">×</span>
+            <h2>Tu Carrito</h2>
+            <ul id="cartItems"></ul>
+            <p id="cartTotal">Total: S/ 0.00</p>
+            <button id="checkoutBtn">Comprar por WhatsApp</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
