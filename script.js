@@ -1,4 +1,22 @@
 // ==========================
+
+document.addEventListener("DOMContentLoaded", () => {
+  const burger = document.querySelector(".burger"); // botón del menú
+  const nav = document.querySelector(".nav-links"); // contenedor del menú
+  const navLinks = document.querySelectorAll(".nav-links a"); // todos los links
+
+  // Toggle para abrir/cerrar
+  burger.addEventListener("click", () => {
+    nav.classList.toggle("active");
+  });
+
+  // Al hacer click en un link -> cierra el menú
+  navLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      nav.classList.remove("active");
+    });
+  });
+});
 // Productos con peso opcional
 // ==========================
 const products = [
@@ -53,6 +71,7 @@ function renderProducts() {
           <img src="${p.img}" alt="${p.name}">
           <h3>${p.name}</h3>
           <p>${priceLabel}</p>
+          <button  onclick="addToCart('${p.name}')">Agregar al Carrito</button>
         </div>
         <div class="card-back">
           <h3>${p.name}</h3>
@@ -214,6 +233,7 @@ document.getElementById("checkoutBtn").addEventListener("click", () => {
   message += `📝 *Datos del cliente:*\n`;
   message += `- Nombre completo: __________________\n`;
   message += `- Método de pago (Efectivo / Transferencia / Yape / Plin): __________________\n`;
+  message += `- ¿Direccion de entrega si es con delivery?: __________________\n`;
   message += `- ¿Requiere Factura o Boleta?: __________________\n`;
 
   // limpiar carrito después de enviar

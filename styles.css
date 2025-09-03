@@ -55,7 +55,7 @@ header {
   background: var(--negro);
   color: white;
   padding: 10px 20px;
-  height: 80px;
+  height: 10vh;
 }
 
 header .logo {
@@ -89,8 +89,17 @@ header nav a {
   background: var(--negro);
   color: white;
   text-align: center;
-  padding: 50px 20px;
+  padding: 80px 20px;
   height: 40vh;
+}
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+.burger {
+  display: none;
+  font-size: 28px;
+  cursor: pointer;
 }
 #inicio {
   display: flex;
@@ -115,25 +124,135 @@ header nav a {
   margin-bottom: 20px;
 }
 
-/*DIFERENCIADORES*/
-.diferenciador {
-  background: var(--amarillo);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-weight: bold;
-  margin: 5px;
-}
+/*colores btns diferenciador*/
 #agua{
   background-color: var(--celeste);
 }
 #alimento{
   background-color: var(--amarillo);
+  color: #000;
 }
 #circulo{
   background-color: var(--verde);
 }
+.diferenciador {
+  position: relative; /* referencia para el tooltip */
+  background: var(--amarillo);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 10px;
+  font-size: 16px;
+}
+
+/* Tooltip oculto por defecto */
+.diferenciador .tooltip {
+  position: absolute;
+  bottom: -30px; /* debajo del botón */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, bottom 0.3s ease;
+  z-index: 1000;
+}
+
+/* Flechita del tooltip */
+.diferenciador .tooltip::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent rgba(0,0,0,0.85) transparent;
+}
+
+/* Hover en PC */
+.diferenciador:hover .tooltip {
+  opacity: 1;
+  bottom: -50px;
+  pointer-events: auto;
+}
+
+/* En móvil: tooltip aparece ARRIBA */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 140px;
+    right: 0;
+    background: #111;
+    flex-direction: column;
+    width: 100vw;
+    padding: 15px;
+    border-radius: none;
+    z-index: 1000;
+    height: auto;
+    
+    
+  }
+.item-nav-link{
+  display: block;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  height: 100%;
+}
+
+  
+  .nav-links.active {
+    display: flex;
+    background-color: var(--verde);
+  
+  }
+
+  .burger {
+    display: block;
+  }
+
+  .cart-icon {
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--verde);
+  position: fixed;
+  top: 90px;
+  right: 20px;
+
+  #descripcion-hero{
+    width: 80vw;
+  }
+}
+
+
+  .diferenciador .tooltip {
+    width: 70vw;
+    height: 30px;
+    bottom: auto;
+    top: -60px; /* aparece encima */
+    white-space: normal; /* permite varias líneas */
+
+    text-align: center;
+  }
+
+  .diferenciador .tooltip::after {
+    top: auto;
+    bottom: -6px;
+    border-color: rgba(0,0,0,0.85) transparent transparent transparent;
+  }
+
+}
+
+
 
 /* ===== GRID DE PRODUCTOS ===== */
 #productos{
@@ -214,7 +333,16 @@ color: var(--verde);
   cursor: pointer;
   font-weight: bold;
 }
-
+.card-front button {
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--verde);
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
 
 /* Paginación */
 .pagination {

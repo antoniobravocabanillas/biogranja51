@@ -12,30 +12,50 @@
 
 <body>
     <header>
-        <a href="biogranja51.com"><img src="/img/Recurso 19.png" alt="Logo BioGranja 51" class="logo"></a>
-        <nav>
-            <a href="#inicio">Inicio</a>
-            <a href="#productos">Productos</a>
+        <a href="/"><img src="/img/Recurso 19.png" alt="Logo BioGranja 51" class="logo"></a>
+        <nav class="nav-links">
+            <a class="item-nav-link" href="#inicio">Inicio</a>
+            <a class="item-nav-link" href="#productos">Productos</a>
         </nav>
         <div class="cart-icon" onclick="openCart()">
             <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> <span id="cart-count">0</span>
         </div>
+        <div class="burger">&#9776;</div>
     </header>
 
     <main>
-        <!-- Hero -->
-        <section id="inicio" class="hero">
-            <div class="tittles-hero"> <h1 id="tittle-hero">Bienvenido a BioGranja 51</h1>
-            <h4 id="sub-tittle-hero">Donde la naturaleza se encuentra con la innovación</h4></div>
-            <p id="descripcion-hero">En un mundo donde la mayoría busca solo números y velocidad, en BioGranja 51 elegimos otro camino:
-                no aceleramos el crecimiento de nuestros pollos ni cuyes con hormonas ni químicos. <br><br>Criamos con
-                paciencia, respeto y ciencia.</p>
-            <div class="btns-diferenciador">
-                <button class="diferenciador" id="agua">Agua purificada</button>
-                <button class="diferenciador" id="alimento">Alimento Premium</button>
-                <button class="diferenciador" id="circulo">Círculo 360 BioGranja</button>
-            </div>
-        </section>
+ <!-- Hero -->
+<section id="inicio" class="hero">
+  <div class="tittles-hero">
+    <h1 id="tittle-hero">Bienvenido a BioGranja 51</h1>
+    <h4 id="sub-tittle-hero">Donde la naturaleza se encuentra con la innovación</h4>
+  </div>
+  <p id="descripcion-hero">
+    En un mundo donde la mayoría busca solo números y velocidad, en BioGranja 51 elegimos otro camino:
+    no aceleramos el crecimiento de nuestros pollos ni cuyes con hormonas ni químicos. 
+    <br><br>
+    Criamos con paciencia, respeto y ciencia.
+  </p>
+
+  <div class="btns-diferenciador">
+    <button class="diferenciador" id="agua">
+      Agua purificada
+      <span class="tooltip">💧 Sin bacterias, sin riesgos. Pollos más sanos, carne más limpia.</span>
+    </button>
+
+    <button class="diferenciador" id="alimento">
+      Alimento Premium
+      <span class="tooltip">🌾 Granos de calidad. Pollos fuertes, carne jugosa y nutritiva.</span>
+    </button>
+
+    <button class="diferenciador" id="circulo">
+      Círculo 360 BioGranja
+      <span class="tooltip">🌱 Bienestar animal, manejo responsable y confianza en cada bocado.</span>
+    </button>
+</div>
+
+</section>
+
 
         <!-- Productos -->
         <section id="productos">
