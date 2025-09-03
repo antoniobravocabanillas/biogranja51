@@ -73,6 +73,9 @@ header nav a {
   font-size: 28px;
   cursor: pointer;
   color: var(--verde);
+  position: fixed;
+  top: 20px;
+  right: 20px;
 }
 #cart-count{
   
@@ -133,6 +136,16 @@ header nav a {
 }
 
 /* ===== GRID DE PRODUCTOS ===== */
+#productos{
+  text-align: center;
+  margin-bottom: 30px;
+  background: #000;
+  
+  padding-top: 40px;
+}
+#productos #tittle-productos{
+color: var(--verde);
+}
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -293,7 +306,7 @@ header nav a {
 /*notificacion*/
 #toast-container {
   position: fixed;
-  top: 20px;
+  top: 60px;
   right: 20px;
   z-index: 2000;
   display: flex;
