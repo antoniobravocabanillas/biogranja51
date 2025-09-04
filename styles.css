@@ -58,6 +58,9 @@ header {
   color: white;
   padding: 10px 20px;
   height: 10vh;
+   position: sticky; /* opcional, mantiene header visible al hacer scroll */
+  top: 0;
+  z-index: 1000;
 }
 
 header .logo {
@@ -72,18 +75,21 @@ header nav a {
 }
 
 .cart-icon {
-  font-size: 28px;
+  font-size: 26px;
   cursor: pointer;
   color: var(--verde);
-  position: fixed;
-  top: 60px;
-  right: 20px;
+  position: relative; /* ya no fixed */
 }
-#cart-count{
-  
+#cart-count {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: var(--amarillo);
+  color: rgb(53, 53, 53);
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.7em;
   font-weight: bold;
-  text-shadow: 1px 1px 2px black;
-  font-size: 0.8em;
 }
 
 /* Hero */
@@ -122,6 +128,7 @@ header nav a {
   display: none;
   font-size: 28px;
   cursor: pointer;
+  color: white;
 }
 #inicio {
   display: flex;
