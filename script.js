@@ -20,18 +20,132 @@ document.addEventListener("DOMContentLoaded", () => {
 // Productos con peso opcional
 // ==========================
 const products = [
-  { name: "Pollo tierno (30 días)", price: 13, weight: 3, img: "/img/productos/pollo/pollo-tierno.jpg", desc: "Pollo joven, ideal para un sabor suave y nutritivo." },
-  { name: "Pollo clásico (45 días)", price: 11, weight: 4, img: "/img/productos/pollo/pollo-clasico.jpg", desc: "Sabor balanceado, ideal para toda la familia." },
-  { name: "Pollo robusto (60 días)", price: 10, weight: 5, img: "/img/productos/pollo/pollo-robusto.jpg", desc: "Más carne y sabor intenso para cortes premium." },
-  { name: "Pechuga", price: 18.9, img: "/img/productos/pollo/pechugas.jpg", desc: "Pechuga magra y saludable." },
-  { name: "Pata Muslo", price: 14.9, img: "/img/productos/pollo/muslo.jpg", desc: "Muslo carnoso y sabroso." },
-  { name: "Alitas", price: 12.5, img: "/img/productos/pollo/alitas.webp", desc: "Perfectas para aperitivos o BBQ." },
-  { name: "Patas", price: 6, img: "/img/productos/pollo/patas.jpg", desc: "Para caldos y recetas tradicionales." },
-  { name: "Cuy entero joven", price: 40, img: "/img/productos/cuy/cuy-entero-joven.png", desc: "Cuy fresco, nutritivo y tradicional." },
-  { name: "Pulpa de cuy desmenuzada", price: 26, img: "/img/productos/cuy/pulpa_cuy.jpg", desc: "Ideal para guisos y recetas rápidas." },
-  { name: "Hamburguesa de cuy", price: 20, img: "/img/productos/cuy/hamburguesa_cuy.jpg", desc: "Sabroso y saludable." },
-  { name: "Compost orgánico", price: 15, img: "/img/productos/compost/compost.webp", desc: "Fertilizante natural 100% sostenible." }
+  {
+    name: "Pollo tierno (30 días)",
+    subName: "Natural, nutritivo y lleno de sabor.",
+    price: 13,
+    weight: 3,
+    img: "/img/productos/pollo/pollo-tierno.jpg",
+    benefits0: "💧 Agua purificada → carne más limpia y segura",
+    benefits1: "🌱 Sin hormonas ni químicos",
+    benefits2: "🍲 Suave y jugoso, ideal para caldos y guisos",
+    benefits3: "💪 Alto en proteína magra",
+    desc: "Pollo joven, ideal para un sabor suave y nutritivo."
+  },
+  {
+    name: "Pollo clásico (45 días)",
+    subName: "Sabor balanceado para toda la familia.",
+    price: 11,
+    weight: 4,
+    img: "/img/productos/pollo/pollo-clasico.jpg",
+    benefits0: "👨‍👩‍👧 Ideal para preparaciones familiares",
+    benefits1: "🍗 Carne equilibrada: jugosa pero firme",
+    benefits2: "🌱 Criado de manera natural sin químicos",
+    benefits3: "💪 Buena fuente de proteínas y vitaminas del grupo B",
+    desc: "Sabor balanceado, ideal para toda la familia."
+  },
+  {
+    name: "Pollo robusto (60 días)",
+    subName: "Más carne, más sabor.",
+    price: 10,
+    weight: 5,
+    img: "/img/productos/pollo/pollo-robusto.jpg",
+    benefits0: "🍖 Mayor rendimiento en cortes grandes",
+    benefits1: "🔥 Ideal para parrillas, hornos y recetas gourmet",
+    benefits2: "💪 Alto contenido proteico con textura firme",
+    benefits3: "🌱 Criado naturalmente, sin aceleradores de crecimiento",
+    desc: "Más carne y sabor intenso para cortes premium."
+  },
+  {
+    name: "Pechuga",
+    subName: "Ligera, nutritiva y versátil.",
+    price: 18.9,
+    img: "/img/productos/pollo/pechugas.jpg",
+    benefits0: "💪 Baja en grasa, rica en proteína magra",
+    benefits1: "🥗 Ideal para dietas fitness y saludables",
+    benefits2: "🍳 Versátil: salteados, a la plancha o ensaladas",
+    benefits3: "🌱 Libre de químicos y hormonas",
+    desc: "Pechuga magra y saludable."
+  },
+  {
+    name: "Pata Muslo",
+    subName: "Jugoso y lleno de sabor.",
+    price: 14.9,
+    img: "/img/productos/pollo/muslo.jpg",
+    benefits0: "🍗 Carne más jugosa y sabrosa",
+    benefits1: "🔥 Perfecto para guisos, horno o parrilla",
+    benefits2: "💪 Aporta proteínas, hierro y zinc",
+    benefits3: "🌱 Criado naturalmente sin hormonas",
+    desc: "Muslo carnoso y sabroso."
+  },
+  {
+    name: "Alitas",
+    subName: "Para compartir y disfrutar.",
+    price: 12.5,
+    img: "/img/productos/pollo/alitas.webp",
+    benefits0: "🔥 Ideales para BBQ, frituras y snacks",
+    benefits1: "🍺 Perfecto acompañamiento en reuniones",
+    benefits2: "🍗 Carne tierna con piel crujiente",
+    benefits3: "🌱 Criadas sin químicos, sabor auténtico",
+    desc: "Perfectas para aperitivos o BBQ."
+  },
+  {
+    name: "Patas",
+    subName: "Tradición en tu mesa.",
+    price: 6,
+    img: "/img/productos/pollo/patas.jpg",
+    benefits0: "🍲 Ricas en colágeno natural",
+    benefits1: "🦴 Fortalece articulaciones y huesos",
+    benefits2: "🌿 Usadas en caldos medicinales y tradicionales",
+    benefits3: "🌱 100% naturales y frescas",
+    desc: "Para caldos y recetas tradicionales."
+  },
+  {
+    name: "Cuy entero joven",
+    subName: "Nutrición ancestral en tu mesa.",
+    price: 40,
+    img: "/img/productos/cuy/cuy-entero-joven.png",
+    benefits0: "💪 Rico en proteínas de alta calidad",
+    benefits1: "❤️ Bajo en grasa y colesterol",
+    benefits2: "🌿 Carne recomendada en dietas médicas tradicionales",
+    benefits3: "🥘 Ideal para recetas típicas andinas",
+    desc: "Cuy fresco, nutritivo y tradicional."
+  },
+  {
+    name: "Pulpa de cuy desmenuzada",
+    subName: "Practicidad y nutrición.",
+    price: 26,
+    img: "/img/productos/cuy/pulpa_cuy.jpg",
+    benefits0: "⚡ Lista para usar en guisos y pastas",
+    benefits1: "💪 Rica en proteínas y baja en grasa",
+    benefits2: "🥘 Ideal para cocina rápida y saludable",
+    benefits3: "🌱 Natural y sin aditivos",
+    desc: "Ideal para guisos y recetas rápidas."
+  },
+  {
+    name: "Hamburguesa de cuy",
+    subName: "Innovación con tradición.",
+    price: 20,
+    img: "/img/productos/cuy/hamburguesa_cuy.jpg",
+    benefits0: "🍔 Alternativa saludable a la hamburguesa convencional",
+    benefits1: "💪 Aporta proteínas y aminoácidos esenciales",
+    benefits2: "🌱 Menos grasa y colesterol",
+    benefits3: "🔥 Listas para preparar y disfrutar",
+    desc: "Sabroso y saludable."
+  },
+  {
+    name: "Compost orgánico",
+    subName: "De la granja a tu tierra.",
+    price: 15,
+    img: "/img/productos/compost/compost.webp",
+    benefits0: "🌱 100% natural y sostenible",
+    benefits1: "🌿 Enriquece el suelo con nutrientes esenciales",
+    benefits2: "♻️ Reutiliza los subproductos de la granja",
+    benefits3: "🌍 Contribuye a un ciclo agrícola responsable",
+    desc: "Fertilizante natural 100% sostenible."
+  }
 ];
+
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 const itemsPerPage = 8;
@@ -69,13 +183,21 @@ function renderProducts() {
       <div class="card-inner">
         <div class="card-front">
           <img src="${p.img}" alt="${p.name}">
-          <h3>${p.name}</h3>
+          <h4>${p.name}</h4>
+          <p><strong>${p.subName}</strong></p>
           <p>${priceLabel}</p>
-          <button  onclick="addToCart('${p.name}')">Agregar al Carrito</button>
+    
         </div>
         <div class="card-back">
           <h3>${p.name}</h3>
           <p>${p.desc}</p>
+          <ul style="text-align: left; padding-left: 20px; list-style-type: none;">
+            <li>${p.benefits0}</li>
+            <li>${p.benefits1}</li>
+            <li>${p.benefits2}</li>
+            <li>${p.benefits3}</li>
+          </ul>
+          
           <button onclick="addToCart('${p.name}')">Agregar al Carrito</button>
         </div>
       </div>
@@ -94,7 +216,10 @@ function renderPagination() {
     const btn = document.createElement("button");
     btn.textContent = i;
     if (i === currentPage) btn.style.opacity = 0.6;
-    btn.addEventListener("click", () => { currentPage = i; renderProducts(); });
+    btn.addEventListener("click", () => {
+      currentPage = i;
+      renderProducts();
+    });
     pagination.appendChild(btn);
   }
 }
@@ -115,7 +240,10 @@ function addToCart(name) {
     item.quantity++;
     showToast(`+1 ${name} agregado al carrito 🛒`);
   } else {
-    cart.push({ ...product, quantity: 1 });
+    cart.push({
+      ...product,
+      quantity: 1
+    });
     showToast(`${name} agregado al carrito 🛒`);
   }
   updateCartCount();
@@ -141,7 +269,7 @@ function changeQuantity(name, delta) {
 }
 
 function updateCartCount() {
-  document.getElementById("cart-count").textContent = cart.reduce((sum,i)=>sum+i.quantity,0);
+  document.getElementById("cart-count").textContent = cart.reduce((sum, i) => sum + i.quantity, 0);
 }
 
 // ==========================
@@ -203,7 +331,10 @@ function renderCartItems() {
 // Checkout WhatsApp
 // ==========================
 document.getElementById("checkoutBtn").addEventListener("click", () => {
-  if (!cart.length) { alert("Carrito vacío"); return; }
+  if (!cart.length) {
+    alert("Carrito vacío");
+    return;
+  }
 
   let message = "📋 *Detalle de Pedido:*\n\n";
 
@@ -224,7 +355,7 @@ document.getElementById("checkoutBtn").addEventListener("click", () => {
     }
   });
 
-  const total = cart.reduce((sum,i)=> 
+  const total = cart.reduce((sum, i) =>
     sum + (i.weight ? i.price * i.weight : i.price) * i.quantity, 0);
 
   message += `===========================\n`;

@@ -4,6 +4,7 @@
 
 :root {
   --negro: #0d0d0d;
+  --negrotransparente: #0d0d0d5c;
   --verde: #4caf50;
   --celeste: #00bcd4;
   --gris: #757575;
@@ -74,7 +75,7 @@ header nav a {
   cursor: pointer;
   color: var(--verde);
   position: fixed;
-  top: 20px;
+  top: 60px;
   right: 20px;
 }
 #cart-count{
@@ -258,7 +259,6 @@ header nav a {
 #productos{
   text-align: center;
   background: #000;
-  
   padding-top: 40px;
 }
 #productos #tittle-productos{
@@ -284,7 +284,7 @@ color: var(--verde);
   height: 100%;
   transform-style: preserve-3d;
   transition: transform 0.8s;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .product-card:hover .card-inner {
@@ -298,7 +298,7 @@ color: var(--verde);
   height: 100%;
   backface-visibility: hidden;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(159, 159, 159, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -307,7 +307,8 @@ color: var(--verde);
 }
 
 .card-front {
-  background: white;
+  background: var(--negrotransparente);
+  color: white;
 }
 
 .card-front img {
@@ -317,11 +318,13 @@ color: var(--verde);
 }
 
 .card-back {
-  background: var(--verde);
+
+  background: var(--negro);
   color: white;
   transform: rotateY(180deg);
   padding: 15px;
   text-align: center;
+
 }
 
 .card-back button {
