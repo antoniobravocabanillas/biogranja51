@@ -28,15 +28,15 @@ h1 {
   margin: 0;
 }
 h2 {
-  font-size: 2em;
+  font-size: 1.6em;
   margin: 0;
 }
 h3 {
-  font-size: 1.75em;
+  font-size: 1.4em;
   margin: 0;
 }
 h4 {
-  font-size: 1.5em;
+  font-size: 1.2em;
   margin: 0;
 }
 p {
@@ -47,6 +47,7 @@ a {
   color: var(--celeste);
   text-decoration: none;
 }
+
 
 /* Header */
 header {
@@ -87,12 +88,32 @@ header nav a {
 
 /* Hero */
 .hero {
-  background: var(--negro);
+  position: relative;
   color: white;
   text-align: center;
   padding: 80px 20px;
-  height: 40vh;
+  height: 60vh;
+  background: url('/img/fondo2.jpg') center/cover no-repeat;
+  overflow: hidden;
 }
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--negro);
+  filter: grayscale(100%);      /* blanco y negro */
+  z-index: 0;
+}
+
+.hero * {
+  position: relative;
+  z-index: 1; /* mantiene los textos arriba */
+}
+
 .nav-links {
   display: flex;
   gap: 20px;
@@ -184,6 +205,98 @@ header nav a {
   bottom: -50px;
   pointer-events: auto;
 }
+
+/* --- Secciones narrativas --- */
+.section-filosofia {
+  height: 50vh;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0,0,0,0.98)),
+    url('/img/filosofia1.jpg') center/cover no-repeat;
+  color: #fff;
+  text-align: center;
+
+  /* 🔑 centrado vertical + horizontal */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 20px; /* margen interno para que no choque el texto en pantallas pequeñas */
+}
+
+.section-filosofia h2 {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: var(--verde);
+}
+
+.section-filosofia p {
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-size: 1.1em;
+  font-weight: 300;
+}
+
+
+.section-impacto {
+  background: linear-gradient(rgba(0, 0, 0, 0.818), rgba(0, 0, 0, 0.226)),
+              url('/img/fondoimpacto2.jpg') center/cover no-repeat;
+  color: #fff;
+  padding: 80px 10%;
+  text-align: center;
+}
+.section-impacto h2 {
+  color: var(--celeste);
+  margin-bottom: 20px;
+}
+.section-impacto p {
+  max-width: 800px;
+  margin: auto;
+  font-size: 1.2em;
+  line-height: 1.6;
+}
+
+/* --- Footer --- */
+footer {
+  background: var(--negro);
+  color: #f0f0f0;
+  text-align: center;
+  padding: 30px 15px;
+  font-family: Arial, sans-serif;
+}
+.footer-container {
+  max-width: 1000px;
+  margin: auto;
+}
+footer h3 {
+  margin-bottom: 10px;
+  color: var(--verde);
+  font-size: 20px;
+}
+footer p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.8;
+}
+footer .footer-copy {
+  margin: 8px 0 20px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+.footer-links a {
+  margin: 0 10px;
+  color: #f0f0f0;
+  text-decoration: none;
+  font-size: 14px;
+}
+.footer-links a:hover {
+  color: var(--verde);
+}
+
+
+
+
 
 /* En móvil: tooltip aparece ARRIBA */
 @media (max-width: 768px) {
@@ -285,6 +398,7 @@ color: var(--verde);
   transform-style: preserve-3d;
   transition: transform 0.8s;
   border-radius: 8px;
+  
 }
 
 .product-card:hover .card-inner {
@@ -307,15 +421,25 @@ color: var(--verde);
 }
 
 .card-front {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   background: var(--negrotransparente);
-  color: white;
+  color: rgb(255, 255, 255);
+  box-shadow: 0 0.2px 2px rgba(151, 151, 151, 0.484);
+
 }
 
 .card-front img {
   width: 100%;
   height: 160px;
   object-fit: cover;
+   filter: brightness(0.7);
 }
+
+
+
 
 .card-back {
 
@@ -346,6 +470,7 @@ color: var(--verde);
   font-weight: bold;
   color: white;
 }
+
 
 /* Paginación */
 .pagination {
@@ -495,4 +620,47 @@ color: var(--verde);
   transform: scale(1.1);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
   color: white;
+}
+
+
+/* 📱 Responsive móvil */
+@media (max-width: 576px) {
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.3em; }
+  h3 { font-size: 1.1em; }
+  h4 { font-size: 1em; }
+  p  { font-size: 0.9em; line-height: 1.4; }
+
+  .section-filosofia {
+    height: auto;            /* ahora solo en móviles */
+    min-height: 40vh;        /* evita que quede demasiado chica */
+    padding: 40px 15px;
+    background-size: cover;
+  }
+  .section-filosofia h2 { font-size: 1.6em; }
+  .section-filosofia p { font-size: 1em; line-height: 1.4; }
+
+  .section-impacto {
+    padding: 50px 20px;
+    background-size: cover;
+  }
+  .section-impacto p {
+    font-size: 1em;
+    line-height: 1.5;
+  }
+}
+
+/* 💻 Responsive tablets */
+@media (min-width: 577px) and (max-width: 992px) {
+  h1 { font-size: 2.4em; }
+  h2 { font-size: 1.5em; }
+
+  .section-filosofia {
+    height: auto;           /* tablets también sin fijo */
+    min-height: 45vh;
+    padding: 60px 30px;
+  }
+  .section-impacto {
+    padding: 70px 40px;
+  }
 }

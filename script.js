@@ -184,7 +184,7 @@ function renderProducts() {
         <div class="card-front">
           <img src="${p.img}" alt="${p.name}">
           <h4>${p.name}</h4>
-          <p><strong>${p.subName}</strong></p>
+          <p><strong>${p.subName}</strong></p></br>
           <p>${priceLabel}</p>
     
         </div>
