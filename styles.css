@@ -11,6 +11,8 @@
   --amarillo: #ffeb3b;
 }
 
+
+
 body {
   max-width: 100%;
   overflow-x: hidden;
@@ -307,6 +309,8 @@ footer .footer-copy {
 
 /* En móvil: tooltip aparece ARRIBA */
 @media (max-width: 768px) {
+  .product-card.flipped .card-inner {
+    transform: rotateY(180deg);}
   .nav-links {
     display: none;
     position: absolute;

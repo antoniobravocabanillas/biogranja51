@@ -177,16 +177,17 @@ function renderProducts() {
     const card = document.createElement("div");
     card.classList.add("product-card");
 
-    const priceLabel = p.weight ? `S/ ${p.price.toFixed(2)} x Kg (≈ ${p.weight} Kg)` : `S/ ${p.price.toFixed(2)}`;
+    const priceLabel = p.weight
+      ? `S/ ${p.price.toFixed(2)} x Kg (≈ ${p.weight} Kg)`
+      : `S/ ${p.price.toFixed(2)}`;
 
     card.innerHTML = `
       <div class="card-inner">
         <div class="card-front">
           <img src="${p.img}" alt="${p.name}">
           <h4>${p.name}</h4>
-          <p><strong>${p.subName}</strong></p></br>
+          <p><strong>${p.subName}</strong></p><br>
           <p>${priceLabel}</p>
-    
         </div>
         <div class="card-back">
           <h3>${p.name}</h3>
@@ -197,7 +198,6 @@ function renderProducts() {
             <li>${p.benefits2}</li>
             <li>${p.benefits3}</li>
           </ul>
-          
           <button onclick="addToCart('${p.name}')">Agregar al Carrito</button>
         </div>
       </div>
@@ -205,8 +205,35 @@ function renderProducts() {
 
     container.appendChild(card);
   });
+
+  // 👉 aquí activamos los eventos de flip SOLO en móvil
+  if (window.innerWidth <= 768) {
+    const cards = document.querySelectorAll(".product-card");
+
+    cards.forEach(card => {
+      card.addEventListener("click", () => {
+        cards.forEach(c => {
+          if (c !== card) c.classList.remove("flipped");
+        });
+        card.classList.toggle("flipped");
+      });
+
+      let startX = 0;
+      card.addEventListener("touchstart", e => {
+        startX = e.touches[0].clientX;
+      });
+      card.addEventListener("touchend", e => {
+        const endX = e.changedTouches[0].clientX;
+        if (Math.abs(startX - endX) > 50) {
+          card.classList.remove("flipped");
+        }
+      });
+    });
+  }
+
   renderPagination();
 }
+
 
 function renderPagination() {
   const pagination = document.getElementById("pagination");
@@ -377,7 +404,9 @@ document.getElementById("checkoutBtn").addEventListener("click", () => {
 });
 
 
-// ==========================
+
+// =========================CARD FLIPPED MOVIL
+
 // Inicializar
 // ==========================
 renderProducts();
