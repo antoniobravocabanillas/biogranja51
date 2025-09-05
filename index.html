@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <!-- SEO -->
-  <meta name="description" content="BioGranja 51: Pollos y cuyes criados con agua purificada, alimento natural y un ecosistema 360°. Más que comida, cultivamos salud y vida.">
+  <meta name="description"
+    content="BioGranja 51: Pollos y cuyes criados con agua purificada, alimento natural y un ecosistema 360°. Más que comida, cultivamos salud y vida.">
   <meta name="keywords" content="biogranja, pollos naturales, cuyes, alimentos saludables, sostenible, Perú">
 
   <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
   <meta property="og:title" content="BioGranja 51 - No criamos comida, cultivamos salud">
-  <meta property="og:description" content="Pollos y cuyes criados con agua purificada y alimento natural. Más que productos, experiencias de salud.">
-  <meta property="og:image" content="https://biogranja51.netlify.app/img/preview.jpg"> <!-- ✅ URL absoluta -->
+  <meta property="og:description"
+    content="Pollos y cuyes criados con agua purificada y alimento natural. Más que productos, experiencias de salud.">
+  <meta property="og:image" content="https://biogranja51.com/img/preview.jpg">
   <meta property="og:url" content="https://biogranja51.com">
   <meta property="og:type" content="website">
 
@@ -36,12 +39,12 @@
       <a class="item-nav-link" href="#impacto">Impacto</a>
     </nav>
     <div class="header-actions">
-    <div class="burger">&#9776;</div>
-    <div class="cart-icon" onclick="openCart()">
-      <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> 
-      <span id="cart-count">0</span>
+      <div class="burger">&#9776;</div>
+      <div class="cart-icon" onclick="openCart()">
+        <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+        <span id="cart-count">0</span>
+      </div>
     </div>
-  </div>
   </header>
 
   <main>
@@ -72,17 +75,23 @@
 
     <!-- Filosofía -->
     <section id="filosofia" class="section-filosofia">
-      <h2>Nuestra Filosofía</h2>
-      <p>
-        En BioGranja 51 no hablamos de kilos de carne, hablamos de salud, energía y longevidad.  
-        Cada decisión en nuestra granja está diseñada para que tu mesa sea un lugar de bienestar, 
-        donde cada bocado inspire confianza y vida plena.
-      </p>
+      <div class="content">
+        <h2>Nuestra Filosofía</h2>
+        <p>
+          En BioGranja 51 no hablamos de kilos de carne, hablamos de salud, energía y longevidad.
+          Cada decisión en nuestra granja está diseñada para que tu mesa sea un lugar de bienestar,
+          donde cada bocado inspire confianza y vida plena.
+        </p>
+      </div>
     </section>
 
     <!-- Productos -->
     <section id="productos">
-      <h2 id="tittle-productos">No son productos, son experiencias de salud.</h2>
+      <div class="texto-productos">
+        <h2 id="tittle-productos">No son productos, son experiencias de salud.</h2>
+        <p>Alimentarte bien no es un lujo, es tu derecho. En BioGranja 51 no vendemos comida, cultivamos rendimiento,
+          salud y vida. Bienvenido a una nueva forma de nutrirte.</p>
+      </div>
       <div class="product-grid" id="products-container"></div>
       <div class="pagination" id="pagination"></div>
     </section>
@@ -91,8 +100,8 @@
     <section id="impacto" class="section-impacto">
       <h2>Impacto que trasciende</h2>
       <p>
-        Cada pollo, cada cuy y cada semilla de nuestra granja son parte de un círculo virtuoso:  
-        bienestar animal, suelos más fértiles, familias más saludables y un planeta más sostenible.  
+        Cada pollo, cada cuy y cada semilla de nuestra granja son parte de un círculo virtuoso:
+        bienestar animal, suelos más fértiles, familias más saludables y un planeta más sostenible.
         BioGranja 51 es mucho más que alimento, es confianza en el futuro.
       </p>
     </section>
@@ -101,15 +110,29 @@
   <!-- Footer -->
   <footer>
     <div class="footer-container">
-      <h3>BioGranja 51</h3>
-      <p>Donde la naturaleza se encuentra con la innovación</p>
-      <p class="footer-copy">© 2025 BioGranja 51 - Sostenibilidad y frescura</p>
+      <div class="footer-brand">
+        <img src="/img/Recurso 19.png" alt="Logo BioGranja 51" class="footer-logo">
+        <p class="footer-slogan">Más que alimento, cultivamos confianza en cada bocado.</p>
+      </div>
+
       <div class="footer-links">
+        <h4>Explora</h4>
         <a href="#inicio">Inicio</a>
         <a href="#productos">Productos</a>
         <a href="#filosofia">Filosofía</a>
         <a href="#impacto">Impacto</a>
       </div>
+
+      <div class="footer-social">
+        <h4>Conéctate</h4>
+        <a href="https://wa.me/51936198468" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://facebook.com" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+        <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 BioGranja 51 - Sostenibilidad y frescura</p>
     </div>
   </footer>
 
@@ -124,11 +147,31 @@
     </div>
   </div>
 
-  <a href="https://wa.me/51936198468" class="whatsapp-float" target="_blank">
+ <!-- Widget de WhatsApp -->
+<div id="whatsapp-widget" class="whatsapp-chat">
+  <div class="chat-header">
     <i class="fa-brands fa-whatsapp"></i>
-  </a>
+    <span>Estamos en línea</span>
+    <button class="close-chat" onclick="toggleChat()">×</button>
+  </div>
+  <div class="chat-body">
+    <p>👋 Hola, soy BioGranja 51.<br>¿Quieres saber más sobre nuestros productos?</p>
+    <a href="https://wa.me/51936198468?text=Hola%20BioGranja%2051,%20quiero%20más%20información." 
+       target="_blank" class="chat-button">
+      Iniciar conversación
+    </a>
+  </div>
+</div>
+
+<!-- Botón flotante minimizado -->
+<div id="whatsapp-icon" class="whatsapp-icon" onclick="toggleChat()">
+  <i class="fa-brands fa-whatsapp"></i>
+</div>
+
+
   <div id="toast-container"></div>
 
   <script src="script.js"></script>
 </body>
+
 </html>

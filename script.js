@@ -1,4 +1,28 @@
 // ==========================
+//whatsapp
+//whatsapp
+function toggleChat() {
+  const widget = document.getElementById("whatsapp-widget");
+  const icon = document.getElementById("whatsapp-icon");
+
+  if (widget.style.display === "none") {
+    widget.style.display = "block";
+    icon.style.display = "none";
+  } else {
+    widget.style.display = "none";
+    icon.style.display = "flex";
+  }
+}
+
+// Inicia con el chat abierto
+window.onload = () => {
+  document.getElementById("whatsapp-widget").style.display = "block";
+  document.getElementById("whatsapp-icon").style.display = "none";
+};
+
+//whatsapp
+//whatsapp
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const burger = document.querySelector(".burger"); // botón del menú
