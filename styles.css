@@ -485,6 +485,44 @@ font-size: 2em;
 }
 
 /* ===== TARJETA CON FLIP ===== */
+/* ===== BANDA DE DESCUENTO===== */
+.product-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.product-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #28a745; /* Verde BioGranja */
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.price-old {
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 5px;
+}
+
+.price-new {
+  color: #e74c3c; /* rojo oferta */
+  font-weight: bold;
+}
+
+/* =====BANDA DE DESCUENTO ===== */
+
+
+
+
+
 .product-card {
   perspective: 1000px; /* genera el efecto 3D */
   width: 100%;
@@ -871,3 +909,5 @@ font-size: 2em;
 }
 
 /* ===== WHATSAPP ===== */
+
+

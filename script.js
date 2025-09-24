@@ -1,3 +1,4 @@
+
 // ==========================
 //whatsapp
 //whatsapp
@@ -47,8 +48,9 @@ const products = [
   {
     name: "Pollo tierno (30 días)",
     subName: "Natural, nutritivo y lleno de sabor.",
-    price: 13,
-    weight: 3,
+    price: 14.99,
+    weight: 2,
+     offerPrice: 11.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/pollo-tierno.jpg",
     benefits0: "💧 Agua purificada → carne más limpia y segura",
     benefits1: "🌱 Sin hormonas ni químicos",
@@ -59,8 +61,9 @@ const products = [
   {
     name: "Pollo clásico (45 días)",
     subName: "Sabor balanceado para toda la familia.",
-    price: 11,
-    weight: 4,
+    price: 11.99,
+    weight: 3.5,
+    offerPrice: 9.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/pollo-clasico.jpg",
     benefits0: "👨‍👩‍👧 Ideal para preparaciones familiares",
     benefits1: "🍗 Carne equilibrada: jugosa pero firme",
@@ -71,8 +74,9 @@ const products = [
   {
     name: "Pollo robusto (60 días)",
     subName: "Más carne, más sabor.",
-    price: 10,
-    weight: 5,
+    price: 11,
+    weight: 4.5,
+    offerPrice: 8.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/pollo-robusto.jpg",
     benefits0: "🍖 Mayor rendimiento en cortes grandes",
     benefits1: "🔥 Ideal para parrillas, hornos y recetas gourmet",
@@ -83,7 +87,9 @@ const products = [
   {
     name: "Pechuga",
     subName: "Ligera, nutritiva y versátil.",
-    price: 18.9,
+    price: 19.99,
+    weight: 0.5,
+    offerPrice: 17.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/pechugas.jpg",
     benefits0: "💪 Baja en grasa, rica en proteína magra",
     benefits1: "🥗 Ideal para dietas fitness y saludables",
@@ -94,7 +100,8 @@ const products = [
   {
     name: "Pata Muslo",
     subName: "Jugoso y lleno de sabor.",
-    price: 14.9,
+    price: 14.99,
+    offerPrice: 12.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/muslo.jpg",
     benefits0: "🍗 Carne más jugosa y sabrosa",
     benefits1: "🔥 Perfecto para guisos, horno o parrilla",
@@ -105,7 +112,8 @@ const products = [
   {
     name: "Alitas",
     subName: "Para compartir y disfrutar.",
-    price: 12.5,
+    price: 12.99,
+    offerPrice: 10.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/alitas.webp",
     benefits0: "🔥 Ideales para BBQ, frituras y snacks",
     benefits1: "🍺 Perfecto acompañamiento en reuniones",
@@ -116,7 +124,8 @@ const products = [
   {
     name: "Patas",
     subName: "Tradición en tu mesa.",
-    price: 6,
+    price: 6.99,
+    offerPrice: 5.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/patas.jpg",
     benefits0: "🍲 Ricas en colágeno natural",
     benefits1: "🦴 Fortalece articulaciones y huesos",
@@ -127,7 +136,8 @@ const products = [
   {
     name: "Cuy entero joven",
     subName: "Nutrición ancestral en tu mesa.",
-    price: 40,
+    price: 40.99,
+    offerPrice: 35.99,   // ← si existe, activa oferta
     img: "/img/productos/cuy/cuy-entero-joven.png",
     benefits0: "💪 Rico en proteínas de alta calidad",
     benefits1: "❤️ Bajo en grasa y colesterol",
@@ -138,7 +148,8 @@ const products = [
   {
     name: "Pulpa de cuy desmenuzada",
     subName: "Practicidad y nutrición.",
-    price: 26,
+    price: 26.99,
+    offerPrice: 24.99,   // ← si existe, activa oferta
     img: "/img/productos/cuy/pulpa_cuy.jpg",
     benefits0: "⚡ Lista para usar en guisos y pastas",
     benefits1: "💪 Rica en proteínas y baja en grasa",
@@ -149,7 +160,8 @@ const products = [
   {
     name: "Hamburguesa de cuy",
     subName: "Innovación con tradición.",
-    price: 20,
+    price: 20.99,
+    offerPrice: 18.99,   // ← si existe, activa oferta
     img: "/img/productos/cuy/hamburguesa_cuy.jpg",
     benefits0: "🍔 Alternativa saludable a la hamburguesa convencional",
     benefits1: "💪 Aporta proteínas y aminoácidos esenciales",
@@ -160,7 +172,8 @@ const products = [
   {
     name: "Compost orgánico",
     subName: "De la granja a tu tierra.",
-    price: 15,
+    price: 15.99,
+    offerPrice: 11.99,   // ← si existe, activa oferta
     img: "/img/productos/compost/compost.webp",
     benefits0: "🌱 100% natural y sostenible",
     benefits1: "🌿 Enriquece el suelo con nutrientes esenciales",
@@ -201,31 +214,60 @@ function renderProducts() {
     const card = document.createElement("div");
     card.classList.add("product-card");
 
-    const priceLabel = p.weight
-      ? `S/ ${p.price.toFixed(2)} x Kg (≈ ${p.weight} Kg)`
-      : `S/ ${p.price.toFixed(2)}`;
+  let priceLabel;
 
-    card.innerHTML = `
-      <div class="card-inner">
-        <div class="card-front">
-          <img src="${p.img}" alt="${p.name}">
-          <h4>${p.name}</h4>
-          <p><strong>${p.subName}</strong></p><br>
-          <p>${priceLabel}</p>
-        </div>
-        <div class="card-back">
-          <h3>${p.name}</h3>
-          <p>${p.desc}</p>
-          <ul style="text-align: left; padding-left: 20px; list-style-type: none;">
-            <li>${p.benefits0}</li>
-            <li>${p.benefits1}</li>
-            <li>${p.benefits2}</li>
-            <li>${p.benefits3}</li>
-          </ul>
-          <button onclick="addToCart('${p.name}')">Agregar al Carrito</button>
-        </div>
-      </div>
+if (p.offerPrice) {
+  // Si tiene oferta
+  if (p.weight) {
+    priceLabel = `
+      <span class="price-old">S/ ${p.price.toFixed(2)} x Kg (≈ ${p.weight} Kg)</span>
+      <span class="price-new">S/ ${p.offerPrice.toFixed(2)} x Kg (≈ ${p.weight} Kg)</span>
     `;
+  } else {
+    priceLabel = `
+      <span class="price-old">S/ ${p.price.toFixed(2)}</span>
+      <span class="price-new">S/ ${p.offerPrice.toFixed(2)}</span>
+    `;
+  }
+} else {
+  // Si NO tiene oferta
+  if (p.weight) {
+    priceLabel = `S/ ${p.price.toFixed(2)} x Kg (≈ ${p.weight} Kg)`;
+  } else {
+    priceLabel = `S/ ${p.price.toFixed(2)}`;
+  }
+}
+
+card.innerHTML = `
+  <div class="card-inner">
+    <div class="card-front">
+      <!-- Etiqueta superior -->
+      <div class="product-label">
+        ${p.offerPrice 
+          ? `Oferta de Lanzamiento` 
+          : `S/ ${p.price.toFixed(2)} x Kg${p.weight ? ' (≈ ' + p.weight + ' Kg)' : ''}`
+        }
+      </div>
+
+      <img src="${p.img}" alt="${p.name}">
+      <h4>${p.name}</h4>
+      <p><strong>${p.subName}</strong></p><br>
+      <p>${priceLabel}</p>
+    </div>
+    <div class="card-back">
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <ul style="text-align: left; padding-left: 20px; list-style-type: none;">
+        <li>${p.benefits0}</li>
+        <li>${p.benefits1}</li>
+        <li>${p.benefits2}</li>
+        <li>${p.benefits3}</li>
+      </ul>
+      <button onclick="addToCart('${p.name}')">Agregar al Carrito</button>
+    </div>
+  </div>
+`;
+
 
     container.appendChild(card);
   });

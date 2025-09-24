@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <!-- SEO -->
+  <meta name="description" content="Recetario BioGranja 51: Ideas nutritivas y deliciosas con pollos y cuyes criados de forma natural.">
+  <meta name="keywords" content="recetas, recetario, biogranja, pollo, cuy, saludable, cocina peruana">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Recetario BioGranja 51">
+  <meta property="og:description" content="Platos nutritivos, fáciles y llenos de sabor con nuestros productos naturales.">
+  <meta property="og:image" content="https://biogranja51.com/img/recetario-preview.jpg">
+  <meta property="og:url" content="https://biogranja51.com/recetario.html">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Recetario BioGranja 51">
+  <meta name="twitter:description" content="Ideas nutritivas y deliciosas para tu mesa.">
+  <meta name="twitter:image" content="https://biogranja51.com/img/recetario-preview.jpg">
+
+  <!-- General -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recetario - BioGranja 51</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="recetario.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+  <header>
+    <a href="/"><img src="/img/Recurso 19.png" alt="Logo BioGranja 51" class="logo"></a>
+    <nav class="nav-links">
+      <a class="item-nav-link" href="index.html#inicio">Inicio</a>
+      <a class="item-nav-link" href="index.html#productos">Productos</a>
+      <a class="item-nav-link" href="index.html#filosofia">Filosofía</a>
+      <a class="item-nav-link" href="index.html#impacto">Impacto</a>
+      <a class="item-nav-link active" href="recetario.html">Recetario</a>
+    </nav>
+    <div class="header-actions">
+      <div class="burger">&#9776;</div>
+      <div class="cart-icon" onclick="openCart()">
+        <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+        <span id="cart-count">0</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Recetario -->
+    <section class="hero hero-recetario">
+      <div class="tittles-hero">
+        <h1 id="tittle-hero">Recetario BioGranja 51</h1>
+        <h4 id="sub-tittle-hero">
+          Platos fáciles, nutritivos y llenos de sabor con pollos y cuyes criados de manera natural.
+        </h4>
+      </div>
+    </section>
+
+    <!-- Recetario -->
+    <section id="recetario">
+      <div class="texto-recetario">
+        <h2>Inspírate en tu cocina</h2>
+        <p>Elige entre nuestras recetas nutritivas, rápidas y pensadas para disfrutar en familia. Cada plato lleva el
+          sello de frescura y naturalidad de BioGranja 51.</p>
+      </div>
+      <div class="recetas-grid" id="recetas-container"></div>
+    </section>
+  </main>
+
+   <!-- Modal Receta -->
+  <div id="recetaModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+
+      <h2 id="modal-titulo"></h2>
+      <img id="modal-imagen" src="" alt="">
+      <p id="modal-descripcion"></p>
+
+      <h3>Ingredientes</h3>
+      <ul id="modal-ingredientes"></ul>
+
+      <h3>Técnica</h3>
+      <p id="modal-tecnica"></p>
+
+      <h3>Pasos</h3>
+      <ol id="modal-pasos"></ol>
+
+      <h3>Presentación</h3>
+      <p id="modal-presentacion"></p>
+
+      <h3>Maridaje</h3>
+      <p id="modal-maridaje"></p>
+    </div>
+  </div>
+
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-brand">
+        <img src="/img/Recurso 19.png" alt="Logo BioGranja 51" class="footer-logo">
+        <p class="footer-slogan">Más que alimento, cultivamos confianza en cada bocado.</p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Explora</h4>
+        <a href="index.html#inicio">Inicio</a>
+        <a href="index.html#productos">Productos</a>
+        <a href="index.html#filosofia">Filosofía</a>
+        <a href="index.html#impacto">Impacto</a>
+        <a class="item-nav-link active" href="recetario.html">Recetario</a>
+      </div>
+
+      <div class="footer-social">
+        <h4>Conéctate</h4>
+        <a href="https://wa.me/51936198468" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="https://facebook.com" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+        <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 BioGranja 51 - Sostenibilidad y frescura</p>
+    </div>
+  </footer>
+
+  <!-- Overlay Carrito -->
+  <div id="cartOverlay" class="cart-overlay">
+    <div class="cart-content">
+      <span class="close-btn" onclick="closeCart()">×</span>
+      <h2>Tu Carrito</h2>
+      <ul id="cartItems"></ul>
+      <p id="cartTotal">Total: S/ 0.00</p>
+      <button id="checkoutBtn">Comprar por WhatsApp</button>
+    </div>
+  </div>
+
+  <!-- Widget de WhatsApp -->
+  <div id="whatsapp-widget" class="whatsapp-chat">
+    <div class="chat-header">
+      <i class="fa-brands fa-whatsapp"></i>
+      <span>Estamos en línea</span>
+      <button class="close-chat" onclick="toggleChat()">×</button>
+    </div>
+    <div class="chat-body">
+      <p>👋 Hola, soy BioGranja 51.<br>¿Quieres saber más sobre nuestras recetas y productos?</p>
+      <a href="https://wa.me/51936198468?text=Hola%20BioGranja%2051,%20quiero%20más%20información."
+        target="_blank" class="chat-button">
+        Iniciar conversación
+      </a>
+    </div>
+  </div>
+
+  <!-- Botón flotante minimizado -->
+  <div id="whatsapp-icon" class="whatsapp-icon" onclick="toggleChat()">
+    <i class="fa-brands fa-whatsapp"></i>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="script.js"></script>
+  <script src="recetario.js"></script>
+</body>
+
+</html>
