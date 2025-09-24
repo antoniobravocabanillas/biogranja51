@@ -187,18 +187,7 @@ function cerrarModal() {
 // =====================
 // WhatsApp Widget
 // =====================
-function toggleChat() {
-  const chat = document.getElementById("whatsapp-widget");
-  const icon = document.getElementById("whatsapp-icon");
-  if (!chat || !icon) return;
-  if (chat.classList.contains("open")) {
-    chat.classList.remove("open");
-    icon.style.display = "flex";
-  } else {
-    chat.classList.add("open");
-    icon.style.display = "none";
-  }
-}
+
 
 // =====================
 // Init
