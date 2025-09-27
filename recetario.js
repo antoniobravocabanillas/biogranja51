@@ -113,6 +113,37 @@ const recetas = [
     ],
     presentacion: "En un plato amplio, base de quinua negra; a un lado, pechuga fileteada. Al otro, montículo de pulpa de cuy. Traza una línea de emulsión de ají amarillo y decora con microhierbas.",
     maridaje: "Vino rosé seco o limonada de hierbaluisa con hielo."
+  },{
+    id: "pechuga-y-patitas",
+    slug: "pechugsa-y-patitas",
+    ext: "png",
+    titulo: "Bowl Proteico de Pechuga & Patitas BioGranja con Quinoa",
+    preview: "Un plato diseñado para deportistas que entrenan fuerte y necesitan un boost de proteínas, energía limpia y recuperación articular.",
+    descripcion: "Se prepara con pocos pasos, sin técnicas complicadas, y con ingredientes accesibles. La pechuga y las patitas de pollo BioGranja 51 (30 días) son fuentes completas de proteínas, vitaminas y minerales. La quinoa aporta carbohidratos complejos, fibra y aminoácidos esenciales. El bowl se complementa con vegetales frescos y una vinagreta ligera para un plato equilibrado y nutritivo.",
+    porciones: 2,
+    tiempo: "30 min",
+    dificultad: "Fácil – apto para preparar en casa",
+    ingredientes: [
+      "Pechuga de pollo BioGranja – 2 unidades (200 g c/u)",
+      "Patitas de pollo BioGranja – 4 unidades",
+      "Quinua blanca – 1 taza",
+      "Brócoli – 1 taza en arbolitos pequeños",
+      "Zanahoria – 1 mediana en rodajas",
+      "Aceite de oliva – 2 cdas",
+      "Jugo de limón – 1 cda",
+      "Sal y pimienta al gusto"
+    ],
+    tecnica: "Cocción simple en olla (para patitas y quinoa). Salteado rápido (para pechuga).Verduras al vapor o hervidas (según lo que el deportista tenga en casa).",
+    pasos: [
+      ",Caldo rápido de patitas: en una olla, hervir las patitas en 500 ml de agua con sal durante 20 minutos. Colar y reservar el caldo (fuente de colágeno).",
+      "Quinoa: cocinar la taza de quinua en 2 tazas del caldo de patitas hasta que esté lista (15 min aprox).",
+      "Pechugas: sazonar con sal, pimienta y un poco de limón. En sartén caliente con 1 cda de aceite, dorar 3 min por lado hasta que queden jugosas.",
+      "Verduras: hervir o cocer al vapor el brócoli y la zanahoria 5 min (que queden al dente).",
+      "Montaje casero: servir la quinua como base en dos bowls, colocar las pechugas cortadas en tiras encima y rodear con brócoli y zanahoria.",
+      "Toque final: rociar con un hilo de aceite de oliva y unas gotas de limón para frescura."
+    ],
+    presentacion: "No se necesitan técnicas complicadas: Usar un bowl grande. Base de quinoa, luego tiras de pechuga en abanico. Vegetales alrededor para dar color. Un chorrito de aceite de oliva al final para brillo.",
+    maridaje: "Agua fría con rodajas de naranja o limón (hidratación + vitamina C).Como opción, un jugo de maracuyá sin azúcar."
   }
 ];
 
