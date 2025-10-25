@@ -464,10 +464,7 @@ footer {
     width: 80vw;
   }
 }
-.banner-oferta{
-  padding-left: 20px;
-  padding-right: 20px;
-}
+
 
   .diferenciador .tooltip {
     width: 70vw;
@@ -484,7 +481,10 @@ footer {
     bottom: -6px;
     border-color: rgba(0,0,0,0.85) transparent transparent transparent;
   }
-
+.banner-oferta{
+  padding-left: 30px;
+  padding-right: 30px;
+}
 }
 
 
