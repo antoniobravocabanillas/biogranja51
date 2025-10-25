@@ -244,7 +244,7 @@ card.innerHTML = `
       <!-- Etiqueta superior -->
       <div class="product-label">
         ${p.offerPrice 
-          ? `Oferta de Lanzamiento` 
+          ? `Hasta fin de mes o agotar stock` 
           : `S/ ${p.price.toFixed(2)} x Kg${p.weight ? ' (≈ ' + p.weight + ' Kg)' : ''}`
         }
       </div>
