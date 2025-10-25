@@ -1,0 +1,122 @@
+:root {
+  --negro: #0d0d0d;
+  --negrotransparente: #0d0d0d5c;
+  --verde: #4caf50;
+  --celeste: #00bcd4;
+  --gris: #757575;
+  --amarillo: #ffeb3b;
+  --blanco: #ffffff;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9f9;
+  color: var(--negro);
+  margin: 0;
+}
+
+header {
+  background: var(--verde);
+  color: var(--blanco);
+  text-align: center;
+  padding: 1.5em 0;
+}
+
+header .logo {
+  width: 100px;
+  border-radius: 50%;
+  background: var(--blanco);
+  margin-bottom: 0.5em;
+}
+
+main {
+  padding: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.uploader {
+  background: var(--blanco);
+  padding: 2em;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px #0002;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+}
+
+input[type="file"] {
+  margin-top: 1em;
+  padding: 10px;
+  border: 2px dashed var(--celeste);
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+}
+
+#info {
+  margin-top: 2em;
+  background: var(--blanco);
+  padding: 2em;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px #0002;
+  width: 100%;
+  max-width: 800px;
+}
+
+.hidden {
+  display: none;
+}
+
+#comprobanteData {
+  margin-top: 1em;
+  line-height: 1.6;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+}
+
+th {
+  background: var(--celeste);
+  color: var(--blanco);
+  padding: 8px;
+  text-align: center;
+}
+
+td {
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background: #f4f4f4;
+}
+
+.btn-verde {
+  margin-top: 1.5em;
+  background: var(--verde);
+  color: var(--blanco);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btn-verde:hover {
+  background: var(--celeste);
+}
+
+footer {
+  margin-top: 3em;
+  text-align: center;
+  font-size: 0.9em;
+  color: var(--gris);
+}

@@ -59,6 +59,20 @@ a {
   text-decoration: none;
 }
 
+.banner-oferta{display: flex;
+flex-direction: column;
+text-align: center;
+background-color: var(--amarillo);
+padding-top: 20px;
+padding-bottom: 20px;
+}
+
+.tittle-oferta{
+  font-size: 1.6em;
+}
+.dscp-oferta{
+  font-size: 1.2em;
+}
 
 /* Header */
 header {
