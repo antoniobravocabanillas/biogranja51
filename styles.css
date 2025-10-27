@@ -62,9 +62,10 @@ a {
 .banner-oferta{display: flex;
 flex-direction: column;
 text-align: center;
-background-color: var(--amarillo);
+background-color: var(--verde);
 padding-top: 20px;
 padding-bottom: 20px;
+color: white;
 }
 
 .tittle-oferta{
