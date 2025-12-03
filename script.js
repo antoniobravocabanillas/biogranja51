@@ -52,7 +52,7 @@ const products = [
     subName: "Natural, nutritivo y lleno de sabor.",
     price: 14.99,
     weight: 2,
-     offerPrice: 10.99,   // ← si existe, activa oferta
+     offerPrice: 11.99,   // ← si existe, activa oferta
     img: "/img/productos/pollo/pollo-tierno.jpg",
     benefits0: "💧 Agua purificada → carne más limpia y segura",
     benefits1: "🌱 Sin hormonas ni químicos",
@@ -65,7 +65,7 @@ const products = [
     subName: "Sabor balanceado para toda la familia.",
     price: 11.99,
     weight: 3,
-    offerPrice: 9,   // ← si existe, activa oferta
+    offerPrice: 9.49,   // ← si existe, activa oferta
     img: "/img/productos/pollo/pollo-clasico.jpg",
     benefits0: "👨‍👩‍👧 Ideal para preparaciones familiares",
     benefits1: "🍗 Carne equilibrada: jugosa pero firme",
