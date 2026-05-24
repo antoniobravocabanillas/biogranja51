@@ -1,0 +1,196 @@
+{
+  "products": [
+    {
+      "id": "prd-pollo-entero",
+      "sku": "POL-ENTERO",
+      "name": "Pollo entero",
+      "category": "Pollo",
+      "originType": "own",
+      "description": "Pollo criado en BioGranja 51 con alimentación controlada por etapa.",
+      "presentation": "Entero, peso final confirmado",
+      "priceUnit": "kg",
+      "price": null,
+      "portionGrams": null,
+      "imageUrl": null,
+      "active": true,
+      "subscriptionEligible": true,
+      "traceable": true
+    },
+    {
+      "id": "prd-huevos-maple",
+      "sku": "HUE-MAPLE-30",
+      "name": "Huevos frescos",
+      "category": "Huevos",
+      "originType": "pending_confirmation",
+      "description": "Maple completo de huevos frescos, clasificados para despacho.",
+      "presentation": "Maple completo de 30 unidades",
+      "priceUnit": "maple",
+      "price": null,
+      "portionGrams": null,
+      "imageUrl": null,
+      "active": true,
+      "subscriptionEligible": true,
+      "traceable": true
+    },
+    {
+      "id": "prd-res-500",
+      "sku": "RES-POR-500",
+      "name": "Res seleccionada",
+      "category": "Res",
+      "originType": "selected_supplier",
+      "description": "Carne de res adquirida a proveedor evaluado y despachada con control de origen.",
+      "presentation": "Porción de 500 g",
+      "priceUnit": "kg",
+      "price": null,
+      "portionGrams": 500,
+      "imageUrl": null,
+      "active": true,
+      "subscriptionEligible": true,
+      "traceable": true
+    },
+    {
+      "id": "prd-cerdo-500",
+      "sku": "CER-POR-500",
+      "name": "Cerdo seleccionado",
+      "category": "Cerdo",
+      "originType": "selected_supplier",
+      "description": "Carne de cerdo de proveedor evaluado, fraccionada para compra práctica.",
+      "presentation": "Porción de 500 g",
+      "priceUnit": "kg",
+      "price": null,
+      "portionGrams": 500,
+      "imageUrl": null,
+      "active": true,
+      "subscriptionEligible": true,
+      "traceable": true
+    },
+    {
+      "id": "prd-cuy-entero",
+      "sku": "CUY-ENTERO",
+      "name": "Cuy entero",
+      "category": "Cuy",
+      "originType": "pending_confirmation",
+      "description": "Cuy entero fresco, ideal para preparaciones tradicionales.",
+      "presentation": "Unidad entera",
+      "priceUnit": "unit",
+      "price": 35,
+      "portionGrams": null,
+      "imageUrl": null,
+      "active": true,
+      "subscriptionEligible": false,
+      "traceable": true
+    }
+  ],
+  "deliveryZones": [
+    {
+      "id": "zon-trujillo-central",
+      "name": "Trujillo urbano central",
+      "neighborhoods": "Centro, San Andrés, La Merced, Primavera",
+      "baseFee": 8,
+      "freeFrom": 160,
+      "subscriptionAvailable": true,
+      "active": true
+    },
+    {
+      "id": "zon-victor-larco",
+      "name": "Víctor Larco y California",
+      "neighborhoods": "California, El Golf, Las Flores, Buenos Aires",
+      "baseFee": 10,
+      "freeFrom": 190,
+      "subscriptionAvailable": true,
+      "active": true
+    },
+    {
+      "id": "zon-urbanizaciones",
+      "name": "Urbanizaciones norte y este",
+      "neighborhoods": "Las Quintanas, Santa Inés, Los Cedros, Palermo",
+      "baseFee": 10,
+      "freeFrom": 190,
+      "subscriptionAvailable": true,
+      "active": true
+    }
+  ],
+  "paymentMethods": [
+    {
+      "id": "pay-yape",
+      "name": "Yape",
+      "instructions": "Confirmación mediante comprobante de pago.",
+      "active": true
+    },
+    {
+      "id": "pay-plin",
+      "name": "Plin",
+      "instructions": "Confirmación mediante comprobante de pago.",
+      "active": true
+    },
+    {
+      "id": "pay-transferencia",
+      "name": "Transferencia bancaria",
+      "instructions": "Confirmación antes del despacho.",
+      "active": true
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-tienda-principal",
+      "name": "Comercializadora BioGranja 51",
+      "type": "store",
+      "address": "Trujillo - dirección por registrar",
+      "active": true
+    },
+    {
+      "id": "loc-molino",
+      "name": "Almacén y molino",
+      "type": "mill",
+      "address": "Ubicación por registrar",
+      "active": true
+    },
+    {
+      "id": "loc-granja",
+      "name": "Unidad productiva avícola",
+      "type": "farm",
+      "address": "Ubicación por registrar",
+      "active": true
+    }
+  ],
+  "roles": [
+    {
+      "id": "role-administrador",
+      "name": "Administrador",
+      "scope": "Empresa completa",
+      "permissions": [
+        "catálogo",
+        "precios",
+        "pedidos",
+        "usuarios",
+        "configuración",
+        "reportes"
+      ]
+    },
+    {
+      "id": "role-ventas",
+      "name": "Ventas",
+      "scope": "Tienda asignada",
+      "permissions": [
+        "clientes",
+        "pedidos",
+        "cotizaciones",
+        "cobros"
+      ]
+    },
+    {
+      "id": "role-almacen",
+      "name": "Almacén / Molino",
+      "scope": "Almacén asignado",
+      "permissions": [
+        "inventario",
+        "lotes",
+        "insumos",
+        "molienda",
+        "despacho"
+      ]
+    }
+  ],
+  "orders": [],
+  "updatedAt": "2026-05-23T21:00:00-05:00"
+}
