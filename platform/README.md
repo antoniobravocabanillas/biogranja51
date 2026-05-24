@@ -43,10 +43,10 @@ en Supabase Storage, preparado para el runtime de Netlify.
 Configurar las variables copiando `.env.example` a `.env.local` y siguiendo
 la guía de activación en `../docs/CONFIGURACION_SUPABASE_NETLIFY.md`.
 
-La aplicacion incluye `netlify.toml` dentro de `platform/`. En Netlify, esta
-carpeta debe configurarse como paquete/base desplegable para que se detecte
-Next.js y se ejecute SSR, Proxy y route handlers con su adaptador
-OpenNext administrado.
+El repositorio incluye `../netlify.toml`, que dirige el build a `platform/` y
+declara el adaptador Next.js para la migracion desde la web estatica actual.
+Netlify ejecuta SSR, Proxy y route handlers con su runtime OpenNext
+administrado.
 
 ## Desarrollo
 

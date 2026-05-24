@@ -65,9 +65,10 @@ El acceso administrativo queda disponible en `/gestion/login`.
 
 ## 4. Variables En Netlify
 
-La aplicacion incluye `platform/netlify.toml`. En Netlify, configurar
-`platform` como directorio base o paquete del sitio para activar el adaptador
-Next.js/OpenNext. Agregar variables con alcance `Builds` y `Functions`:
+El repositorio incluye `netlify.toml` en la raiz. Esta configuracion dirige el
+build hacia `platform/` y declara el adaptador Next.js/OpenNext, permitiendo
+migrar desde la web estatica actual sin cambiar los ajustes remotos antes de
+aprobar el deploy. Agregar variables con alcance `Builds` y `Functions`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://TU-PROYECTO.supabase.co
@@ -82,14 +83,14 @@ Auth y RLS.
 ## 5. Vincular Y Desplegar En Netlify
 
 El sitio puede vincularse al repositorio para construir en la infraestructura
-de Netlify. Esto es especialmente recomendable para Next.js con middleware.
+de Netlify. Esto es especialmente recomendable para Next.js con Proxy.
 
 ### Desde Dashboard
 
 1. Subir la rama a GitHub.
 2. En Netlify, importar el repositorio o abrir el proyecto existente.
-3. Definir `platform` como base/package directory en los ajustes de build.
-4. Netlify leera `platform/netlify.toml` y aplicara el runtime Next.js.
+3. Netlify leera `netlify.toml`, construira desde `platform/` y aplicara el
+   runtime Next.js.
 4. Agregar las variables del punto anterior y desplegar.
 
 ### Desde CLI
@@ -101,10 +102,11 @@ netlify link
 netlify env:set NEXT_PUBLIC_SUPABASE_URL "https://TU-PROYECTO.supabase.co"
 netlify env:set NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY "sb_publishable_XXXXXXXX"
 netlify env:set NETLIFY_NEXT_SKEW_PROTECTION "true"
+```
+
 El flujo recomendado de despliegue es publicar una rama en GitHub para obtener
 el Deploy Preview y, luego de aprobarlo, fusionar o desplegar a produccion
 desde Netlify.
-```
 
 ## 6. Verificacion De Lanzamiento
 
