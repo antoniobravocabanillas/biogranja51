@@ -657,7 +657,8 @@ p {
   margin-bottom: 14px;
 }
 
-.form-field span {
+.form-field span,
+.form-field > label {
   color: var(--muted);
   font-size: 11px;
   font-weight: 750;
@@ -677,6 +678,35 @@ p {
 
 .form-field textarea {
   resize: vertical;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-input input {
+  padding-right: 86px;
+  width: 100%;
+}
+
+.password-toggle {
+  background: transparent;
+  border: 0;
+  color: var(--forest);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 750;
+  padding: 10px 12px;
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.password-toggle:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
 }
 
 .zone-detail {

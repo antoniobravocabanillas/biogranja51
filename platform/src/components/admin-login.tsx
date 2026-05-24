@@ -9,10 +9,25 @@ type AdminLoginProps = {
   configured: boolean;
 };
 
+function signInErrorMessage(code?: string) {
+  switch (code) {
+    case "email_not_confirmed":
+      return "Tu correo aún no está confirmado. Revisa el enlace de activación o contacta al administrador.";
+    case "over_request_rate_limit":
+    case "over_email_send_rate_limit":
+      return "Demasiados intentos seguidos. Espera unos minutos y vuelve a intentar.";
+    case "invalid_credentials":
+      return "Correo o contraseña incorrectos. Usa Mostrar para comprobar la clave escrita.";
+    default:
+      return "No se pudo iniciar sesión. Intenta nuevamente o contacta al administrador.";
+  }
+}
+
 export function AdminLogin({ configured }: AdminLoginProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,9 +39,12 @@ export function AdminLogin({ configured }: AdminLoginProps) {
     setLoading(true);
     setMessage("");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
     if (error) {
-      setMessage("No se pudo iniciar sesión. Verifica correo y contraseña.");
+      setMessage(signInErrorMessage(error.code));
       setLoading(false);
       return;
     }
@@ -65,16 +83,28 @@ export function AdminLogin({ configured }: AdminLoginProps) {
           onChange={(event) => setEmail(event.target.value)}
         />
       </label>
-      <label className="form-field">
-        <span>Contraseña</span>
-        <input
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
-      </label>
+      <div className="form-field">
+        <label htmlFor="staff-password">Contraseña</label>
+        <div className="password-input">
+          <input
+            id="staff-password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+          <button
+            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            aria-pressed={showPassword}
+            className="password-toggle"
+            onClick={() => setShowPassword((visible) => !visible)}
+            type="button"
+          >
+            {showPassword ? "Ocultar" : "Mostrar"}
+          </button>
+        </div>
+      </div>
       {message ? <p className="form-message">{message}</p> : null}
       <button className="save-button" disabled={loading} type="submit">
         {loading ? "Ingresando..." : "Ingresar"}
