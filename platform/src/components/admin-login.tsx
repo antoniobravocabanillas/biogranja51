@@ -105,6 +105,9 @@ export function AdminLogin({ configured }: AdminLoginProps) {
           </button>
         </div>
       </div>
+      <Link className="password-recovery-link" href="/gestion/recuperar">
+        ¿Olvidaste tu contraseña?
+      </Link>
       {message ? <p className="form-message">{message}</p> : null}
       <button className="save-button" disabled={loading} type="submit">
         {loading ? "Ingresando..." : "Ingresar"}

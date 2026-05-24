@@ -80,6 +80,21 @@ No habilitar `ADMIN_WRITE_ENABLED`, `ADMIN_READ_ENABLED` ni
 `ORDER_WRITE_ENABLED` en produccion: con Supabase activo el acceso depende de
 Auth y RLS.
 
+### Recuperacion De Contrasena
+
+En `Authentication > URL Configuration`, configurar:
+
+```text
+Site URL: https://biogranja51.com
+Redirect URL: https://**--biogranja51.netlify.app/**
+Redirect URL: http://localhost:3100/**
+Redirect URL: https://biogranja51.com/gestion/restablecer
+```
+
+El acceso de gestion expone `/gestion/recuperar`, que envia el correo seguro,
+y `/gestion/restablecer`, que recibe el enlace temporal y permite definir una
+nueva clave mediante Supabase Auth.
+
 ## 5. Vincular Y Desplegar En Netlify
 
 El sitio puede vincularse al repositorio para construir en la infraestructura
@@ -113,6 +128,8 @@ desde Netlify.
 - La tienda publica lista productos y calcula delivery.
 - Un pedido real queda registrado antes de abrir WhatsApp.
 - `/gestion` redirige a `/gestion/login` sin sesion.
+- El enlace `Olvidaste tu contrasena` envia correo y permite establecer una
+  nueva clave en `/gestion/restablecer`.
 - El administrador puede editar precios e imagenes.
 - Una imagen subida retorna URL publica de Supabase Storage.
 - Un pedido avanza por confirmacion, preparacion, despacho y entrega.
