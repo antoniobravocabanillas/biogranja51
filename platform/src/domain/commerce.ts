@@ -26,7 +26,20 @@ export type BirdBatchStage =
   | "ready_processing"
   | "processed"
   | "closed";
-export type BirdBatchEventType = "mortality" | "weight_sample" | "feed_consumption" | "stage_change" | "processing";
+export type PoultryExpenseCategory =
+  | "health"
+  | "bedding"
+  | "energy"
+  | "labor"
+  | "transport"
+  | "other";
+export type BirdBatchEventType =
+  | "mortality"
+  | "weight_sample"
+  | "feed_consumption"
+  | "expense"
+  | "stage_change"
+  | "processing";
 
 export const originTypes: OriginType[] = [
   "own",
@@ -59,6 +72,14 @@ export const birdBatchStages: BirdBatchStage[] = [
   "ready_processing",
   "processed",
   "closed",
+];
+export const poultryExpenseCategories: PoultryExpenseCategory[] = [
+  "health",
+  "bedding",
+  "energy",
+  "labor",
+  "transport",
+  "other",
 ];
 
 export function isOriginType(value: unknown): value is OriginType {
@@ -252,6 +273,9 @@ export type BirdBatchEvent = {
   count: number | null;
   avgWeightGrams: number | null;
   feedKg: number | null;
+  feedUnitCost: number | null;
+  amount: number | null;
+  expenseCategory: PoultryExpenseCategory | null;
   stage: BirdBatchStage | null;
   notes: string;
 };
@@ -352,8 +376,18 @@ export const birdBatchEventLabels: Record<BirdBatchEventType, string> = {
   mortality: "Mortalidad",
   weight_sample: "Pesaje",
   feed_consumption: "Alimento consumido",
+  expense: "Costo operativo",
   stage_change: "Cambio de etapa",
   processing: "Salida faenada",
+};
+
+export const poultryExpenseCategoryLabels: Record<PoultryExpenseCategory, string> = {
+  health: "Sanidad / vacunas",
+  bedding: "Cama y limpieza",
+  energy: "Energía",
+  labor: "Mano de obra",
+  transport: "Transporte",
+  other: "Otro costo",
 };
 
 export function formatPrice(product: Product): string {

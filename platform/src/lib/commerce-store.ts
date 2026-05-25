@@ -6,6 +6,7 @@ import type {
   BirdBatch,
   BirdBatchEvent,
   BirdBatchStage,
+  PoultryExpenseCategory,
   CommerceState,
   Customer,
   CustomerMetrics,
@@ -157,6 +158,9 @@ type BirdBatchEventRow = {
   count: number | null;
   avg_weight_grams: number | string | null;
   feed_kg: number | string | null;
+  feed_unit_cost?: number | string | null;
+  amount?: number | string | null;
+  expense_category?: PoultryExpenseCategory | null;
   stage: BirdBatchStage | null;
   notes: string | null;
 };
@@ -394,6 +398,9 @@ function birdBatchFromRow(row: BirdBatchRow): BirdBatch {
         count: event.count,
         avgWeightGrams: numberValue(event.avg_weight_grams),
         feedKg: numberValue(event.feed_kg),
+        feedUnitCost: numberValue(event.feed_unit_cost ?? null),
+        amount: numberValue(event.amount ?? null),
+        expenseCategory: event.expense_category ?? null,
         stage: event.stage,
         notes: event.notes ?? "",
       }))
@@ -995,11 +1002,14 @@ export async function createBirdBatch(payload: {
 
 export async function recordBirdBatchEvent(payload: {
   batchId: string;
-  type: "mortality" | "weight_sample" | "feed_consumption" | "stage_change";
+  type: "mortality" | "weight_sample" | "feed_consumption" | "expense" | "stage_change";
   eventAt: string;
   count: number | null;
   avgWeightGrams: number | null;
   feedKg: number | null;
+  feedUnitCost: number | null;
+  amount: number | null;
+  expenseCategory: PoultryExpenseCategory | null;
   stage: BirdBatchStage | null;
   notes: string;
 }): Promise<void> {
@@ -1014,10 +1024,30 @@ export async function recordBirdBatchEvent(payload: {
     p_count: payload.count,
     p_avg_weight_grams: payload.avgWeightGrams,
     p_feed_kg: payload.feedKg,
+    p_feed_unit_cost: payload.feedUnitCost,
+    p_amount: payload.amount,
+    p_expense_category: payload.expenseCategory,
     p_stage: payload.stage,
     p_notes: payload.notes,
   });
   assertDatabaseResult(error, "No se pudo registrar el evento de crianza");
+}
+
+export async function valueBirdBatchFeedEvent(payload: {
+  batchId: string;
+  eventId: string;
+  feedUnitCost: number;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La crianza operativa requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("value_bird_feed_event", {
+    p_batch_id: payload.batchId,
+    p_event_id: payload.eventId,
+    p_feed_unit_cost: payload.feedUnitCost,
+  });
+  assertDatabaseResult(error, "No se pudo valorizar el consumo de alimento");
 }
 
 export async function harvestBirdBatch(payload: {

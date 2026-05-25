@@ -60,6 +60,10 @@ Definicion operativa corregida:
   venta, y recibe pollo propio solamente despues de la faena, expresado en kg.
 - El paso de faena enlaza el lote vivo con el lote vendible para conservar
   trazabilidad y posteriormente calcular rendimiento y margen.
+- Cada lote mide supervivencia, evolucion de peso, alimento acumulado y
+  conversion alimenticia referencial.
+- El costo acumulado integra pollitos, alimento valorizado y gastos de
+  sanidad u operacion; el alimento sin precio permanece pendiente de valorizar.
 
 Criterio de salida: cada venta tiene costo y origen identificables.
 
@@ -68,7 +72,7 @@ Criterio de salida: cada venta tiene costo y origen identificables.
 Objetivo: capturar la ventaja productiva propia.
 
 - Lotes de pollitos de engorde, ingreso y salida faenada. `Implementado en desarrollo`.
-- Consumos, mortalidad y pesos del pollo de engorde. `Implementado en desarrollo`.
+- Consumos, mortalidad, pesos y costos del pollo de engorde. `Implementado en desarrollo`.
 - Lotes de ponedoras, postura y cosecha de huevos.
 - Catalogo de insumos del molino y precios historicos.
 - Formula versionada con validaciones de porcentaje y costo.

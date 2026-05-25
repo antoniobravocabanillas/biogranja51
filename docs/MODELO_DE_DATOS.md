@@ -68,13 +68,19 @@ que la empresa confirme y registre su procedencia.
 | --- | --- |
 | `production_units` | id, type, name, capacity, status |
 | `bird_batches` | id, code, breed, received_at, initial_count, current_count, processed_count, stage, unit_id |
-| `bird_batch_events` | batch_id, event_type, event_at, count, avg_weight_grams, feed_kg, notes |
+| `bird_batch_events` | batch_id, event_type, event_at, count, avg_weight_grams, feed_kg, feed_unit_cost, amount, expense_category, notes |
 | `egg_collections` | batch_id, collected_at, quantity, grade, rejected_quantity |
 | `feed_consumption` | batch_id, formula_version_id, quantity_kg, consumed_at |
 | `harvest_batches` | bird_batch_id, lot_id, processed_at, final_weight_kg |
 
-Indicadores calculables: mortalidad, tasa de postura, conversion alimenticia,
-peso promedio y costo real por kg.
+Los eventos de alimento pueden llevar costo por kg y los eventos de gasto
+clasifican sanidad, cama, energia, mano de obra, transporte u otros costos.
+Los consumos todavia sin costo permanecen visibles como pendientes de
+valorizacion y se pueden valorizar posteriormente desde el tablero del lote.
+
+Indicadores calculables: mortalidad, supervivencia, evolucion de peso,
+consumo por ave, conversion alimenticia referencial, costo acumulado y costo
+por ave o kg vivo antes de faena.
 
 ### Molino
 

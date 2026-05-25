@@ -4,9 +4,11 @@ import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
+  BirdBatch,
   BirdBatchEventType,
   BirdBatchStage,
   BusinessLocation,
+  PoultryExpenseCategory,
   PoultryWorkspace,
   Product,
 } from "@/domain/commerce";
@@ -14,6 +16,8 @@ import {
   birdBatchEventLabels,
   birdBatchStageLabels,
   birdBatchStages,
+  poultryExpenseCategories,
+  poultryExpenseCategoryLabels,
 } from "@/domain/commerce";
 
 type PoultryAdminProps = {
@@ -40,6 +44,146 @@ function money(value: number | null): string {
   return value === null ? "Sin costo" : `S/ ${value.toFixed(2)}`;
 }
 
+function decimal(value: number | null, digits = 2): string {
+  return value === null ? "Sin dato" : value.toFixed(digits);
+}
+
+function dateShort(value: string): string {
+  return new Intl.DateTimeFormat("es-PE", {
+    day: "2-digit",
+    month: "short",
+    timeZone: "America/Lima",
+  }).format(new Date(value));
+}
+
+function calculateBatchMetrics(batch: BirdBatch) {
+  const chronological = [...batch.events].sort((a, b) => a.eventAt.localeCompare(b.eventAt));
+  const weightPoints = [
+    ...(batch.initialAvgWeightGrams
+      ? [{ date: batch.receivedAt, value: batch.initialAvgWeightGrams }]
+      : []),
+    ...chronological
+      .filter((event) => event.type === "weight_sample" && event.avgWeightGrams !== null)
+      .map((event) => ({ date: event.eventAt, value: event.avgWeightGrams! })),
+  ];
+  const feedPoints = chronological
+    .filter((event) => event.type === "feed_consumption" && event.feedKg !== null)
+    .map((event) => ({ date: event.eventAt, value: event.feedKg!, amount: event.amount }));
+  const currentWeight = weightPoints.at(-1)?.value ?? null;
+  const totalFeedKg = feedPoints.reduce((sum, point) => sum + point.value, 0);
+  const feedCost = feedPoints.reduce((sum, point) => sum + (point.amount ?? 0), 0);
+  const unvaluedFeedKg = feedPoints
+    .filter((point) => point.amount === null)
+    .reduce((sum, point) => sum + point.value, 0);
+  const unvaluedFeedEvents = chronological.filter(
+    (event) => event.type === "feed_consumption" && event.feedKg !== null && event.amount === null,
+  );
+  const expenseCost = chronological
+    .filter((event) => event.type === "expense")
+    .reduce((sum, event) => sum + (event.amount ?? 0), 0);
+  const chickCost =
+    batch.costPerChick === null ? null : batch.initialCount * batch.costPerChick;
+  const totalKnownCost = (chickCost ?? 0) + feedCost + expenseCost;
+  const mortalityCount = chronological
+    .filter((event) => event.type === "mortality")
+    .reduce((sum, event) => sum + (event.count ?? 0), 0);
+  const liveBiomassKg =
+    currentWeight === null ? null : (currentWeight * batch.currentCount) / 1000;
+  const gainBiomassKg =
+    currentWeight === null || batch.initialAvgWeightGrams === null
+      ? null
+      : ((currentWeight - batch.initialAvgWeightGrams) * batch.currentCount) / 1000;
+  const birdDays = Math.max(
+    1,
+    Math.floor((Date.now() - new Date(batch.receivedAt).getTime()) / 86400000),
+  );
+
+  return {
+    birdDays,
+    weightPoints,
+    feedPoints,
+    currentWeight,
+    weightGainGrams:
+      currentWeight === null || batch.initialAvgWeightGrams === null
+        ? null
+        : currentWeight - batch.initialAvgWeightGrams,
+    totalFeedKg,
+    feedPerLiveBird: batch.currentCount ? totalFeedKg / batch.currentCount : null,
+    dailyFeedPerLiveBirdGrams:
+      batch.currentCount ? (totalFeedKg * 1000) / batch.currentCount / birdDays : null,
+    feedConversion:
+      gainBiomassKg !== null && gainBiomassKg > 0 ? totalFeedKg / gainBiomassKg : null,
+    mortalityCount,
+    survivalRate: batch.initialCount
+      ? ((batch.initialCount - mortalityCount) / batch.initialCount) * 100
+      : null,
+    chickCost,
+    feedCost,
+    expenseCost,
+    unvaluedFeedKg,
+    unvaluedFeedEvents,
+    totalKnownCost,
+    costPerLiveBird: batch.currentCount ? totalKnownCost / batch.currentCount : null,
+    costPerLiveKg:
+      liveBiomassKg !== null && liveBiomassKg > 0 ? totalKnownCost / liveBiomassKg : null,
+    costsIncomplete: chickCost === null || unvaluedFeedKg > 0,
+  };
+}
+
+function WeightChart({ points }: { points: Array<{ date: string; value: number }> }) {
+  if (points.length < 2) {
+    return <p className="chart-empty">Registra dos pesajes para ver la curva de crecimiento.</p>;
+  }
+  const max = Math.max(...points.map((point) => point.value));
+  const min = Math.min(...points.map((point) => point.value));
+  const span = Math.max(1, max - min);
+  const chartPoints = points
+    .map((point, index) => {
+      const x = points.length === 1 ? 15 : 15 + (index / (points.length - 1)) * 270;
+      const y = 105 - ((point.value - min) / span) * 82;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <>
+      <svg className="weight-chart" viewBox="0 0 300 120" role="img" aria-label="Evolución del peso promedio">
+        <path d="M15 105 H285" />
+        <polyline points={chartPoints} />
+        {points.map((point, index) => {
+          const x = points.length === 1 ? 15 : 15 + (index / (points.length - 1)) * 270;
+          const y = 105 - ((point.value - min) / span) * 82;
+          return <circle key={`${point.date}-${point.value}`} cx={x} cy={y} r="4" />;
+        })}
+      </svg>
+      <div className="chart-axis">
+        <span>{dateShort(points[0].date)} | {points[0].value.toFixed(0)} g</span>
+        <strong>{points.at(-1)!.value.toFixed(0)} g</strong>
+        <span>{dateShort(points.at(-1)!.date)}</span>
+      </div>
+    </>
+  );
+}
+
+function FeedChart({ points }: { points: Array<{ date: string; value: number }> }) {
+  if (!points.length) {
+    return <p className="chart-empty">Registra alimento consumido para analizar el lote.</p>;
+  }
+  const max = Math.max(...points.map((point) => point.value));
+
+  return (
+    <div className="feed-chart">
+      {points.slice(-8).map((point) => (
+        <div key={`${point.date}-${point.value}`}>
+          <span style={{ height: `${Math.max(8, (point.value / max) * 92)}%` }} />
+          <small>{dateShort(point.date)}</small>
+          <b>{point.value.toFixed(2)}</b>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function PoultryAdmin({
   initialWorkspace,
   locations,
@@ -57,6 +201,7 @@ export function PoultryAdmin({
     initialWorkspace.batches.find((batch) => batch.id === selectedId) ??
     initialWorkspace.batches[0] ??
     null;
+  const metrics = selected ? calculateBatchMetrics(selected) : null;
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [batchDraft, setBatchDraft] = useState({
@@ -75,6 +220,9 @@ export function PoultryAdmin({
     count: string;
     avgWeightGrams: string;
     feedKg: string;
+    feedUnitCost: string;
+    amount: string;
+    expenseCategory: PoultryExpenseCategory;
     stage: BirdBatchStage;
     notes: string;
   }>({
@@ -83,6 +231,9 @@ export function PoultryAdmin({
     count: "",
     avgWeightGrams: "",
     feedKg: "",
+    feedUnitCost: "",
+    amount: "",
+    expenseCategory: "health",
     stage: "brooding",
     notes: "",
   });
@@ -96,6 +247,14 @@ export function PoultryAdmin({
     expiresAt: "",
     notes: "",
   });
+  const [valuationDraft, setValuationDraft] = useState({
+    eventId: "",
+    feedUnitCost: "",
+  });
+  const valuationEventId =
+    metrics?.unvaluedFeedEvents.some((event) => event.id === valuationDraft.eventId)
+      ? valuationDraft.eventId
+      : metrics?.unvaluedFeedEvents[0]?.id ?? "";
 
   async function submitBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -147,6 +306,9 @@ export function PoultryAdmin({
         count: eventDraft.count ? Number(eventDraft.count) : null,
         avgWeightGrams: eventDraft.avgWeightGrams ? Number(eventDraft.avgWeightGrams) : null,
         feedKg: eventDraft.feedKg ? Number(eventDraft.feedKg) : null,
+        feedUnitCost: eventDraft.feedUnitCost ? Number(eventDraft.feedUnitCost) : null,
+        amount: eventDraft.amount ? Number(eventDraft.amount) : null,
+        expenseCategory: eventDraft.type === "expense" ? eventDraft.expenseCategory : null,
         stage: eventDraft.type === "stage_change" ? eventDraft.stage : null,
         notes: eventDraft.notes,
       }),
@@ -163,6 +325,8 @@ export function PoultryAdmin({
       count: "",
       avgWeightGrams: "",
       feedKg: "",
+      feedUnitCost: "",
+      amount: "",
       notes: "",
     }));
     setSaving(false);
@@ -201,6 +365,30 @@ export function PoultryAdmin({
       unitCost: "",
       notes: "",
     }));
+    setSaving(false);
+    router.refresh();
+  }
+
+  async function valuePendingFeed() {
+    if (!selected || !metrics?.unvaluedFeedEvents.length) return;
+    setSaving(true);
+    setMessage("");
+    const response = await fetch(
+      `/api/crianza/lotes/${selected.id}/eventos/${valuationEventId}/valorizar`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feedUnitCost: Number(valuationDraft.feedUnitCost) }),
+      },
+    );
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo valorizar el consumo.");
+      setSaving(false);
+      return;
+    }
+    setMessage("Consumo de alimento valorizado para el cálculo de costos.");
+    setValuationDraft({ eventId: "", feedUnitCost: "" });
     setSaving(false);
     router.refresh();
   }
@@ -371,6 +559,138 @@ export function PoultryAdmin({
         </form>
       </div>
 
+      {selected && metrics ? (
+        <section className="poultry-analytics settings-panel">
+          <div className="analytics-heading">
+            <div>
+              <p className="eyebrow">Tablero técnico económico</p>
+              <h2>{selected.code}</h2>
+            </div>
+            <p>
+              Día <strong>{metrics.birdDays}</strong> | {birdBatchStageLabels[selected.stage]}
+            </p>
+          </div>
+          <div className="production-metrics">
+            <article>
+              <span>Peso promedio actual</span>
+              <strong>{metrics.currentWeight === null ? "Sin dato" : `${metrics.currentWeight.toFixed(0)} g`}</strong>
+              <small>
+                {metrics.weightGainGrams === null
+                  ? "Registra pesajes"
+                  : `+${metrics.weightGainGrams.toFixed(0)} g desde ingreso`}
+              </small>
+            </article>
+            <article>
+              <span>Supervivencia</span>
+              <strong>{metrics.survivalRate === null ? "Sin dato" : `${metrics.survivalRate.toFixed(2)}%`}</strong>
+              <small>{metrics.mortalityCount} bajas registradas</small>
+            </article>
+            <article>
+              <span>Alimento acumulado</span>
+              <strong>{metrics.totalFeedKg.toFixed(2)} kg</strong>
+              <small>
+                {metrics.feedPerLiveBird === null
+                  ? "Sin aves vivas"
+                  : `${metrics.feedPerLiveBird.toFixed(3)} kg / ave viva`}
+              </small>
+            </article>
+            <article>
+              <span>Conversión referencial</span>
+              <strong>{decimal(metrics.feedConversion)}</strong>
+              <small>kg alimento / kg ganado vivo</small>
+            </article>
+            <article>
+              <span>Costo acumulado</span>
+              <strong>{money(metrics.totalKnownCost)}</strong>
+              <small>{metrics.costsIncomplete ? "Parcial: hay datos por valorizar" : "Costos valorizados"}</small>
+            </article>
+            <article>
+              <span>Costo por ave viva</span>
+              <strong>{money(metrics.costPerLiveBird)}</strong>
+              <small>Antes de faena</small>
+            </article>
+            <article>
+              <span>Costo por kg vivo</span>
+              <strong>{money(metrics.costPerLiveKg)}</strong>
+              <small>Referencia productiva actual</small>
+            </article>
+            <article>
+              <span>Consumo diario</span>
+              <strong>
+                {metrics.dailyFeedPerLiveBirdGrams === null
+                  ? "Sin dato"
+                  : `${metrics.dailyFeedPerLiveBirdGrams.toFixed(1)} g`}
+              </strong>
+              <small>promedio diario / ave viva</small>
+            </article>
+          </div>
+          <div className="analytics-grid">
+            <article className="chart-panel">
+              <header>
+                <h3>Evolución de peso</h3>
+                <span>Promedio del muestreo en gramos</span>
+              </header>
+              <WeightChart points={metrics.weightPoints} />
+            </article>
+            <article className="chart-panel">
+              <header>
+                <h3>Consumo registrado</h3>
+                <span>Kg de alimento por registro</span>
+              </header>
+              <FeedChart points={metrics.feedPoints} />
+            </article>
+            <article className="cost-panel">
+              <header>
+                <h3>Estructura de costos</h3>
+                <span>Control acumulado por lote</span>
+              </header>
+              <dl>
+                <div><dt>Pollitos</dt><dd>{money(metrics.chickCost)}</dd></div>
+                <div><dt>Alimento valorizado</dt><dd>{money(metrics.feedCost)}</dd></div>
+                <div><dt>Sanidad y operación</dt><dd>{money(metrics.expenseCost)}</dd></div>
+                <div className="cost-total"><dt>Total conocido</dt><dd>{money(metrics.totalKnownCost)}</dd></div>
+              </dl>
+              {metrics.unvaluedFeedKg > 0 ? (
+                <div className="feed-valuation">
+                  <p>{metrics.unvaluedFeedKg.toFixed(3)} kg de alimento aún sin costo asignado.</p>
+                  <select
+                    value={valuationEventId}
+                    onChange={(event) =>
+                      setValuationDraft({ ...valuationDraft, eventId: event.target.value })
+                    }
+                  >
+                    {metrics.unvaluedFeedEvents.map((event) => (
+                      <option key={event.id} value={event.id}>
+                        {dateShort(event.eventAt)} | {event.feedKg?.toFixed(3)} kg
+                      </option>
+                    ))}
+                  </select>
+                  <div>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.0001"
+                      placeholder="S/ por kg"
+                      value={valuationDraft.feedUnitCost}
+                      onChange={(event) =>
+                        setValuationDraft({ ...valuationDraft, feedUnitCost: event.target.value })
+                      }
+                    />
+                    <button
+                      type="button"
+                      disabled={!editable || saving || valuationDraft.feedUnitCost === ""}
+                      onClick={valuePendingFeed}
+                    >
+                      Valorizar
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </article>
+          </div>
+        </section>
+      ) : null}
+
       <div className="poultry-bottom-grid">
         <section className="settings-panel poultry-control">
           <p className="eyebrow">Seguimiento</p>
@@ -406,6 +726,7 @@ export function PoultryAdmin({
                       <option value="mortality">Mortalidad</option>
                       <option value="weight_sample">Pesaje promedio</option>
                       <option value="feed_consumption">Alimento consumido</option>
+                      <option value="expense">Costo operativo</option>
                       <option value="stage_change">Cambiar etapa</option>
                     </select>
                   </label>
@@ -443,16 +764,61 @@ export function PoultryAdmin({
                   </label>
                 ) : null}
                 {eventDraft.type === "feed_consumption" ? (
-                  <label className="form-field">
-                    <span>Alimento consumido (kg)</span>
-                    <input
-                      type="number"
-                      min="0.001"
-                      step="0.001"
-                      value={eventDraft.feedKg}
-                      onChange={(event) => setEventDraft({ ...eventDraft, feedKg: event.target.value })}
-                    />
-                  </label>
+                  <div className="field-pair">
+                    <label className="form-field">
+                      <span>Alimento consumido (kg)</span>
+                      <input
+                        type="number"
+                        min="0.001"
+                        step="0.001"
+                        value={eventDraft.feedKg}
+                        onChange={(event) => setEventDraft({ ...eventDraft, feedKg: event.target.value })}
+                      />
+                    </label>
+                    <label className="form-field">
+                      <span>Costo del alimento S/ kg</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.0001"
+                        value={eventDraft.feedUnitCost}
+                        onChange={(event) => setEventDraft({ ...eventDraft, feedUnitCost: event.target.value })}
+                        placeholder="Puede valorizarse luego"
+                      />
+                    </label>
+                  </div>
+                ) : null}
+                {eventDraft.type === "expense" ? (
+                  <div className="field-pair">
+                    <label className="form-field">
+                      <span>Tipo de costo</span>
+                      <select
+                        value={eventDraft.expenseCategory}
+                        onChange={(event) =>
+                          setEventDraft({
+                            ...eventDraft,
+                            expenseCategory: event.target.value as PoultryExpenseCategory,
+                          })
+                        }
+                      >
+                        {poultryExpenseCategories.map((category) => (
+                          <option key={category} value={category}>
+                            {poultryExpenseCategoryLabels[category]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="form-field">
+                      <span>Monto S/</span>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={eventDraft.amount}
+                        onChange={(event) => setEventDraft({ ...eventDraft, amount: event.target.value })}
+                      />
+                    </label>
+                  </div>
                 ) : null}
                 {eventDraft.type === "stage_change" ? (
                   <label className="form-field">
@@ -491,7 +857,12 @@ export function PoultryAdmin({
                     <strong>
                       {event.type === "mortality" ? `-${event.count} aves` : null}
                       {event.type === "weight_sample" ? `${event.avgWeightGrams} g` : null}
-                      {event.type === "feed_consumption" ? `${event.feedKg} kg` : null}
+                      {event.type === "feed_consumption"
+                        ? `${event.feedKg} kg${event.amount === null ? "" : ` | ${money(event.amount)}`}`
+                        : null}
+                      {event.type === "expense" && event.expenseCategory
+                        ? `${poultryExpenseCategoryLabels[event.expenseCategory]} | ${money(event.amount)}`
+                        : null}
                       {event.type === "stage_change" && event.stage ? birdBatchStageLabels[event.stage] : null}
                       {event.type === "processing" ? `${event.count} faenados` : null}
                     </strong>
@@ -572,6 +943,26 @@ export function PoultryAdmin({
                   />
                 </label>
               </div>
+              {metrics && Number(harvestDraft.netWeightKg) > 0 && metrics.totalKnownCost > 0 ? (
+                <p className="suggested-cost">
+                  Costo calculado con los registros actuales:{" "}
+                  <strong>
+                    S/ {(metrics.totalKnownCost / Number(harvestDraft.netWeightKg)).toFixed(2)} / kg
+                  </strong>
+                  {metrics.costsIncomplete ? " (parcial)" : ""}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setHarvestDraft({
+                        ...harvestDraft,
+                        unitCost: (metrics.totalKnownCost / Number(harvestDraft.netWeightKg)).toFixed(2),
+                      })
+                    }
+                  >
+                    Usar cálculo
+                  </button>
+                </p>
+              ) : null}
               <div className="field-pair">
                 <label className="form-field">
                   <span>Fecha de faena</span>

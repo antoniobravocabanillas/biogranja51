@@ -17,7 +17,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
 - CRM en `/gestion/clientes` con historial, valor de compra, notas,
   segmentación e interés en suscripción.
 - Crianza en `/gestion/crianza` con ingreso de pollitos vivos, mortalidad,
-  pesaje, alimento y salida faenada hacia inventario.
+  curva de peso, consumo valorizable, costos productivos y salida faenada
+  hacia inventario.
 - Inventario comercial en `/gestion/inventario` con productos listos para
   venta, stock valorizado, mermas y reserva trazable para pedidos.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
