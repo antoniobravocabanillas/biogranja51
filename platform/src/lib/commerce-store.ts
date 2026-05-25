@@ -14,6 +14,7 @@ import type {
   DispatchableOrderItem,
   InventoryLot,
   InventoryMovement,
+  InventorySanitaryStatus,
   InventoryUnit,
   InventoryWorkspace,
   EggCollection,
@@ -158,6 +159,14 @@ type InventoryLotRow = {
   expires_at: string | null;
   status: InventoryLot["status"];
   notes: string | null;
+  supplier_document?: string | null;
+  supplier_lot_code?: string | null;
+  arrival_temperature_c?: number | string | null;
+  storage_temperature_c?: number | string | null;
+  packaging_condition?: string | null;
+  sanitary_status?: InventorySanitaryStatus | null;
+  sanitary_notes?: string | null;
+  sanitary_reviewed_at?: string | null;
   source_bird_batch_id?: string | null;
   source_layer_flock_id?: string | null;
   processed_units?: number | string | null;
@@ -506,6 +515,14 @@ function inventoryLotFromRow(row: InventoryLotRow): InventoryLot {
     expiresAt: row.expires_at,
     status: row.status,
     notes: row.notes ?? "",
+    supplierDocument: row.supplier_document ?? null,
+    supplierLotCode: row.supplier_lot_code ?? null,
+    arrivalTemperatureC: numberValue(row.arrival_temperature_c ?? null),
+    storageTemperatureC: numberValue(row.storage_temperature_c ?? null),
+    packagingCondition: row.packaging_condition ?? "",
+    sanitaryStatus: row.sanitary_status ?? null,
+    sanitaryNotes: row.sanitary_notes ?? "",
+    sanitaryReviewedAt: row.sanitary_reviewed_at ?? null,
     sourceBirdBatchId: row.source_bird_batch_id ?? null,
     sourceBirdBatchCode: row.bird_batches?.code ?? null,
     sourceLayerFlockId: row.source_layer_flock_id ?? null,
@@ -1124,6 +1141,8 @@ export async function getInventoryWorkspace(): Promise<InventoryWorkspace> {
       activeLotCount: 0,
       expiringLotCount: 0,
       pendingAssignmentCount: 0,
+      controlledPurchasedLotCount: 0,
+      approvedPurchasedLotCount: 0,
     };
   }
 
@@ -1159,9 +1178,16 @@ export async function getInventoryWorkspace(): Promise<InventoryWorkspace> {
       (sum, lot) => sum + lot.quantity * (lot.unitCost ?? 0),
       0,
     ),
-    activeLotCount: lots.filter((lot) => lot.quantity > 0 && lot.status === "available").length,
+    activeLotCount: lots.filter(
+      (lot) =>
+        lot.quantity > 0 &&
+        lot.status === "available" &&
+        (lot.originType === "own" || lot.sanitaryStatus === "approved"),
+    ).length,
     expiringLotCount,
     pendingAssignmentCount: pendingAssignments.length,
+    controlledPurchasedLotCount: lots.filter((lot) => lot.sanitaryStatus !== null).length,
+    approvedPurchasedLotCount: lots.filter((lot) => lot.sanitaryStatus === "approved").length,
   };
 }
 
@@ -1174,6 +1200,11 @@ export async function createInventoryLot(payload: {
   receivedAt: string;
   expiresAt: string | null;
   supplierName: string | null;
+  supplierDocument: string;
+  supplierLotCode: string;
+  arrivalTemperatureC: number;
+  storageTemperatureC: number;
+  packagingCondition: string;
   notes: string;
 }): Promise<void> {
   if (!isSupabaseConfigured()) {
@@ -1189,9 +1220,54 @@ export async function createInventoryLot(payload: {
     p_received_at: payload.receivedAt,
     p_expires_at: payload.expiresAt,
     p_supplier_name: payload.supplierName,
+    p_supplier_document: payload.supplierDocument,
+    p_supplier_lot_code: payload.supplierLotCode,
+    p_arrival_temperature_c: payload.arrivalTemperatureC,
+    p_storage_temperature_c: payload.storageTemperatureC,
+    p_packaging_condition: payload.packagingCondition,
     p_notes: payload.notes,
   });
   assertDatabaseResult(error, "No se pudo registrar el lote");
+}
+
+export async function reviewInventoryLotSanitary(payload: {
+  lotId: string;
+  sanitaryStatus: "approved" | "rejected";
+  sanitaryNotes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El control sanitario requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("review_inventory_lot_sanitary", {
+    p_lot_id: payload.lotId,
+    p_sanitary_status: payload.sanitaryStatus,
+    p_sanitary_notes: payload.sanitaryNotes,
+  });
+  assertDatabaseResult(error, "No se pudo revisar la liberacion sanitaria");
+}
+
+export async function recordInventorySanitaryEvidence(payload: {
+  lotId: string;
+  supplierDocument: string;
+  supplierLotCode: string;
+  arrivalTemperatureC: number;
+  storageTemperatureC: number;
+  packagingCondition: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El control sanitario requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("record_inventory_lot_sanitary_evidence", {
+    p_lot_id: payload.lotId,
+    p_supplier_document: payload.supplierDocument,
+    p_supplier_lot_code: payload.supplierLotCode,
+    p_arrival_temperature_c: payload.arrivalTemperatureC,
+    p_storage_temperature_c: payload.storageTemperatureC,
+    p_packaging_condition: payload.packagingCondition,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el expediente sanitario");
 }
 
 export async function recordInventoryMovement(payload: {
@@ -1714,6 +1790,8 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
       totalInventoryLots: 0,
       approvedInputKg: 0,
       producedFeedKg: 0,
+      controlledCommercialLots: 0,
+      approvedCommercialLots: 0,
     };
   }
 
@@ -1722,7 +1800,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     await Promise.all([
       supabase
         .from("inventory_lots")
-        .select("id, code, origin_type, supplier_name, unit_cost, quantity, status, products(name)"),
+        .select("id, code, origin_type, supplier_name, supplier_document, supplier_lot_code, arrival_temperature_c, storage_temperature_c, sanitary_status, unit_cost, quantity, status, products(name)"),
       supabase
         .from("feed_input_lots")
         .select("*, feed_inputs(name), suppliers(name, tax_id), locations(name)"),
@@ -1747,6 +1825,9 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
   const inventoryLots = (inventoryResult.data ?? []) as unknown as Array<{
     id: string; code: string; origin_type: Product["originType"]; supplier_name: string | null;
     unit_cost: number | string | null; quantity: number | string; status: InventoryLot["status"];
+    supplier_document: string | null; supplier_lot_code: string | null;
+    arrival_temperature_c: number | string | null; storage_temperature_c: number | string | null;
+    sanitary_status: InventorySanitaryStatus | null;
     products: { name: string } | null;
   }>;
   const inputLots = (inputLotsResult.data as unknown as FeedInputLotRow[]).map(feedInputLotFromRow);
@@ -1788,16 +1869,32 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     }
   }
 
-  const supplierInventoryLots = inventoryLots.filter((lot) => lot.origin_type === "selected_supplier");
-  if (supplierInventoryLots.length > 0) {
-    issues.push({
-      id: "supplier-product-evidence",
-      severity: "warning",
-      area: "Calidad",
-      title: `${supplierInventoryLots.length} lotes comprados requieren expediente de frio`,
-      detail: "Res y cerdo ya identifican proveedor, pero falta registrar temperatura, documento y liberacion sanitaria estructurada.",
-      href: "/gestion/inventario",
-    });
+  const purchasedInventoryLots = inventoryLots.filter((lot) => lot.origin_type !== "own");
+  for (const lot of purchasedInventoryLots) {
+    if (
+      !lot.supplier_document ||
+      !lot.supplier_lot_code ||
+      lot.arrival_temperature_c === null ||
+      lot.storage_temperature_c === null
+    ) {
+      issues.push({
+        id: `supplier-evidence-${lot.id}`,
+        severity: "critical",
+        area: "Cadena de frio",
+        title: `${lot.code} sin expediente completo`,
+        detail: "Falta documento, lote del proveedor o temperaturas verificables de recepcion y almacenamiento.",
+        href: "/gestion/inventario",
+      });
+    } else if (lot.sanitary_status !== "approved") {
+      issues.push({
+        id: `supplier-release-${lot.id}`,
+        severity: lot.sanitary_status === "rejected" ? "critical" : "warning",
+        area: "Calidad",
+        title: `${lot.code}: ${lot.sanitary_status === "rejected" ? "recepcion rechazada" : "liberacion pendiente"}`,
+        detail: "El producto comprado permanece bloqueado para despacho hasta completar la revision sanitaria.",
+        href: "/gestion/inventario",
+      });
+    }
   }
 
   for (const lot of inputLots) {
@@ -1878,12 +1975,14 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     warningCount: issues.filter((issue) => issue.severity === "warning").length,
     auditEventCount: (eventsResult.data ?? []).length,
     traceableInventoryLots: inventoryLots.filter(
-      (lot) => lot.unit_cost !== null && (lot.origin_type !== "selected_supplier" || Boolean(lot.supplier_name)),
+      (lot) => lot.unit_cost !== null && (lot.origin_type === "own" || lot.sanitary_status === "approved"),
     ).length,
     totalInventoryLots: inventoryLots.length,
     approvedInputKg: inputLots
       .filter((lot) => lot.qualityStatus === "approved")
       .reduce((sum, lot) => sum + lot.availableKg, 0),
     producedFeedKg: millBatches.reduce((sum, batch) => sum + Number(batch.produced_kg), 0),
+    controlledCommercialLots: purchasedInventoryLots.length,
+    approvedCommercialLots: purchasedInventoryLots.filter((lot) => lot.sanitary_status === "approved").length,
   };
 }

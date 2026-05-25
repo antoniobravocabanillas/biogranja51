@@ -89,8 +89,8 @@ export const managementModules = [
   {
     code: "PRO",
     name: "Abastecimiento",
-    description: "Proveedores, recepcion de insumos y liberacion de calidad.",
-    status: "En desarrollo",
+    description: "Proveedores, insumos, cadena de frio y liberacion de calidad.",
+    status: "Operativo",
   },
   {
     code: "AUD",

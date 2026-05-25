@@ -29,6 +29,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
 - Auditoria en `/gestion/auditoria` con excepciones operativas y bitacora.
 - Inventario comercial en `/gestion/inventario` con productos listos para
   venta, stock valorizado, mermas y reserva trazable para pedidos.
+- Cadena de frio para compras comerciales con documento, temperaturas,
+  cuarentena y liberacion sanitaria antes del despacho.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
 
 La web estatica existente permanece en la raiz del repositorio mientras se

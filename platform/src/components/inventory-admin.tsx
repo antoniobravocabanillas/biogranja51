@@ -7,6 +7,7 @@ import type {
   BusinessLocation,
   DispatchableOrderItem,
   InventoryLot,
+  InventorySanitaryStatus,
   InventoryUnit,
   InventoryWorkspace,
   Product,
@@ -14,6 +15,7 @@ import type {
 import {
   inventoryLotStatusLabels,
   inventoryMovementLabels,
+  inventorySanitaryStatusLabels,
   originLabels,
 } from "@/domain/commerce";
 
@@ -33,6 +35,11 @@ type LotDraft = {
   receivedAt: string;
   expiresAt: string;
   supplierName: string;
+  supplierDocument: string;
+  supplierLotCode: string;
+  arrivalTemperatureC: string;
+  storageTemperatureC: string;
+  packagingCondition: string;
   notes: string;
 };
 
@@ -85,6 +92,11 @@ export function InventoryAdmin({
     receivedAt: dateInputValue(new Date()),
     expiresAt: "",
     supplierName: "",
+    supplierDocument: "",
+    supplierLotCode: "",
+    arrivalTemperatureC: "",
+    storageTemperatureC: "",
+    packagingCondition: "",
     notes: "",
   });
   const [movementType, setMovementType] = useState<"waste" | "adjustment_in">("waste");
@@ -101,7 +113,12 @@ export function InventoryAdmin({
   const availableByProduct = useMemo(() => {
     const index = new Map<string, InventoryLot[]>();
     initialWorkspace.lots
-      .filter((lot) => lot.status === "available" && lot.quantity > 0)
+      .filter(
+        (lot) =>
+          lot.status === "available" &&
+          lot.quantity > 0 &&
+          (lot.originType === "own" || lot.sanitaryStatus === "approved"),
+      )
       .forEach((lot) => {
         index.set(lot.productId, [...(index.get(lot.productId) ?? []), lot]);
       });
@@ -122,6 +139,8 @@ export function InventoryAdmin({
         unitCost: lotDraft.unitCost ? Number(lotDraft.unitCost) : null,
         receivedAt: new Date(lotDraft.receivedAt).toISOString(),
         expiresAt: lotDraft.expiresAt ? new Date(lotDraft.expiresAt).toISOString() : null,
+        arrivalTemperatureC: Number(lotDraft.arrivalTemperatureC),
+        storageTemperatureC: Number(lotDraft.storageTemperatureC),
       }),
     });
     const result = (await response.json()) as { error?: string };
@@ -130,8 +149,19 @@ export function InventoryAdmin({
       setSaving(false);
       return;
     }
-    setMessage("Lote recibido y stock actualizado.");
-    setLotDraft((current) => ({ ...current, quantity: "", unitCost: "", supplierName: "", notes: "" }));
+    setMessage("Lote recibido en cuarentena. Completa la inspeccion para liberarlo.");
+    setLotDraft((current) => ({
+      ...current,
+      quantity: "",
+      unitCost: "",
+      supplierName: "",
+      supplierDocument: "",
+      supplierLotCode: "",
+      arrivalTemperatureC: "",
+      storageTemperatureC: "",
+      packagingCondition: "",
+      notes: "",
+    }));
     setSaving(false);
     router.refresh();
   }
@@ -158,6 +188,72 @@ export function InventoryAdmin({
     setMessage(movementType === "waste" ? "Merma registrada en el lote." : "Ingreso adicional registrado.");
     setMovementQuantity("");
     setMovementReason("");
+    setSaving(false);
+    router.refresh();
+  }
+
+  async function reviewSanitary(status: Exclude<InventorySanitaryStatus, "pending">) {
+    if (!selectedLot || !editable) return;
+    const notes = window.prompt(
+      status === "approved"
+        ? "Documenta la inspeccion y criterio de liberacion:"
+        : "Documenta el motivo del rechazo y disposicion del lote:",
+      selectedLot.sanitaryNotes,
+    );
+    if (!notes?.trim()) return;
+    setSaving(true);
+    setMessage("");
+    const response = await fetch(`/api/inventario/lotes/${selectedLot.id}/calidad`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sanitaryStatus: status, sanitaryNotes: notes.trim() }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo registrar la inspeccion.");
+      setSaving(false);
+      return;
+    }
+    setMessage(status === "approved" ? "Lote liberado para venta." : "Lote rechazado y bloqueado.");
+    setSaving(false);
+    router.refresh();
+  }
+
+  async function regularizeSanitaryEvidence() {
+    if (!selectedLot || !editable) return;
+    const supplierDocument = window.prompt("Guia o comprobante del proveedor:", selectedLot.supplierDocument ?? "");
+    if (!supplierDocument?.trim()) return;
+    const supplierLotCode = window.prompt("Codigo de lote del proveedor:", selectedLot.supplierLotCode ?? "");
+    if (!supplierLotCode?.trim()) return;
+    const arrivalInput = window.prompt("Temperatura de llegada en C:", selectedLot.arrivalTemperatureC?.toString() ?? "");
+    const storageInput = window.prompt("Temperatura de almacenamiento en C:", selectedLot.storageTemperatureC?.toString() ?? "");
+    const packagingCondition = window.prompt("Condicion verificada del empaque:", selectedLot.packagingCondition);
+    const arrivalTemperatureC = Number(arrivalInput);
+    const storageTemperatureC = Number(storageInput);
+    if (!packagingCondition?.trim() || !Number.isFinite(arrivalTemperatureC) || !Number.isFinite(storageTemperatureC)) {
+      setMessage("Completa temperaturas validas y condicion del empaque.");
+      return;
+    }
+    setSaving(true);
+    setMessage("");
+    const response = await fetch(`/api/inventario/lotes/${selectedLot.id}/expediente`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        supplierDocument: supplierDocument.trim(),
+        supplierLotCode: supplierLotCode.trim(),
+        arrivalTemperatureC,
+        storageTemperatureC,
+        packagingCondition: packagingCondition.trim(),
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo regularizar el expediente.");
+      setSaving(false);
+      return;
+    }
+    setMessage("Expediente registrado. Revisa y libera el lote para venta.");
     setSaving(false);
     router.refresh();
   }
@@ -214,6 +310,11 @@ export function InventoryAdmin({
           <strong>{initialWorkspace.pendingAssignmentCount}</strong>
           <small>Confirmados o preparando</small>
         </article>
+        <article>
+          <span>Calidad liberada</span>
+          <strong>{initialWorkspace.approvedPurchasedLotCount}/{initialWorkspace.controlledPurchasedLotCount}</strong>
+          <small>Compras con revision sanitaria</small>
+        </article>
       </div>
 
       <div className="inventory-top-grid">
@@ -239,6 +340,11 @@ export function InventoryAdmin({
                 <span className={`lot-state lot-${lot.status}`}>
                   {inventoryLotStatusLabels[lot.status]}
                 </span>
+                {lot.sanitaryStatus ? (
+                  <span className={`quality-pill quality-${lot.sanitaryStatus}`}>
+                    {inventorySanitaryStatusLabels[lot.sanitaryStatus]}
+                  </span>
+                ) : null}
                 <b>{quantityLabel(lot.quantity, lot.unit)}</b>
               </button>
             ))
@@ -253,6 +359,10 @@ export function InventoryAdmin({
         <form className="inventory-receipt settings-panel" onSubmit={createLot}>
           <p className="eyebrow">Compra comercial</p>
           <h2>Recibir producto listo para venta</h2>
+          <p className="inventory-boundary sanitary-boundary">
+            Toda compra comercial entra en cuarentena. Solo queda disponible
+            para pedidos despues de registrar evidencia y liberacion sanitaria.
+          </p>
           <p className="inventory-boundary">
             Los pollitos vivos no ingresan aquí. Se registran en{" "}
             <Link href="/gestion/crianza">Crianza avícola</Link> y, tras la faena,
@@ -293,9 +403,28 @@ export function InventoryAdmin({
             <label className="form-field">
               <span>Proveedor del producto</span>
               <input
+                required
                 value={lotDraft.supplierName}
                 onChange={(event) => setLotDraft({ ...lotDraft, supplierName: event.target.value })}
                 placeholder={draftProduct?.originType === "selected_supplier" ? "Obligatorio" : "Indicar origen"}
+              />
+            </label>
+          </div>
+          <div className="field-pair">
+            <label className="form-field">
+              <span>Guia / comprobante</span>
+              <input
+                required
+                value={lotDraft.supplierDocument}
+                onChange={(event) => setLotDraft({ ...lotDraft, supplierDocument: event.target.value })}
+              />
+            </label>
+            <label className="form-field">
+              <span>Lote del proveedor</span>
+              <input
+                required
+                value={lotDraft.supplierLotCode}
+                onChange={(event) => setLotDraft({ ...lotDraft, supplierLotCode: event.target.value })}
               />
             </label>
           </div>
@@ -352,6 +481,41 @@ export function InventoryAdmin({
               />
             </label>
           </div>
+          <div className="field-triple">
+            <label className="form-field">
+              <span>Temp. llegada C</span>
+              <input
+                type="number"
+                min="-30"
+                max="15"
+                step="0.1"
+                required
+                value={lotDraft.arrivalTemperatureC}
+                onChange={(event) => setLotDraft({ ...lotDraft, arrivalTemperatureC: event.target.value })}
+              />
+            </label>
+            <label className="form-field">
+              <span>Temp. almacen C</span>
+              <input
+                type="number"
+                min="-30"
+                max="15"
+                step="0.1"
+                required
+                value={lotDraft.storageTemperatureC}
+                onChange={(event) => setLotDraft({ ...lotDraft, storageTemperatureC: event.target.value })}
+              />
+            </label>
+            <label className="form-field">
+              <span>Condicion de empaque</span>
+              <input
+                required
+                value={lotDraft.packagingCondition}
+                onChange={(event) => setLotDraft({ ...lotDraft, packagingCondition: event.target.value })}
+                placeholder="Sellado e integro"
+              />
+            </label>
+          </div>
           <label className="form-field">
             <span>Control de recepción</span>
             <textarea
@@ -392,6 +556,39 @@ export function InventoryAdmin({
                   <div><dt>Faenados</dt><dd>{selectedLot.processedUnits} pollos</dd></div>
                 ) : null}
               </dl>
+              {selectedLot.originType !== "own" || selectedLot.sanitaryStatus ? (
+                <section className="sanitary-file">
+                  <div className="panel-heading">
+                    <div>
+                      <p className="eyebrow">Cadena de frio</p>
+                      <h3>Expediente sanitario</h3>
+                    </div>
+                    {selectedLot.sanitaryStatus ? (
+                      <span className={`quality-pill quality-${selectedLot.sanitaryStatus}`}>
+                        {inventorySanitaryStatusLabels[selectedLot.sanitaryStatus]}
+                      </span>
+                    ) : <span className="quality-pill quality-pending">Sin expediente</span>}
+                  </div>
+                  <dl className="lot-metadata">
+                    <div><dt>Documento</dt><dd>{selectedLot.supplierDocument || "Pendiente"}</dd></div>
+                    <div><dt>Lote proveedor</dt><dd>{selectedLot.supplierLotCode || "Pendiente"}</dd></div>
+                    <div><dt>Temp. llegada</dt><dd>{selectedLot.arrivalTemperatureC === null ? "Pendiente" : `${selectedLot.arrivalTemperatureC.toFixed(1)} C`}</dd></div>
+                    <div><dt>Temp. almacen</dt><dd>{selectedLot.storageTemperatureC === null ? "Pendiente" : `${selectedLot.storageTemperatureC.toFixed(1)} C`}</dd></div>
+                    <div><dt>Empaque</dt><dd>{selectedLot.packagingCondition || "Pendiente"}</dd></div>
+                    <div><dt>Revision</dt><dd>{selectedLot.sanitaryNotes || "Pendiente de inspeccion"}</dd></div>
+                  </dl>
+                  {selectedLot.sanitaryStatus === "pending" ? (
+                    <div className="sanitary-actions">
+                      <button type="button" disabled={!editable || saving} onClick={() => reviewSanitary("approved")}>Liberar lote</button>
+                      <button className="reject" type="button" disabled={!editable || saving} onClick={() => reviewSanitary("rejected")}>Rechazar</button>
+                    </div>
+                  ) : selectedLot.sanitaryStatus === null ? (
+                    <div className="sanitary-actions">
+                      <button type="button" disabled={!editable || saving} onClick={regularizeSanitaryEvidence}>Completar expediente</button>
+                    </div>
+                  ) : null}
+                </section>
+              ) : null}
               <div className="movement-entry">
                 <h3>Registrar movimiento</h3>
                 <div className="field-triple">

@@ -17,6 +17,9 @@ function eventLabel(action: string): string {
   const labels: Record<string, string> = {
     "inventory_lot.created": "Ingreso de inventario comercial",
     "inventory_lot.movement": "Movimiento de inventario",
+    "inventory_lot.sanitary_received": "Compra recibida en cuarentena",
+    "inventory_lot.sanitary_evidence_recorded": "Expediente sanitario registrado",
+    "inventory_lot.sanitary_reviewed": "Liberacion sanitaria revisada",
     "bird_batch.inventory_handoff": "Faena a inventario",
     "bird_batch.feed_valued": "Valorizacion de alimento",
     "layer_flock.inventory_handoff": "Maples a inventario",
@@ -63,6 +66,11 @@ export function AuditDashboard({ workspace }: AuditDashboardProps) {
           <span>Alimento producido</span>
           <strong>{workspace.producedFeedKg.toFixed(2)} kg</strong>
           <small>Produccion acumulada</small>
+        </article>
+        <article>
+          <span>Frio liberado</span>
+          <strong>{workspace.approvedCommercialLots}/{workspace.controlledCommercialLots}</strong>
+          <small>Lotes comprados aprobados</small>
         </article>
       </div>
 

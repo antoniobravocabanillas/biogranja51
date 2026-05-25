@@ -1654,7 +1654,7 @@ p {
 .inventory-kpis {
   display: grid;
   gap: 15px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   margin-bottom: 20px;
 }
 
@@ -1703,7 +1703,7 @@ p {
   border-top: 1px solid var(--line);
   display: grid;
   gap: 16px;
-  grid-template-columns: 1fr 102px 105px;
+  grid-template-columns: 1fr 102px 116px 105px;
   padding: 17px 10px;
   text-align: left;
   width: 100%;
@@ -1936,6 +1936,56 @@ p {
 .inventory-link {
   color: var(--leaf);
   font-weight: 750;
+}
+
+.sanitary-boundary {
+  background: #fff2d7;
+  color: #765927;
+}
+
+.sanitary-file {
+  background: #f5f5ef;
+  border-radius: 13px;
+  margin-bottom: 18px;
+  padding: 17px;
+}
+
+.sanitary-file .panel-heading {
+  margin-bottom: 4px;
+}
+
+.sanitary-file h3 {
+  color: var(--forest);
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+.sanitary-actions {
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 13px;
+}
+
+.sanitary-actions button {
+  background: var(--forest);
+  border: 0;
+  border-radius: 9px;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 750;
+  padding: 10px 15px;
+}
+
+.sanitary-actions button.reject {
+  background: #f5dfdb;
+  color: #8d4134;
+}
+
+.sanitary-actions button:disabled {
+  background: #b5beb2;
+  color: var(--white);
 }
 
 .poultry-workspace {
@@ -3577,6 +3627,20 @@ p {
   .lot-metadata,
   .production-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .inventory-list button {
+    gap: 9px;
+    grid-template-columns: 1fr auto;
+  }
+
+  .inventory-list button > div,
+  .inventory-list button b {
+    grid-column: 1 / -1;
+  }
+
+  .inventory-list button b {
+    text-align: left;
   }
 
   .analytics-heading {

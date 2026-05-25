@@ -50,10 +50,10 @@ falsear el origen.
 | `suppliers` | id, name, tax_id, supplies, approval_status |
 | `purchase_orders` | id, supplier_id, status, expected_at, total |
 | `purchase_items` | purchase_order_id, input_or_product_id, quantity, unit_cost |
-| `lots` | id, code, product_id, origin_type, source_id, created_at, expiry_at |
+| `inventory_lots` | id, code, product_id, origin_type, supplier_name, quantity, unit_cost, status, expires_at |
 | `inventory_movements` | lot_id, type, quantity, unit, location_id, reference |
-| `quality_checks` | lot_id, check_type, value, result, evidence_url |
-| `cold_chain_records` | lot_id, stage, temperature, recorded_at, actor_id |
+| `inventory_lots` (calidad) | supplier_document, supplier_lot_code, packaging_condition, sanitary_status, sanitary_notes |
+| `inventory_lots` (frio) | arrival_temperature_c, storage_temperature_c, sanitary_reviewed_at, sanitary_reviewed_by |
 | `delivery_slots` | zone_id, date, time_range, capacity, fee |
 
 La res y el cerdo comprados ya faenados nacen como `inventory_lots`
@@ -61,6 +61,11 @@ asociados a proveedor. El pollito vivo nunca es inventario comercial: nace
 como `bird_batches` y solo después de la faena genera un `inventory_lot` de
 pollo propio en kilogramos. Huevos y cuy no adoptan sello de origen hasta
 que la empresa confirme y registre su procedencia.
+
+Cada lote comercial comprado registra comprobante, lote del proveedor,
+temperatura de llegada, temperatura de almacenamiento y condicion del
+empaque. El lote nace en `quarantine` y solo cambia a `available` tras una
+revision sanitaria aprobada; el rechazo mantiene bloqueado el despacho.
 
 ### Produccion propia
 
@@ -157,4 +162,5 @@ flowchart LR
 6. Molino y versionado de formulas.
 7. Descuento trazable del alimento molido en crianza y ponedoras.
 8. Recepcion, calidad y consumo FIFO de insumos; tablero de auditoria.
-9. Circularidad e indicadores.
+9. Cadena de frio y liberacion sanitaria de producto comercial comprado.
+10. Circularidad e indicadores.

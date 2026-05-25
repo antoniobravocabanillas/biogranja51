@@ -33,16 +33,16 @@ export default async function InventarioPage() {
           <p className="eyebrow">Trazabilidad operativa</p>
           <h1>Inventario comercial</h1>
           <p>
-            Administra producto listo para entregar: carnes compradas ya
-            procesadas o pollo propio después de faena. Los animales vivos se
-            controlan en Crianza avícola.
+            Administra producto listo para entregar: carnes compradas procesadas
+            y liberadas bajo cadena de frio, o pollo propio despues de faena.
+            Los animales vivos se controlan en Crianza avicola.
           </p>
         </div>
         <aside className="security-notice">
-          <strong>Solo stock vendible</strong>
+          <strong>Cuarentena obligatoria</strong>
           <span>
-            Las existencias y asignaciones solo pueden modificarse con acceso
-            autenticado del equipo.
+            Las compras solo se asignan a pedidos despues de registrar evidencia
+            e inspeccion sanitaria del equipo.
           </span>
         </aside>
       </section>

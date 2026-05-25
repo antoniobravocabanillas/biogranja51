@@ -17,6 +17,7 @@ export type CustomerSegment =
   | "distribuidor";
 export type InventoryUnit = "kg" | "unit" | "maple";
 export type InventoryLotStatus = "available" | "depleted" | "quarantine";
+export type InventorySanitaryStatus = "pending" | "approved" | "rejected";
 export type InventoryMovementType = "receipt" | "adjustment_in" | "waste" | "allocation";
 export type BirdBatchStage =
   | "received"
@@ -243,6 +244,14 @@ export type InventoryLot = {
   expiresAt: string | null;
   status: InventoryLotStatus;
   notes: string;
+  supplierDocument: string | null;
+  supplierLotCode: string | null;
+  arrivalTemperatureC: number | null;
+  storageTemperatureC: number | null;
+  packagingCondition: string;
+  sanitaryStatus: InventorySanitaryStatus | null;
+  sanitaryNotes: string;
+  sanitaryReviewedAt: string | null;
   sourceBirdBatchId: string | null;
   sourceBirdBatchCode: string | null;
   sourceLayerFlockId: string | null;
@@ -272,6 +281,8 @@ export type InventoryWorkspace = {
   activeLotCount: number;
   expiringLotCount: number;
   pendingAssignmentCount: number;
+  controlledPurchasedLotCount: number;
+  approvedPurchasedLotCount: number;
 };
 
 export type BirdBatchEvent = {
@@ -486,6 +497,8 @@ export type AuditWorkspace = {
   totalInventoryLots: number;
   approvedInputKg: number;
   producedFeedKg: number;
+  controlledCommercialLots: number;
+  approvedCommercialLots: number;
 };
 
 export type CommerceState = {
@@ -541,6 +554,12 @@ export const inventoryLotStatusLabels: Record<InventoryLotStatus, string> = {
   available: "Disponible",
   depleted: "Agotado",
   quarantine: "En cuarentena",
+};
+
+export const inventorySanitaryStatusLabels: Record<InventorySanitaryStatus, string> = {
+  pending: "Inspeccion pendiente",
+  approved: "Liberado",
+  rejected: "Rechazado",
 };
 
 export const birdBatchStageLabels: Record<BirdBatchStage, string> = {

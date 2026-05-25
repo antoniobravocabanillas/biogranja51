@@ -122,7 +122,9 @@ Objetivo: poder sustentar origen, costo y movimiento de cada producto.
 - Compras de materias primas del molino con comprobante y calidad.
   `Implementado en desarrollo`.
 - Proveedores, documentos y controles de calidad/cadena de frio para res,
-  cerdo y producto comercial comprado.
+  cerdo y producto comercial comprado. `Implementado en desarrollo`.
+- Cuarentena automatica de compras comerciales y liberacion sanitaria antes
+  de asignar stock a pedidos. `Implementado en desarrollo`.
 - Margen real por pedido, producto y lote vendido.
 - Evidencias adjuntas, responsables y exportacion del expediente por lote.
 - Conciliacion de pagos y comprobantes de venta.

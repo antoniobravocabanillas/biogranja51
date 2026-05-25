@@ -73,6 +73,9 @@ flowchart TB
 - Recepcion con peso, costo, temperatura, documento y evidencia.
 - Lotes de producto, ubicacion, fechas, mermas y stock disponible.
 - Separacion estricta entre producto propio y producto seleccionado.
+- Cuarentena de res, cerdo y compras terminadas hasta validar documento,
+  lote proveedor, empaque y temperaturas de cadena de frio.
+- Liberacion o rechazo sanitario auditable antes de reservar un pedido.
 
 ### 4. Produccion avicola y huevos
 

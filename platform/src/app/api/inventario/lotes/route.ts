@@ -12,6 +12,11 @@ type LotRequest = {
   receivedAt?: string;
   expiresAt?: string | null;
   supplierName?: string | null;
+  supplierDocument?: string;
+  supplierLotCode?: string;
+  arrivalTemperatureC?: number;
+  storageTemperatureC?: number;
+  packagingCondition?: string;
   notes?: string;
 };
 
@@ -41,6 +46,28 @@ export async function POST(request: Request) {
       return Response.json({ error: "El costo del lote no es válido." }, { status: 400 });
     }
 
+    if (
+      !body.supplierName?.trim() ||
+      !body.supplierDocument?.trim() ||
+      !body.supplierLotCode?.trim() ||
+      !Number.isFinite(body.arrivalTemperatureC) ||
+      !Number.isFinite(body.storageTemperatureC) ||
+      !body.packagingCondition?.trim()
+    ) {
+      return Response.json(
+        { error: "Registra proveedor, documento, lote, temperaturas y condicion del empaque." },
+        { status: 400 },
+      );
+    }
+    if (
+      (body.arrivalTemperatureC ?? 0) < -30 ||
+      (body.arrivalTemperatureC ?? 0) > 15 ||
+      (body.storageTemperatureC ?? 0) < -30 ||
+      (body.storageTemperatureC ?? 0) > 15
+    ) {
+      return Response.json({ error: "Las temperaturas deben estar entre -30 y 15 C." }, { status: 400 });
+    }
+
     await createInventoryLot({
       productId: body.productId,
       locationId: body.locationId,
@@ -50,6 +77,11 @@ export async function POST(request: Request) {
       receivedAt: body.receivedAt,
       expiresAt: body.expiresAt || null,
       supplierName: body.supplierName?.trim() || null,
+      supplierDocument: body.supplierDocument.trim(),
+      supplierLotCode: body.supplierLotCode.trim(),
+      arrivalTemperatureC: body.arrivalTemperatureC!,
+      storageTemperatureC: body.storageTemperatureC!,
+      packagingCondition: body.packagingCondition.trim(),
       notes: body.notes?.trim() || "",
     });
     revalidatePath("/gestion");
