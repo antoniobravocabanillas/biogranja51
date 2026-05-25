@@ -18,6 +18,15 @@ export type CustomerSegment =
 export type InventoryUnit = "kg" | "unit" | "maple";
 export type InventoryLotStatus = "available" | "depleted" | "quarantine";
 export type InventoryMovementType = "receipt" | "adjustment_in" | "waste" | "allocation";
+export type BirdBatchStage =
+  | "received"
+  | "brooding"
+  | "growing"
+  | "finishing"
+  | "ready_processing"
+  | "processed"
+  | "closed";
+export type BirdBatchEventType = "mortality" | "weight_sample" | "feed_consumption" | "stage_change" | "processing";
 
 export const originTypes: OriginType[] = [
   "own",
@@ -42,6 +51,15 @@ export const customerSegments: CustomerSegment[] = [
   "distribuidor",
 ];
 export const inventoryUnits: InventoryUnit[] = ["kg", "unit", "maple"];
+export const birdBatchStages: BirdBatchStage[] = [
+  "received",
+  "brooding",
+  "growing",
+  "finishing",
+  "ready_processing",
+  "processed",
+  "closed",
+];
 
 export function isOriginType(value: unknown): value is OriginType {
   return originTypes.includes(value as OriginType);
@@ -61,6 +79,10 @@ export function isCustomerSegment(value: unknown): value is CustomerSegment {
 
 export function isInventoryUnit(value: unknown): value is InventoryUnit {
   return inventoryUnits.includes(value as InventoryUnit);
+}
+
+export function isBirdBatchStage(value: unknown): value is BirdBatchStage {
+  return birdBatchStages.includes(value as BirdBatchStage);
 }
 
 export type Product = {
@@ -194,6 +216,9 @@ export type InventoryLot = {
   expiresAt: string | null;
   status: InventoryLotStatus;
   notes: string;
+  sourceBirdBatchId: string | null;
+  sourceBirdBatchCode: string | null;
+  processedUnits: number | null;
   createdAt: string;
   movements: InventoryMovement[];
 };
@@ -218,6 +243,44 @@ export type InventoryWorkspace = {
   activeLotCount: number;
   expiringLotCount: number;
   pendingAssignmentCount: number;
+};
+
+export type BirdBatchEvent = {
+  id: string;
+  type: BirdBatchEventType;
+  eventAt: string;
+  count: number | null;
+  avgWeightGrams: number | null;
+  feedKg: number | null;
+  stage: BirdBatchStage | null;
+  notes: string;
+};
+
+export type BirdBatch = {
+  id: string;
+  code: string;
+  locationId: string;
+  locationName: string;
+  sourceName: string;
+  breed: string | null;
+  receivedAt: string;
+  initialCount: number;
+  currentCount: number;
+  processedCount: number;
+  initialAvgWeightGrams: number | null;
+  costPerChick: number | null;
+  stage: BirdBatchStage;
+  notes: string;
+  events: BirdBatchEvent[];
+  createdAt: string;
+};
+
+export type PoultryWorkspace = {
+  batches: BirdBatch[];
+  activeBatchCount: number;
+  liveBirdCount: number;
+  mortalityCount: number;
+  processedCount: number;
 };
 
 export type CommerceState = {
@@ -273,6 +336,24 @@ export const inventoryLotStatusLabels: Record<InventoryLotStatus, string> = {
   available: "Disponible",
   depleted: "Agotado",
   quarantine: "En cuarentena",
+};
+
+export const birdBatchStageLabels: Record<BirdBatchStage, string> = {
+  received: "Ingreso",
+  brooding: "Inicio / bebé",
+  growing: "Crecimiento",
+  finishing: "Engorde",
+  ready_processing: "Listo para faena",
+  processed: "Faenado",
+  closed: "Cerrado",
+};
+
+export const birdBatchEventLabels: Record<BirdBatchEventType, string> = {
+  mortality: "Mortalidad",
+  weight_sample: "Pesaje",
+  feed_consumption: "Alimento consumido",
+  stage_change: "Cambio de etapa",
+  processing: "Salida faenada",
 };
 
 export function formatPrice(product: Product): string {

@@ -56,17 +56,19 @@ falsear el origen.
 | `cold_chain_records` | lot_id, stage, temperature, recorded_at, actor_id |
 | `delivery_slots` | zone_id, date, time_range, capacity, fee |
 
-La res y el cerdo comprado nacen como `lots` asociados a proveedor. El pollo
-propio nace de lotes productivos. Huevos y cuy no adoptan sello de origen
-hasta que la empresa confirme y registre su procedencia.
+La res y el cerdo comprados ya faenados nacen como `inventory_lots`
+asociados a proveedor. El pollito vivo nunca es inventario comercial: nace
+como `bird_batches` y solo después de la faena genera un `inventory_lot` de
+pollo propio en kilogramos. Huevos y cuy no adoptan sello de origen hasta
+que la empresa confirme y registre su procedencia.
 
 ### Produccion propia
 
 | Entidad | Campos esenciales |
 | --- | --- |
 | `production_units` | id, type, name, capacity, status |
-| `bird_batches` | id, code, purpose, breed, received_at, initial_count, unit_id |
-| `bird_batch_events` | batch_id, event_type, date, count, weight, notes |
+| `bird_batches` | id, code, breed, received_at, initial_count, current_count, processed_count, stage, unit_id |
+| `bird_batch_events` | batch_id, event_type, event_at, count, avg_weight_grams, feed_kg, notes |
 | `egg_collections` | batch_id, collected_at, quantity, grade, rejected_quantity |
 | `feed_consumption` | batch_id, formula_version_id, quantity_kg, consumed_at |
 | `harvest_batches` | bird_batch_id, lot_id, processed_at, final_weight_kg |
@@ -108,7 +110,7 @@ flowchart LR
   F["Formula v1"] --> FB["Lote alimento"]
   FB --> AV["Lote aves"]
   AV --> CP["Cosecha / preparacion"]
-  CP --> LP["Lote pollo"]
+  CP --> LP["Lote comercial pollo faenado (kg)"]
   LP --> OI["Item de pedido"]
   OI --> C["Cliente"]
 

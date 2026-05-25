@@ -52,14 +52,24 @@ Objetivo: controlar margen y cumplimiento.
 - Despacho asociado a lote. `Implementado en desarrollo`.
 - Reporte de ventas y margen por linea.
 
+Definicion operativa corregida:
+
+- `Crianza avicola` recibe pollitos vivos por unidades, con peso inicial y
+  costo por ave; no representan stock disponible para pedidos.
+- `Inventario comercial` recibe res, cerdo u otros productos ya listos para
+  venta, y recibe pollo propio solamente despues de la faena, expresado en kg.
+- El paso de faena enlaza el lote vivo con el lote vendible para conservar
+  trazabilidad y posteriormente calcular rendimiento y margen.
+
 Criterio de salida: cada venta tiene costo y origen identificables.
 
 ## Sprint 3 - Pollo, Huevos Y Molino
 
 Objetivo: capturar la ventaja productiva propia.
 
-- Lotes de aves y ponedoras.
-- Consumos, mortalidad, pesos, postura y cosecha.
+- Lotes de pollitos de engorde, ingreso y salida faenada. `Implementado en desarrollo`.
+- Consumos, mortalidad y pesos del pollo de engorde. `Implementado en desarrollo`.
+- Lotes de ponedoras, postura y cosecha de huevos.
 - Catalogo de insumos del molino y precios historicos.
 - Formula versionada con validaciones de porcentaje y costo.
 - Ordenes internas de alimento y costo por lote.

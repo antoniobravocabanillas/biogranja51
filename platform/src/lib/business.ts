@@ -64,15 +64,15 @@ export const managementModules = [
   },
   {
     code: "INV",
-    name: "Inventario y lotes",
-    description: "Existencias, cortes, mermas, frío y trazabilidad de origen.",
+    name: "Inventario comercial",
+    description: "Producto faenado o comprado listo para venta, mermas y despacho.",
     status: "Operativo",
   },
   {
     code: "AVI",
-    name: "Producción avícola",
-    description: "Pollos, ponedoras, alimento consumido, mortalidad y rendimiento.",
-    status: "Sprint 3",
+    name: "Crianza avícola",
+    description: "Pollitos vivos, peso, alimento, mortalidad y salida a faena.",
+    status: "Operativo",
   },
   {
     code: "MOL",

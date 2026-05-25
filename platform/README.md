@@ -16,8 +16,10 @@ Nueva plataforma comercial y operativa de BioGranja 51.
   confirmación, preparación, despacho, entrega o cancelación.
 - CRM en `/gestion/clientes` con historial, valor de compra, notas,
   segmentación e interés en suscripción.
-- Inventario en `/gestion/inventario` con recepción por lote, stock
-  valorizado, mermas y reserva trazable para pedidos.
+- Crianza en `/gestion/crianza` con ingreso de pollitos vivos, mortalidad,
+  pesaje, alimento y salida faenada hacia inventario.
+- Inventario comercial en `/gestion/inventario` con productos listos para
+  venta, stock valorizado, mermas y reserva trazable para pedidos.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
 
 La web estatica existente permanece en la raiz del repositorio mientras se

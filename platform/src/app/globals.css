@@ -1921,6 +1921,172 @@ p {
   margin: 20px 0 0;
 }
 
+.inventory-boundary,
+.handoff-note {
+  background: #f2efe7;
+  border-radius: 11px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+}
+
+.inventory-boundary a,
+.inventory-link {
+  color: var(--leaf);
+  font-weight: 750;
+}
+
+.poultry-workspace {
+  margin: 0 auto;
+  max-width: 1240px;
+  padding: 0 32px 64px;
+}
+
+.flow-definition {
+  align-items: stretch;
+  background: #e9efe5;
+  border-radius: 18px;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+}
+
+.flow-definition article {
+  flex: 1;
+}
+
+.flow-definition span {
+  align-self: center;
+  color: var(--leaf);
+  font-weight: 800;
+}
+
+.flow-definition strong {
+  color: var(--forest);
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.flow-definition p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.poultry-top-grid,
+.poultry-bottom-grid {
+  align-items: start;
+  display: grid;
+  gap: 20px;
+}
+
+.poultry-top-grid {
+  grid-template-columns: 1fr 525px;
+  margin-bottom: 20px;
+}
+
+.poultry-bottom-grid {
+  grid-template-columns: 1fr 510px;
+}
+
+.poultry-list button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 15px;
+  grid-template-columns: 1fr 115px 75px;
+  padding: 17px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.poultry-list button.selected {
+  background: #f2f5ed;
+}
+
+.poultry-list strong {
+  color: var(--forest);
+  display: block;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.poultry-list small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.poultry-list b {
+  color: var(--forest);
+  font-size: 13px;
+  text-align: right;
+}
+
+.batch-stage {
+  background: #e5f0df;
+  border-radius: 999px;
+  color: var(--leaf);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 8px 10px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.bird-detail-heading {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 16px;
+}
+
+.bird-detail-heading h2 {
+  color: var(--forest);
+  font-size: 22px;
+  letter-spacing: -0.035em;
+  margin-bottom: 5px;
+}
+
+.bird-detail-heading p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.bird-detail-heading strong {
+  color: var(--forest);
+  font-size: 15px;
+}
+
+.poultry-event .save-button {
+  margin-top: 5px;
+}
+
+.empty-history {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.harvest-panel h2 {
+  color: var(--forest);
+  font-size: 23px;
+  letter-spacing: -0.04em;
+  margin: 8px 0 15px;
+}
+
+.inventory-link {
+  display: block;
+  font-size: 13px;
+  margin-top: 15px;
+  text-align: center;
+}
+
 .status-filter {
   align-items: start;
   color: var(--muted);
@@ -2321,6 +2487,8 @@ p {
   .customers-layout,
   .inventory-top-grid,
   .inventory-bottom-grid,
+  .poultry-top-grid,
+  .poultry-bottom-grid,
   .confidence-section {
     grid-template-columns: 1fr;
   }
@@ -2342,7 +2510,8 @@ p {
 
   .subscription,
   .dashboard-intro,
-  .delivery-experience {
+  .delivery-experience,
+  .flow-definition {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2461,7 +2630,8 @@ p {
   .configuration-layout,
   .orders-layout,
   .customers-layout,
-  .inventory-workspace {
+  .inventory-workspace,
+  .poultry-workspace {
     padding-left: 20px;
     padding-right: 20px;
   }

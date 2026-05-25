@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
@@ -73,7 +74,8 @@ export function InventoryAdmin({
   const [selectedId, setSelectedId] = useState(initialWorkspace.lots[0]?.id ?? "");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  const defaultProduct = products[0];
+  const directReceiptProducts = products.filter((product) => product.originType !== "own");
+  const defaultProduct = directReceiptProducts[0];
   const [lotDraft, setLotDraft] = useState<LotDraft>({
     productId: defaultProduct?.id ?? "",
     locationId: locations.find((location) => location.type === "warehouse" || location.type === "mill")?.id ?? locations[0]?.id ?? "",
@@ -193,7 +195,7 @@ export function InventoryAdmin({
     <section className="inventory-workspace">
       <div className="inventory-kpis">
         <article>
-          <span>Lotes disponibles</span>
+          <span>Lotes vendibles</span>
           <strong>{initialWorkspace.activeLotCount}</strong>
           <small>Con saldo listo para asignar</small>
         </article>
@@ -218,7 +220,7 @@ export function InventoryAdmin({
         <section className="records-panel inventory-list">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">Stock actual</p>
+              <p className="eyebrow">Stock listo para venta</p>
               <h2>{initialWorkspace.lots.length} lotes</h2>
             </div>
           </div>
@@ -243,14 +245,19 @@ export function InventoryAdmin({
           ) : (
             <div className="orders-empty">
               <strong>Sin lotes registrados.</strong>
-              <p>Registra la primera recepción para comenzar a controlar stock y origen.</p>
+              <p>Recibe un producto ya listo para vender o procesa pollo desde crianza.</p>
             </div>
           )}
         </section>
 
         <form className="inventory-receipt settings-panel" onSubmit={createLot}>
-          <p className="eyebrow">Nueva recepción</p>
-          <h2>Registrar lote</h2>
+          <p className="eyebrow">Compra comercial</p>
+          <h2>Recibir producto listo para venta</h2>
+          <p className="inventory-boundary">
+            Los pollitos vivos no ingresan aquí. Se registran en{" "}
+            <Link href="/gestion/crianza">Crianza avícola</Link> y, tras la faena,
+            generan automáticamente stock de pollo entero en kg.
+          </p>
           <div className="field-pair">
             <label className="form-field">
               <span>Producto</span>
@@ -261,7 +268,7 @@ export function InventoryAdmin({
                   setLotDraft({ ...lotDraft, productId: event.target.value, unit: defaultUnit(product) });
                 }}
               >
-                {products.map((product) => (
+                {directReceiptProducts.map((product) => (
                   <option key={product.id} value={product.id}>{product.name}</option>
                 ))}
               </select>
@@ -284,11 +291,11 @@ export function InventoryAdmin({
               </select>
             </label>
             <label className="form-field">
-              <span>Proveedor / referencia</span>
+              <span>Proveedor del producto</span>
               <input
                 value={lotDraft.supplierName}
                 onChange={(event) => setLotDraft({ ...lotDraft, supplierName: event.target.value })}
-                placeholder={draftProduct?.originType === "selected_supplier" ? "Obligatorio" : "Opcional"}
+                placeholder={draftProduct?.originType === "selected_supplier" ? "Obligatorio" : "Indicar origen"}
               />
             </label>
           </div>
@@ -328,7 +335,7 @@ export function InventoryAdmin({
           </div>
           <div className="field-pair">
             <label className="form-field">
-              <span>Recepción / producción</span>
+              <span>Recepción lista para venta</span>
               <input
                 type="datetime-local"
                 required
@@ -346,16 +353,16 @@ export function InventoryAdmin({
             </label>
           </div>
           <label className="form-field">
-            <span>Observación del lote</span>
+            <span>Control de recepción</span>
             <textarea
               rows={2}
               value={lotDraft.notes}
               onChange={(event) => setLotDraft({ ...lotDraft, notes: event.target.value })}
-              placeholder="Documento, calidad, temperatura o responsable"
+              placeholder="Documento, condición del producto, temperatura o responsable"
             />
           </label>
           <button className="save-button" type="submit" disabled={!editable || saving}>
-            {saving ? "Registrando..." : "Recibir lote"}
+            {saving ? "Registrando..." : "Recibir producto terminado"}
           </button>
         </form>
       </div>
@@ -368,7 +375,10 @@ export function InventoryAdmin({
               <div className="lot-detail-heading">
                 <div>
                   <h2>{selectedLot.code}</h2>
-                  <p>{selectedLot.productName} | {originLabels[selectedLot.originType]}</p>
+                  <p>
+                    {selectedLot.productName} | {originLabels[selectedLot.originType]}
+                    {selectedLot.sourceBirdBatchCode ? ` | Crianza ${selectedLot.sourceBirdBatchCode}` : ""}
+                  </p>
                 </div>
                 <strong>{quantityLabel(selectedLot.quantity, selectedLot.unit)}</strong>
               </div>
@@ -377,6 +387,9 @@ export function InventoryAdmin({
                 <div><dt>Vence</dt><dd>{dateLabel(selectedLot.expiresAt)}</dd></div>
                 <div><dt>Costo</dt><dd>{selectedLot.unitCost === null ? "Sin costo" : money(selectedLot.unitCost)}</dd></div>
                 <div><dt>Proveedor</dt><dd>{selectedLot.supplierName || "Origen propio / no indicado"}</dd></div>
+                {selectedLot.processedUnits !== null ? (
+                  <div><dt>Faenados</dt><dd>{selectedLot.processedUnits} pollos</dd></div>
+                ) : null}
               </dl>
               <div className="movement-entry">
                 <h3>Registrar movimiento</h3>

@@ -33,6 +33,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 2. `platform/supabase/migrations/202605240002_production_auth_orders_storage.sql`
 3. `platform/supabase/migrations/202605250001_customer_relationship_management.sql`
 4. `platform/supabase/migrations/202605250002_inventory_lots_movements_dispatch.sql`
+5. `platform/supabase/migrations/202605250003_poultry_rearing_and_commercial_handoff.sql`
 
 La segunda migracion agrega:
 
@@ -52,6 +53,13 @@ La cuarta migracion agrega:
 - recepcion de lotes con cantidad, unidad, costo, origen, sede y vencimiento;
 - movimientos de ingreso y merma con auditoria;
 - reserva de stock al asignar el lote que prepara cada pedido.
+
+La quinta migracion corrige la separacion operativa del pollo:
+
+- `bird_batches` y eventos para pollitos vivos en crianza;
+- seguimiento de mortalidad, peso, alimento y etapa;
+- faena como unico paso que convierte pollo propio en inventario comercial;
+- rechazo de ingresos manuales de producto propio en inventario terminado.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
@@ -157,6 +165,7 @@ desde Netlify.
 - Un pedido avanza por confirmacion, preparacion, despacho y entrega.
 - `/gestion/clientes` muestra recurrencia y permite registrar preferencias comerciales.
 - `/gestion/inventario` permite recibir lotes, registrar mermas y asignar stock a pedidos.
+- `/gestion/crianza` registra pollitos vivos y genera inventario solo al registrar faena.
 
 ## Fuentes Oficiales
 

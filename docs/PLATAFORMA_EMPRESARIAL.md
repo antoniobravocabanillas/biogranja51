@@ -81,6 +81,8 @@ flowchart TB
 - Consumo de alimento por etapa y costo real por ave/kg.
 - Produccion de huevos por lote, clasificacion y merma.
 - Alertas sanitarias y registros operativos.
+- Separacion estricta entre ave viva en crianza y pollo faenado listo para
+  inventario: la faena crea el lote comercial asociado al lote productivo.
 
 ### 5. Molino y nutricion
 
@@ -135,6 +137,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   segmentacion e interes en suscripcion.
 - Inventario operativo con recepcion de lotes, costo unitario, merma,
   saldo valorizado y reserva de lote por pedido.
+- Crianza avicola con ingreso de pollitos, seguimiento de mortalidad, peso y
+  alimento, y salida faenada que alimenta inventario comercial.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y
