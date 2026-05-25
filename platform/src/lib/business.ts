@@ -66,7 +66,7 @@ export const managementModules = [
     code: "INV",
     name: "Inventario y lotes",
     description: "Existencias, cortes, mermas, frío y trazabilidad de origen.",
-    status: "Sprint 2",
+    status: "Operativo",
   },
   {
     code: "AVI",

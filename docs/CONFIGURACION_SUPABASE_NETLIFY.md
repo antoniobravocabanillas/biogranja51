@@ -32,6 +32,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 1. `platform/supabase/migrations/202605240001_commerce_foundation.sql`
 2. `platform/supabase/migrations/202605240002_production_auth_orders_storage.sql`
 3. `platform/supabase/migrations/202605250001_customer_relationship_management.sql`
+4. `platform/supabase/migrations/202605250002_inventory_lots_movements_dispatch.sql`
 
 La segunda migracion agrega:
 
@@ -46,8 +47,14 @@ La tercera migracion agrega:
 - ultima direccion y zona utilizada para seguimiento de delivery;
 - consolidacion automatica por celular para que una recompra no duplique clientes.
 
-Si el proyecto ya contiene la primera migracion, ejecutar solamente la
-segunda.
+La cuarta migracion agrega:
+
+- recepcion de lotes con cantidad, unidad, costo, origen, sede y vencimiento;
+- movimientos de ingreso y merma con auditoria;
+- reserva de stock al asignar el lote que prepara cada pedido.
+
+Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
+siempre respetando su orden.
 
 ## 3. Crear El Primer Administrador
 
@@ -149,6 +156,7 @@ desde Netlify.
 - Una imagen subida retorna URL publica de Supabase Storage.
 - Un pedido avanza por confirmacion, preparacion, despacho y entrega.
 - `/gestion/clientes` muestra recurrencia y permite registrar preferencias comerciales.
+- `/gestion/inventario` permite recibir lotes, registrar mermas y asignar stock a pedidos.
 
 ## Fuentes Oficiales
 

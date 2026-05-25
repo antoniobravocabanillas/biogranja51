@@ -7,6 +7,11 @@ import type {
   Customer,
   CustomerMetrics,
   DeliveryZone,
+  DispatchableOrderItem,
+  InventoryLot,
+  InventoryMovement,
+  InventoryUnit,
+  InventoryWorkspace,
   Order,
   PaymentMethod,
   Product,
@@ -84,7 +89,11 @@ type OrderRow = {
     quantity: number | string;
     unit_price: number | string | null;
     subtotal: number | string | null;
+    allocated_quantity?: number | string | null;
+    allocated_unit?: InventoryUnit | null;
+    cost_total?: number | string | null;
     products: { name: string; presentation: string } | null;
+    inventory_lots?: { code: string } | null;
   }>;
 };
 
@@ -101,6 +110,55 @@ type CustomerRow = {
   last_delivery_zone_id: string | null;
   created_at: string;
   updated_at: string | null;
+};
+
+type InventoryMovementRow = {
+  id: string;
+  movement_type: InventoryMovement["type"];
+  quantity_delta: number | string;
+  unit: InventoryUnit;
+  reason: string;
+  order_item_id: string | null;
+  created_at: string;
+};
+
+type InventoryLotRow = {
+  id: string;
+  code: string;
+  product_id: string;
+  origin_type: InventoryLot["originType"];
+  supplier_name: string | null;
+  location_id: string;
+  received_quantity: number | string;
+  quantity: number | string;
+  unit: InventoryUnit;
+  unit_cost: number | string | null;
+  produced_or_received_at: string;
+  expires_at: string | null;
+  status: InventoryLot["status"];
+  notes: string | null;
+  created_at: string;
+  products: { name: string; presentation: string } | null;
+  locations: { name: string } | null;
+  inventory_movements: InventoryMovementRow[];
+};
+
+type AssignmentOrderRow = {
+  id: string;
+  number: string;
+  status: Order["status"];
+  order_items: Array<{
+    id: string;
+    product_id: string;
+    lot_id: string | null;
+    quantity: number | string;
+    products: {
+      name: string;
+      presentation: string;
+      price_unit: Product["priceUnit"];
+      portion_grams: number | null;
+    } | null;
+  }>;
 };
 
 type StorefrontOrderResult = {
@@ -189,6 +247,10 @@ function orderFromRow(row: OrderRow): Order {
       quantity: Number(item.quantity),
       unitPrice: numberValue(item.unit_price),
       subtotal: numberValue(item.subtotal),
+      lotCode: item.inventory_lots?.code ?? null,
+      allocatedQuantity: numberValue(item.allocated_quantity ?? null),
+      allocatedUnit: item.allocated_unit ?? null,
+      costTotal: numberValue(item.cost_total ?? null),
     })),
     subtotal: Number(row.subtotal),
     deliveryFee: Number(row.delivery_fee),
@@ -233,6 +295,66 @@ function customerWithMetrics(customer: Customer, orders: Order[]): CustomerMetri
       .reduce((sum, order) => sum + (order.total ?? 0), 0),
     lastOrderAt: customerOrders[0]?.createdAt ?? null,
   };
+}
+
+function inventoryLotFromRow(row: InventoryLotRow): InventoryLot {
+  return {
+    id: row.id,
+    code: row.code,
+    productId: row.product_id,
+    productName: row.products?.name ?? "Producto",
+    presentation: row.products?.presentation ?? "",
+    originType: row.origin_type,
+    supplierName: row.supplier_name,
+    locationId: row.location_id,
+    locationName: row.locations?.name ?? "Ubicación",
+    receivedQuantity: Number(row.received_quantity),
+    quantity: Number(row.quantity),
+    unit: row.unit,
+    unitCost: numberValue(row.unit_cost),
+    receivedAt: row.produced_or_received_at,
+    expiresAt: row.expires_at,
+    status: row.status,
+    notes: row.notes ?? "",
+    createdAt: row.created_at,
+    movements: (row.inventory_movements ?? []).map((movement) => ({
+      id: movement.id,
+      type: movement.movement_type,
+      quantityDelta: Number(movement.quantity_delta),
+      unit: movement.unit,
+      reason: movement.reason,
+      orderItemId: movement.order_item_id,
+      createdAt: movement.created_at,
+    })),
+  };
+}
+
+function assignmentFromRow(order: AssignmentOrderRow): DispatchableOrderItem[] {
+  return order.order_items
+    .filter((item) => !item.lot_id && item.products)
+    .map((item) => {
+      const product = item.products!;
+      const inventoryUnit: InventoryUnit = product.price_unit === "kg" ? "kg" : product.price_unit;
+      const requestedQuantity = Number(item.quantity);
+      const requiredStockQuantity =
+        product.price_unit === "kg" && product.portion_grams
+          ? requestedQuantity * (product.portion_grams / 1000)
+          : product.price_unit === "kg"
+            ? null
+            : requestedQuantity;
+      return {
+        orderId: order.id,
+        orderNumber: order.number,
+        orderStatus: order.status,
+        orderItemId: item.id,
+        productId: item.product_id,
+        productName: product.name,
+        presentation: product.presentation,
+        requestedQuantity,
+        requiredStockQuantity,
+        inventoryUnit,
+      };
+    });
 }
 
 function normalizePhone(phone: string): string {
@@ -282,7 +404,7 @@ async function getSupabaseCommerceState(includeProtected: boolean): Promise<Comm
       supabase.from("staff_roles").select("*").order("name"),
       supabase
         .from("orders")
-        .select("*, customers(name, phone), order_items(*, products(name, presentation))")
+        .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
         .order("created_at", { ascending: false }),
     ]);
     assertDatabaseResult(locationsResult.error, "No se pudo leer sedes");
@@ -555,7 +677,7 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
     .from("orders")
     .update({ status: updates.status })
     .eq("id", id)
-    .select("*, customers(name, phone), order_items(*, products(name, presentation))")
+    .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
     .single();
   assertDatabaseResult(error, "No se pudo actualizar el pedido");
   return orderFromRow(data as unknown as OrderRow);
@@ -574,7 +696,7 @@ export async function listCustomersWithMetrics(): Promise<CustomerMetrics[]> {
     supabase.from("customers").select("*").order("updated_at", { ascending: false }),
     supabase
       .from("orders")
-      .select("*, customers(name, phone), order_items(*, products(name, presentation))")
+      .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
       .order("created_at", { ascending: false }),
   ]);
   assertDatabaseResult(customersResult.error, "No se pudo leer clientes");
@@ -621,4 +743,119 @@ export async function updateCustomer(
     .single();
   assertDatabaseResult(error, "No se pudo actualizar el cliente");
   return customerFromRow(data as CustomerRow);
+}
+
+export async function getInventoryWorkspace(): Promise<InventoryWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return {
+      lots: [],
+      pendingAssignments: [],
+      availableStockValue: 0,
+      activeLotCount: 0,
+      expiringLotCount: 0,
+      pendingAssignmentCount: 0,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const [lotsResult, ordersResult] = await Promise.all([
+    supabase
+      .from("inventory_lots")
+      .select("*, products(name, presentation), locations(name), inventory_movements(*)")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("orders")
+      .select("id, number, status, order_items(id, product_id, lot_id, quantity, products(name, presentation, price_unit, portion_grams))")
+      .in("status", ["confirmed", "preparing"])
+      .order("created_at", { ascending: false }),
+  ]);
+  assertDatabaseResult(lotsResult.error, "No se pudo leer lotes");
+  assertDatabaseResult(ordersResult.error, "No se pudo leer pedidos por despachar");
+
+  const lots = (lotsResult.data as unknown as InventoryLotRow[]).map(inventoryLotFromRow);
+  const pendingAssignments = (ordersResult.data as unknown as AssignmentOrderRow[]).flatMap(assignmentFromRow);
+  const expirationLimit = new Date();
+  expirationLimit.setDate(expirationLimit.getDate() + 5);
+  const expiringLotCount = lots.filter(
+    (lot) =>
+      lot.quantity > 0 &&
+      lot.expiresAt !== null &&
+      new Date(lot.expiresAt).getTime() <= expirationLimit.getTime(),
+  ).length;
+  return {
+    lots,
+    pendingAssignments,
+    availableStockValue: lots.reduce(
+      (sum, lot) => sum + lot.quantity * (lot.unitCost ?? 0),
+      0,
+    ),
+    activeLotCount: lots.filter((lot) => lot.quantity > 0 && lot.status === "available").length,
+    expiringLotCount,
+    pendingAssignmentCount: pendingAssignments.length,
+  };
+}
+
+export async function createInventoryLot(payload: {
+  productId: string;
+  locationId: string;
+  quantity: number;
+  unit: InventoryUnit;
+  unitCost: number | null;
+  receivedAt: string;
+  expiresAt: string | null;
+  supplierName: string | null;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El inventario operativo requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("create_inventory_lot", {
+    p_product_id: payload.productId,
+    p_location_id: payload.locationId,
+    p_quantity: payload.quantity,
+    p_unit: payload.unit,
+    p_unit_cost: payload.unitCost,
+    p_received_at: payload.receivedAt,
+    p_expires_at: payload.expiresAt,
+    p_supplier_name: payload.supplierName,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el lote");
+}
+
+export async function recordInventoryMovement(payload: {
+  lotId: string;
+  type: "adjustment_in" | "waste";
+  quantity: number;
+  reason: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El inventario operativo requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("record_inventory_movement", {
+    p_lot_id: payload.lotId,
+    p_movement_type: payload.type,
+    p_quantity: payload.quantity,
+    p_reason: payload.reason,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el movimiento");
+}
+
+export async function allocateLotToOrderItem(payload: {
+  orderItemId: string;
+  lotId: string;
+  quantity: number;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El despacho trazable requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("allocate_inventory_lot", {
+    p_order_item_id: payload.orderItemId,
+    p_lot_id: payload.lotId,
+    p_quantity: payload.quantity,
+  });
+  assertDatabaseResult(error, "No se pudo asignar el lote al pedido");
 }

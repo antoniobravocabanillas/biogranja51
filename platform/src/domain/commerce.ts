@@ -15,6 +15,9 @@ export type CustomerSegment =
   | "parrilla"
   | "restaurante"
   | "distribuidor";
+export type InventoryUnit = "kg" | "unit" | "maple";
+export type InventoryLotStatus = "available" | "depleted" | "quarantine";
+export type InventoryMovementType = "receipt" | "adjustment_in" | "waste" | "allocation";
 
 export const originTypes: OriginType[] = [
   "own",
@@ -38,6 +41,7 @@ export const customerSegments: CustomerSegment[] = [
   "restaurante",
   "distribuidor",
 ];
+export const inventoryUnits: InventoryUnit[] = ["kg", "unit", "maple"];
 
 export function isOriginType(value: unknown): value is OriginType {
   return originTypes.includes(value as OriginType);
@@ -53,6 +57,10 @@ export function isOrderStatus(value: unknown): value is OrderStatus {
 
 export function isCustomerSegment(value: unknown): value is CustomerSegment {
   return customerSegments.includes(value as CustomerSegment);
+}
+
+export function isInventoryUnit(value: unknown): value is InventoryUnit {
+  return inventoryUnits.includes(value as InventoryUnit);
 }
 
 export type Product = {
@@ -111,6 +119,10 @@ export type OrderItem = {
   quantity: number;
   unitPrice: number | null;
   subtotal: number | null;
+  lotCode: string | null;
+  allocatedQuantity: number | null;
+  allocatedUnit: InventoryUnit | null;
+  costTotal: number | null;
 };
 
 export type Order = {
@@ -154,6 +166,60 @@ export type CustomerMetrics = Customer & {
   lastOrderAt: string | null;
 };
 
+export type InventoryMovement = {
+  id: string;
+  type: InventoryMovementType;
+  quantityDelta: number;
+  unit: InventoryUnit;
+  reason: string;
+  orderItemId: string | null;
+  createdAt: string;
+};
+
+export type InventoryLot = {
+  id: string;
+  code: string;
+  productId: string;
+  productName: string;
+  presentation: string;
+  originType: OriginType;
+  supplierName: string | null;
+  locationId: string;
+  locationName: string;
+  receivedQuantity: number;
+  quantity: number;
+  unit: InventoryUnit;
+  unitCost: number | null;
+  receivedAt: string;
+  expiresAt: string | null;
+  status: InventoryLotStatus;
+  notes: string;
+  createdAt: string;
+  movements: InventoryMovement[];
+};
+
+export type DispatchableOrderItem = {
+  orderId: string;
+  orderNumber: string;
+  orderStatus: OrderStatus;
+  orderItemId: string;
+  productId: string;
+  productName: string;
+  presentation: string;
+  requestedQuantity: number;
+  requiredStockQuantity: number | null;
+  inventoryUnit: InventoryUnit;
+};
+
+export type InventoryWorkspace = {
+  lots: InventoryLot[];
+  pendingAssignments: DispatchableOrderItem[];
+  availableStockValue: number;
+  activeLotCount: number;
+  expiringLotCount: number;
+  pendingAssignmentCount: number;
+};
+
 export type CommerceState = {
   products: Product[];
   deliveryZones: DeliveryZone[];
@@ -194,6 +260,19 @@ export const customerSegmentLabels: Record<CustomerSegment, string> = {
   parrilla: "Parrilla",
   restaurante: "Restaurante",
   distribuidor: "Distribuidor",
+};
+
+export const inventoryMovementLabels: Record<InventoryMovementType, string> = {
+  receipt: "Recepción",
+  adjustment_in: "Ingreso adicional",
+  waste: "Merma",
+  allocation: "Asignado a pedido",
+};
+
+export const inventoryLotStatusLabels: Record<InventoryLotStatus, string> = {
+  available: "Disponible",
+  depleted: "Agotado",
+  quarantine: "En cuarentena",
 };
 
 export function formatPrice(product: Product): string {

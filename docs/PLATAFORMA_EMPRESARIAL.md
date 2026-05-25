@@ -133,6 +133,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   auditoria y politicas de seguridad.
 - CRM comercial con consolidacion por celular, historial de compra, notas,
   segmentacion e interes en suscripcion.
+- Inventario operativo con recepcion de lotes, costo unitario, merma,
+  saldo valorizado y reserva de lote por pedido.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

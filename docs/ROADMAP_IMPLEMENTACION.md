@@ -48,8 +48,8 @@ Objetivo: controlar margen y cumplimiento.
   `Implementado en desarrollo`.
 - Clientes, direcciones, notas y recurrencia. `Implementado en desarrollo`.
 - Compras a proveedores de res y cerdo.
-- Recepcion, lotes, inventario y mermas.
-- Despacho asociado a lote.
+- Recepcion, lotes, inventario y mermas. `Implementado en desarrollo`.
+- Despacho asociado a lote. `Implementado en desarrollo`.
 - Reporte de ventas y margen por linea.
 
 Criterio de salida: cada venta tiene costo y origen identificables.

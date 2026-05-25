@@ -146,6 +146,10 @@ export async function POST(request: Request) {
         quantity: requested.quantity,
         unitPrice,
         subtotal: unitPrice === null ? null : unitPrice * requested.quantity,
+        lotCode: null,
+        allocatedQuantity: null,
+        allocatedUnit: null,
+        costTotal: null,
       };
     });
 

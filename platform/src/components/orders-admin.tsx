@@ -157,7 +157,12 @@ export function OrdersAdmin({
               {selected.items.map((item) => (
                 <div key={item.productId}>
                   <span>{item.quantity} x {item.name}</span>
-                  <small>{item.presentation}</small>
+                  <small>
+                    {item.presentation}
+                    {item.lotCode
+                      ? ` | Lote ${item.lotCode}${item.costTotal === null ? "" : ` | Costo ${currency(item.costTotal)}`}`
+                      : " | Sin lote asignado"}
+                  </small>
                   <strong>{currency(item.subtotal)}</strong>
                 </div>
               ))}
