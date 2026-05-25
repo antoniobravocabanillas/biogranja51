@@ -20,10 +20,11 @@ export function PasswordResetForm() {
 
     async function establishRecoverySession() {
       const code = new URLSearchParams(window.location.search).get("code");
+      const queryError = new URLSearchParams(window.location.search).get("error");
       const fragment = new URLSearchParams(window.location.hash.slice(1));
       const linkError = fragment.get("error_description");
 
-      if (linkError) {
+      if (linkError || queryError === "invalid_link") {
         if (active) {
           setMessage("El enlace venció o ya fue utilizado. Solicita uno nuevo.");
         }

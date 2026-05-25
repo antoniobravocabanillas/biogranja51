@@ -23,7 +23,8 @@ export function PasswordRecoveryRequest({ configured }: PasswordRecoveryRequestP
     setLoading(true);
     setMessage("");
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/gestion/restablecer`;
+    const redirectTo =
+      `${window.location.origin}/auth/confirm?next=/gestion/restablecer`;
     const { error } = await supabase.auth.resetPasswordForEmail(
       email.trim().toLowerCase(),
       { redirectTo },

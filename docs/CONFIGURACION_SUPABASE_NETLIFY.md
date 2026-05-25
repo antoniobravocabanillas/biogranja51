@@ -89,11 +89,19 @@ Site URL: https://biogranja51.com
 Redirect URL: https://**--biogranja51.netlify.app/**
 Redirect URL: http://localhost:3100/**
 Redirect URL: https://biogranja51.com/gestion/restablecer
+Redirect URL: https://biogranja51.com/**
 ```
 
 El acceso de gestion expone `/gestion/recuperar`, que envia el correo seguro,
-y `/gestion/restablecer`, que recibe el enlace temporal y permite definir una
-nueva clave mediante Supabase Auth.
+`/auth/confirm`, que valida `token_hash` del correo del lado servidor, y
+`/gestion/restablecer`, que permite definir una nueva clave mediante Supabase
+Auth.
+
+Personalizar la plantilla `Reset password` en Supabase con marca BioGranja y
+un enlace basado en `{{ .RedirectTo }}`, `{{ .TokenHash }}` y `type=recovery`.
+El cuerpo personalizado elimina la referencia visible al proveedor. Para que
+el remitente también use un dominio propio, se debe activar SMTP corporativo
+en Supabase, por ejemplo `acceso@biogranja51.com`.
 
 ## 5. Vincular Y Desplegar En Netlify
 
