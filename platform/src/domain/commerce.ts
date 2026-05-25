@@ -39,6 +39,10 @@ export type LayerEventType = "mortality" | "feed_consumption" | "expense";
 export type FeedFormulaStatus = "draft" | "approved" | "archived";
 export type MillBatchUsage = "internal_broiler" | "internal_layers" | "external_service";
 export type FeedInputQualityStatus = "pending" | "approved" | "rejected";
+export type OrderPaymentStatus = "pending" | "reconciled" | "rejected";
+export type SalesReceiptStatus = "issued" | "voided";
+export type SalesReceiptType = "boleta" | "factura";
+export type OrderExpenseCategory = "delivery" | "packaging" | "commission" | "other";
 export type BirdBatchEventType =
   | "mortality"
   | "weight_sample"
@@ -191,6 +195,63 @@ export type Order = {
   total: number | null;
   hasPendingPrice: boolean;
   createdAt: string;
+};
+
+export type OrderPayment = {
+  id: string;
+  orderId: string;
+  paymentMethodId: string;
+  paymentMethodName: string;
+  amount: number;
+  paidAt: string;
+  operationReference: string;
+  evidenceReference: string;
+  status: OrderPaymentStatus;
+  reconciliationNotes: string;
+  reconciledAt: string | null;
+};
+
+export type SalesReceipt = {
+  id: string;
+  orderId: string;
+  type: SalesReceiptType;
+  seriesNumber: string;
+  customerDocument: string | null;
+  issuedAt: string;
+  total: number;
+  status: SalesReceiptStatus;
+};
+
+export type OrderExpense = {
+  id: string;
+  orderId: string;
+  category: OrderExpenseCategory;
+  amount: number;
+  incurredAt: string;
+  reference: string;
+  notes: string;
+};
+
+export type FinanceOrder = Order & {
+  payments: OrderPayment[];
+  receipt: SalesReceipt | null;
+  expenses: OrderExpense[];
+  reconciledAmount: number;
+  pendingAmount: number;
+  stockCost: number | null;
+  operatingCost: number;
+  margin: number | null;
+};
+
+export type FinanceWorkspace = {
+  orders: FinanceOrder[];
+  reconciledRevenue: number;
+  accountsReceivable: number;
+  registeredCost: number;
+  operatingCost: number;
+  auditableMargin: number;
+  pendingReconciliationCount: number;
+  missingReceiptCount: number;
 };
 
 export type Customer = {
@@ -499,6 +560,9 @@ export type AuditWorkspace = {
   producedFeedKg: number;
   controlledCommercialLots: number;
   approvedCommercialLots: number;
+  reconciledRevenue: number;
+  accountsReceivable: number;
+  auditedMargin: number;
 };
 
 export type CommerceState = {
@@ -560,6 +624,24 @@ export const inventorySanitaryStatusLabels: Record<InventorySanitaryStatus, stri
   pending: "Inspeccion pendiente",
   approved: "Liberado",
   rejected: "Rechazado",
+};
+
+export const orderPaymentStatusLabels: Record<OrderPaymentStatus, string> = {
+  pending: "Por conciliar",
+  reconciled: "Conciliado",
+  rejected: "Rechazado",
+};
+
+export const salesReceiptTypeLabels: Record<SalesReceiptType, string> = {
+  boleta: "Boleta",
+  factura: "Factura",
+};
+
+export const orderExpenseCategoryLabels: Record<OrderExpenseCategory, string> = {
+  delivery: "Reparto",
+  packaging: "Empaque",
+  commission: "Comision",
+  other: "Otro",
 };
 
 export const birdBatchStageLabels: Record<BirdBatchStage, string> = {

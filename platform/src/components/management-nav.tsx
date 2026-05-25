@@ -5,6 +5,7 @@ export function ManagementNav() {
     <nav className="management-nav" aria-label="Gestión">
       <Link href="/gestion">Resumen</Link>
       <Link href="/gestion/pedidos">Pedidos y entregas</Link>
+      <Link href="/gestion/finanzas">Finanzas</Link>
       <Link href="/gestion/clientes">Clientes</Link>
       <Link href="/gestion/crianza">Crianza avícola</Link>
       <Link href="/gestion/huevos">Huevos y ponedoras</Link>

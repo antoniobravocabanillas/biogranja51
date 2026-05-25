@@ -37,11 +37,20 @@ Roles iniciales: `owner`, `admin`, `ventas`, `almacen`, `produccion`,
 | `orders` | id, number, customer_id, channel, status, totals, delivery_slot_id |
 | `order_items` | order_id, variant_id, lot_id, quantity, unit_price, subtotal |
 | `subscriptions` | customer_id, pack_id, frequency, next_delivery, status |
-| `payments` | order_id, provider, method, amount, status, external_reference |
+| `order_payments` | order_id, payment_method_id, amount, paid_at, operation_reference, status, reconciled_at |
+| `sales_receipts` | order_id, receipt_type, series_number, customer_document, issued_at, total, status |
+| `order_expenses` | order_id, category, amount, incurred_at, reference, notes |
 
 `origin_type` empieza con `own`, `selected_supplier` y
 `pending_confirmation`. En el futuro puede incorporar `partner_farm` sin
 falsear el origen.
+
+Los cobros nacen `pending` y solo forman ingreso conciliado al pasar a
+`reconciled` con sustento del revisor. El margen auditable de un pedido
+entregado requiere total definido, lotes valorizados, pago conciliado,
+comprobante de venta y gastos operativos registrados cuando correspondan.
+Los comprobantes anulados no se eliminan: conservan su motivo y dejan el
+pedido pendiente de una emision valida.
 
 ### Compras, stock y trazabilidad
 
@@ -163,4 +172,5 @@ flowchart LR
 7. Descuento trazable del alimento molido en crianza y ponedoras.
 8. Recepcion, calidad y consumo FIFO de insumos; tablero de auditoria.
 9. Cadena de frio y liberacion sanitaria de producto comercial comprado.
-10. Circularidad e indicadores.
+10. Cobranza, comprobantes, gastos por pedido y margen auditado.
+11. Circularidad e indicadores.

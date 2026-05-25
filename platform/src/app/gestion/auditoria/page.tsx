@@ -29,15 +29,15 @@ export default async function AuditoriaPage() {
           <p className="eyebrow">Gobierno y evidencia</p>
           <h1>Auditoria integral</h1>
           <p>
-            Revisa excepciones que impiden demostrar origen, costo y margen:
-            calidad de insumos, valorizacion productiva e inventario asignado.
+            Revisa excepciones que impiden demostrar origen, costo, cobro y
+            margen: calidad, inventario, conciliacion y comprobantes.
           </p>
         </div>
         <aside className="security-notice">
           <strong>Control vivo</strong>
           <span>
-            Este tablero señala brechas automaticas. La evidencia sanitaria,
-            tributaria y de frio se incorporara en el siguiente bloque.
+            Este tablero senala brechas automaticas de produccion, cadena de
+            frio, pagos, comprobantes y rentabilidad registrada.
           </span>
         </aside>
       </section>

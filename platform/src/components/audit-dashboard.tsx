@@ -29,6 +29,11 @@ function eventLabel(action: string): string {
     "feed_input_lot.received": "Insumo recibido",
     "feed_input_lot.quality_reviewed": "Calidad de insumo revisada",
     "order.status_transition": "Estado de pedido actualizado",
+    "order_payment.registered": "Cobro registrado",
+    "order_payment.reviewed": "Cobro conciliado o rechazado",
+    "sales_receipt.issued": "Comprobante emitido",
+    "sales_receipt.voided": "Comprobante anulado",
+    "order_expense.recorded": "Gasto de pedido registrado",
   };
   return labels[action] ?? action;
 }
@@ -71,6 +76,21 @@ export function AuditDashboard({ workspace }: AuditDashboardProps) {
           <span>Frio liberado</span>
           <strong>{workspace.approvedCommercialLots}/{workspace.controlledCommercialLots}</strong>
           <small>Lotes comprados aprobados</small>
+        </article>
+        <article>
+          <span>Ingresos conciliados</span>
+          <strong>S/ {workspace.reconciledRevenue.toFixed(2)}</strong>
+          <small>Cobros verificados</small>
+        </article>
+        <article>
+          <span>Cuentas por cobrar</span>
+          <strong>S/ {workspace.accountsReceivable.toFixed(2)}</strong>
+          <small>Saldo no conciliado</small>
+        </article>
+        <article>
+          <span>Margen auditado</span>
+          <strong>S/ {workspace.auditedMargin.toFixed(2)}</strong>
+          <small>Entregado y cerrado</small>
         </article>
       </div>
 

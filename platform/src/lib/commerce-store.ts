@@ -21,6 +21,8 @@ import type {
   EggWorkspace,
   FeedInputLot,
   FeedInputQualityStatus,
+  FinanceOrder,
+  FinanceWorkspace,
   FeedFormula,
   FeedFormulaStatus,
   FeedInput,
@@ -32,10 +34,16 @@ import type {
   LayerFlockEvent,
   LayerFlockStatus,
   Order,
+  OrderExpense,
+  OrderExpenseCategory,
+  OrderPayment,
+  OrderPaymentStatus,
   PaymentMethod,
   Product,
   PoultryWorkspace,
   StaffRole,
+  SalesReceipt,
+  SalesReceiptType,
   AuditIssue,
   AuditWorkspace,
 } from "@/domain/commerce";
@@ -117,6 +125,41 @@ type OrderRow = {
     products: { name: string; presentation: string } | null;
     inventory_lots?: { code: string } | null;
   }>;
+};
+
+type OrderPaymentRow = {
+  id: string;
+  order_id: string;
+  payment_method_id: string;
+  amount: number | string;
+  paid_at: string;
+  operation_reference: string;
+  evidence_reference: string;
+  status: OrderPaymentStatus;
+  reconciliation_notes: string;
+  reconciled_at: string | null;
+  payment_methods: { name: string } | null;
+};
+
+type SalesReceiptRow = {
+  id: string;
+  order_id: string;
+  receipt_type: SalesReceiptType;
+  series_number: string;
+  customer_document: string | null;
+  issued_at: string;
+  total: number | string;
+  status: SalesReceipt["status"];
+};
+
+type OrderExpenseRow = {
+  id: string;
+  order_id: string;
+  category: OrderExpenseCategory;
+  amount: number | string;
+  incurred_at: string;
+  reference: string;
+  notes: string;
 };
 
 type CustomerRow = {
@@ -456,6 +499,47 @@ function orderFromRow(row: OrderRow): Order {
     total: numberValue(row.total),
     hasPendingPrice: row.has_pending_price,
     createdAt: row.created_at,
+  };
+}
+
+function paymentRecordFromRow(row: OrderPaymentRow): OrderPayment {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    paymentMethodId: row.payment_method_id,
+    paymentMethodName: row.payment_methods?.name ?? "Medio de pago",
+    amount: Number(row.amount),
+    paidAt: row.paid_at,
+    operationReference: row.operation_reference,
+    evidenceReference: row.evidence_reference,
+    status: row.status,
+    reconciliationNotes: row.reconciliation_notes,
+    reconciledAt: row.reconciled_at,
+  };
+}
+
+function salesReceiptFromRow(row: SalesReceiptRow): SalesReceipt {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    type: row.receipt_type,
+    seriesNumber: row.series_number,
+    customerDocument: row.customer_document,
+    issuedAt: row.issued_at,
+    total: Number(row.total),
+    status: row.status,
+  };
+}
+
+function orderExpenseFromRow(row: OrderExpenseRow): OrderExpense {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    category: row.category,
+    amount: Number(row.amount),
+    incurredAt: row.incurred_at,
+    reference: row.reference,
+    notes: row.notes,
   };
 }
 
@@ -1068,6 +1152,187 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
     .single();
   assertDatabaseResult(error, "No se pudo actualizar el pedido");
   return orderFromRow(data as unknown as OrderRow);
+}
+
+export async function getFinanceWorkspace(): Promise<FinanceWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return {
+      orders: [],
+      reconciledRevenue: 0,
+      accountsReceivable: 0,
+      registeredCost: 0,
+      operatingCost: 0,
+      auditableMargin: 0,
+      pendingReconciliationCount: 0,
+      missingReceiptCount: 0,
+    };
+  }
+  const supabase = await createSupabaseClient();
+  const [ordersResult, paymentsResult, receiptsResult, expensesResult] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
+      .neq("status", "cancelled")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("order_payments")
+      .select("*, payment_methods(name)")
+      .order("paid_at", { ascending: false }),
+    supabase.from("sales_receipts").select("*").order("issued_at", { ascending: false }),
+    supabase.from("order_expenses").select("*").order("incurred_at", { ascending: false }),
+  ]);
+  assertDatabaseResult(ordersResult.error, "No se pudo leer pedidos financieros");
+  assertDatabaseResult(paymentsResult.error, "No se pudo leer cobros");
+  assertDatabaseResult(receiptsResult.error, "No se pudo leer comprobantes");
+  assertDatabaseResult(expensesResult.error, "No se pudo leer gastos de pedido");
+
+  const payments = (paymentsResult.data as unknown as OrderPaymentRow[]).map(paymentRecordFromRow);
+  const receipts = (receiptsResult.data as SalesReceiptRow[]).map(salesReceiptFromRow);
+  const expenses = (expensesResult.data as OrderExpenseRow[]).map(orderExpenseFromRow);
+  const orders: FinanceOrder[] = (ordersResult.data as unknown as OrderRow[]).map((row) => {
+    const order = orderFromRow(row);
+    const orderPayments = payments.filter((payment) => payment.orderId === order.id);
+    const orderExpenses = expenses.filter((expense) => expense.orderId === order.id);
+    const receipt = receipts.find((entry) => entry.orderId === order.id && entry.status === "issued") ?? null;
+    const reconciledAmount = orderPayments
+      .filter((payment) => payment.status === "reconciled")
+      .reduce((sum, payment) => sum + payment.amount, 0);
+    const pendingAmount = orderPayments
+      .filter((payment) => payment.status === "pending")
+      .reduce((sum, payment) => sum + payment.amount, 0);
+    const hasCompleteStockCost = order.items.every((item) => item.costTotal !== null);
+    const stockCost = hasCompleteStockCost
+      ? order.items.reduce((sum, item) => sum + (item.costTotal ?? 0), 0)
+      : null;
+    const operatingCost = orderExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+    return {
+      ...order,
+      payments: orderPayments,
+      receipt,
+      expenses: orderExpenses,
+      reconciledAmount,
+      pendingAmount,
+      stockCost,
+      operatingCost,
+      margin: order.total !== null && stockCost !== null
+        ? order.total - stockCost - operatingCost
+        : null,
+    };
+  });
+  const completedWithAuditableMargin = orders.filter(
+    (order) =>
+      order.status === "delivered" &&
+      order.margin !== null &&
+      order.total !== null &&
+      order.reconciledAmount >= order.total,
+  );
+  const collectableOrders = orders.filter((order) =>
+    ["confirmed", "preparing", "dispatched", "delivered"].includes(order.status),
+  );
+  return {
+    orders,
+    reconciledRevenue: orders.reduce((sum, order) => sum + order.reconciledAmount, 0),
+    accountsReceivable: collectableOrders.reduce(
+      (sum, order) => sum + Math.max((order.total ?? 0) - order.reconciledAmount, 0),
+      0,
+    ),
+    registeredCost: orders.reduce((sum, order) => sum + (order.stockCost ?? 0), 0),
+    operatingCost: orders.reduce((sum, order) => sum + order.operatingCost, 0),
+    auditableMargin: completedWithAuditableMargin.reduce((sum, order) => sum + (order.margin ?? 0), 0),
+    pendingReconciliationCount: payments.filter((payment) => payment.status === "pending").length,
+    missingReceiptCount: orders.filter((order) => order.status === "delivered" && !order.receipt).length,
+  };
+}
+
+export async function registerOrderPayment(payload: {
+  orderId: string;
+  paymentMethodId: string;
+  amount: number;
+  paidAt: string;
+  operationReference: string;
+  evidenceReference: string;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("La gestion financiera requiere Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("register_order_payment", {
+    p_order_id: payload.orderId,
+    p_payment_method_id: payload.paymentMethodId,
+    p_amount: payload.amount,
+    p_paid_at: payload.paidAt,
+    p_operation_reference: payload.operationReference,
+    p_evidence_reference: payload.evidenceReference,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el cobro");
+}
+
+export async function reviewOrderPayment(payload: {
+  paymentId: string;
+  status: "reconciled" | "rejected";
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("La gestion financiera requiere Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("review_order_payment", {
+    p_payment_id: payload.paymentId,
+    p_status: payload.status,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo conciliar el cobro");
+}
+
+export async function issueSalesReceipt(payload: {
+  orderId: string;
+  type: SalesReceiptType;
+  seriesNumber: string;
+  customerDocument: string | null;
+  issuedAt: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("La gestion financiera requiere Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("issue_sales_receipt", {
+    p_order_id: payload.orderId,
+    p_receipt_type: payload.type,
+    p_series_number: payload.seriesNumber,
+    p_customer_document: payload.customerDocument,
+    p_issued_at: payload.issuedAt,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el comprobante");
+}
+
+export async function voidSalesReceipt(payload: {
+  receiptId: string;
+  reason: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("La gestion financiera requiere Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("void_sales_receipt", {
+    p_receipt_id: payload.receiptId,
+    p_reason: payload.reason,
+  });
+  assertDatabaseResult(error, "No se pudo anular el comprobante");
+}
+
+export async function recordOrderExpense(payload: {
+  orderId: string;
+  category: OrderExpenseCategory;
+  amount: number;
+  incurredAt: string;
+  reference: string;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("La gestion financiera requiere Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("record_order_expense", {
+    p_order_id: payload.orderId,
+    p_category: payload.category,
+    p_amount: payload.amount,
+    p_incurred_at: payload.incurredAt,
+    p_reference: payload.reference,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el gasto");
 }
 
 export async function listCustomersWithMetrics(): Promise<CustomerMetrics[]> {
@@ -1792,11 +2057,14 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
       producedFeedKg: 0,
       controlledCommercialLots: 0,
       approvedCommercialLots: 0,
+      reconciledRevenue: 0,
+      accountsReceivable: 0,
+      auditedMargin: 0,
     };
   }
 
   const supabase = await createSupabaseClient();
-  const [inventoryResult, inputLotsResult, formulasResult, millResult, birdEventsResult, ordersResult, eventsResult] =
+  const [inventoryResult, inputLotsResult, formulasResult, millResult, birdEventsResult, ordersResult, eventsResult, financeWorkspace] =
     await Promise.all([
       supabase
         .from("inventory_lots")
@@ -1812,6 +2080,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
         .select("id, number, status, order_items(cost_total)")
         .in("status", ["confirmed", "preparing", "dispatched", "delivered"]),
       supabase.from("audit_events").select("id, action, entity, created_at").order("created_at", { ascending: false }).limit(30),
+      getFinanceWorkspace(),
     ]);
 
   assertDatabaseResult(inventoryResult.error, "No se pudo auditar inventario");
@@ -1952,6 +2221,50 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     });
   }
 
+  const deliveredFinancialOrders = financeWorkspace.orders.filter((order) => order.status === "delivered");
+  for (const order of deliveredFinancialOrders) {
+    if (order.total !== null && order.reconciledAmount < order.total) {
+      issues.push({
+        id: `payment-balance-${order.id}`,
+        severity: "critical",
+        area: "Finanzas",
+        title: `${order.number} con saldo no conciliado`,
+        detail: `Falta conciliar S/ ${(order.total - order.reconciledAmount).toFixed(2)} de una entrega finalizada.`,
+        href: "/gestion/finanzas",
+      });
+    }
+    if (!order.receipt) {
+      issues.push({
+        id: `receipt-missing-${order.id}`,
+        severity: "critical",
+        area: "Tributario",
+        title: `${order.number} entregado sin comprobante`,
+        detail: "Registra boleta o factura para sustentar el ingreso reconocido.",
+        href: "/gestion/finanzas",
+      });
+    }
+    if (order.deliveryFee > 0 && !order.expenses.some((expense) => expense.category === "delivery")) {
+      issues.push({
+        id: `delivery-cost-${order.id}`,
+        severity: "warning",
+        area: "Margen",
+        title: `${order.number} sin costo de reparto`,
+        detail: "El margen no incorpora el costo real de entregar el pedido.",
+        href: "/gestion/finanzas",
+      });
+    }
+  }
+  if (financeWorkspace.pendingReconciliationCount > 0) {
+    issues.push({
+      id: "payment-review-pending",
+      severity: "warning",
+      area: "Finanzas",
+      title: `${financeWorkspace.pendingReconciliationCount} cobros esperan conciliacion`,
+      detail: "Confirma operaciones contra Yape, Plin o transferencia antes del cierre.",
+      href: "/gestion/finanzas",
+    });
+  }
+
   if (!formulas.some((formula) => formula.status === "approved")) {
     issues.push({
       id: "formula-approved",
@@ -1984,5 +2297,8 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     producedFeedKg: millBatches.reduce((sum, batch) => sum + Number(batch.produced_kg), 0),
     controlledCommercialLots: purchasedInventoryLots.length,
     approvedCommercialLots: purchasedInventoryLots.filter((lot) => lot.sanitary_status === "approved").length,
+    reconciledRevenue: financeWorkspace.reconciledRevenue,
+    accountsReceivable: financeWorkspace.accountsReceivable,
+    auditedMargin: financeWorkspace.auditableMargin,
   };
 }

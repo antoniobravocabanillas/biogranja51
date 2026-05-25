@@ -99,6 +99,12 @@ export const managementModules = [
     status: "Operativo",
   },
   {
+    code: "FIN",
+    name: "Finanzas",
+    description: "Cobros, conciliacion, comprobantes y margen por pedido.",
+    status: "Operativo",
+  },
+  {
     code: "CIR",
     name: "Circularidad",
     description: "Subproductos, compost, indicadores y aprovechamiento.",

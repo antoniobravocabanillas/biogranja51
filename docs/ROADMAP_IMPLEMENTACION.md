@@ -125,9 +125,11 @@ Objetivo: poder sustentar origen, costo y movimiento de cada producto.
   cerdo y producto comercial comprado. `Implementado en desarrollo`.
 - Cuarentena automatica de compras comerciales y liberacion sanitaria antes
   de asignar stock a pedidos. `Implementado en desarrollo`.
-- Margen real por pedido, producto y lote vendido.
+- Margen por pedido desde venta, lote asignado y gastos registrados.
+  `Implementado en desarrollo`.
 - Evidencias adjuntas, responsables y exportacion del expediente por lote.
-- Conciliacion de pagos y comprobantes de venta.
+- Conciliacion de pagos Yape/Plin/transferencia y comprobantes de venta.
+  `Implementado en desarrollo`.
 
 Criterio de salida: una auditoria puede reconstruir proveedor o produccion,
 costo, calidad, inventario, pedido, pago y entrega sin depender de registros

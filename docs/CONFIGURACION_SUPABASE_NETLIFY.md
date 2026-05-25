@@ -40,6 +40,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 9. `platform/supabase/migrations/202605250007_feed_lot_consumption_traceability.sql`
 10. `platform/supabase/migrations/202605250008_auditable_feed_supply_and_control.sql`
 11. `platform/supabase/migrations/202605250009_commercial_cold_chain_and_sanitary_release.sql`
+12. `platform/supabase/migrations/202605250010_financial_reconciliation_and_order_margin.sql`
 
 La segunda migracion agrega:
 
@@ -109,6 +110,14 @@ La undecima migracion agrega cadena de frio comercial:
 - cuarentena inicial obligatoria para evitar despacho sin inspeccion;
 - liberacion o rechazo sanitario con registro en auditoria;
 - regularizacion de lotes historicos que aun no tienen expediente.
+
+La duodecima migracion agrega cierre financiero:
+
+- cobros por pedido con numero de operacion y estado de conciliacion;
+- boletas o facturas asociadas a ventas con total confirmado;
+- anulacion de comprobantes conservando motivo y evento auditable;
+- gastos por pedido para reparto, empaque, comision u otros;
+- alertas y margen auditado solo para pedidos entregados y cerrados.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
@@ -219,6 +228,7 @@ desde Netlify.
 - `/gestion/molino` valida formulas, actualiza precios y registra lotes internos de alimento.
 - `/gestion/inventario` mantiene compras en cuarentena hasta registrar cadena de frio y liberar calidad.
 - `/gestion/auditoria` alerta lotes comprados sin expediente o sin liberacion sanitaria.
+- `/gestion/finanzas` permite registrar cobros, conciliarlos, emitir comprobantes y valorar gastos.
 - `/gestion/auditoria` muestra alertas de calidad, costos y trazabilidad junto con la bitacora operativa.
 
 ## Fuentes Oficiales

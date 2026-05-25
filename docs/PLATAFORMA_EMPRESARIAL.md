@@ -110,6 +110,8 @@ flowchart TB
 
 - Margen real por producto, canal, pedido y lote.
 - Costo de alimento, crianza, compra, empaque, frio y reparto.
+- Conciliacion de Yape, Plin y transferencia con numero de operacion y sustento.
+- Boleta o factura asociada al pedido antes del cierre auditado.
 - Tablero ejecutivo, flujo de caja y metas.
 - Auditoria de cambios de precio, stock y estado sanitario.
 
@@ -125,7 +127,7 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
 | Datos | PostgreSQL gestionado mediante Supabase | Transacciones y trazabilidad |
 | Usuarios | Supabase Auth + RLS | Accesos por rol y proteccion de datos |
 | Archivos | Supabase Storage | Imagenes, evidencias, guias y documentos |
-| Pagos | WhatsApp registrado; pasarela en fase siguiente | Confirmacion y conciliacion |
+| Pagos | Registro y conciliacion manual; pasarela en fase siguiente | Cobros auditables y cierre |
 | Analitica | Eventos propios + tablero | Conversion, margen y operacion |
 | Despliegue | Entorno de pruebas y produccion separados | Liberaciones controladas |
 

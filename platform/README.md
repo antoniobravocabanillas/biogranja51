@@ -31,6 +31,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
   venta, stock valorizado, mermas y reserva trazable para pedidos.
 - Cadena de frio para compras comerciales con documento, temperaturas,
   cuarentena y liberacion sanitaria antes del despacho.
+- Finanzas en `/gestion/finanzas` con cobros, conciliacion, comprobantes,
+  gastos por pedido y margen auditado.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
 
 La web estatica existente permanece en la raiz del repositorio mientras se
