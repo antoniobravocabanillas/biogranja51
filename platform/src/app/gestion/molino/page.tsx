@@ -33,15 +33,15 @@ export default async function MolinoPage() {
           <p className="eyebrow">Nutrición y costo propio</p>
           <h1>Molino y fórmulas</h1>
           <p>
-            Controla precios de insumos, valida fórmulas de alimento y produce
-            lotes internos con costo por kilogramo trazable.
+            Recibe materia prima con documento y calidad, valida fórmulas de
+            alimento y produce lotes internos con costo real trazable.
           </p>
         </div>
         <aside className="security-notice">
           <strong>Fórmula validada</strong>
           <span>
-            Solo las versiones que totalizan el lote objetivo y tienen precios
-            completos pueden aprobarse para producir alimento.
+            Solo se produce con fórmula aprobada y saldo de insumos liberado
+            por control de calidad.
           </span>
         </aside>
       </section>

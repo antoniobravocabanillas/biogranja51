@@ -79,6 +79,7 @@ export async function POST(
       notes: body.notes?.trim() || "",
     });
     revalidatePath("/gestion/crianza");
+    revalidatePath("/gestion/auditoria");
     return Response.json({ ok: true }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo registrar el seguimiento.";

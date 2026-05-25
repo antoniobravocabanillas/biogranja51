@@ -2557,7 +2557,8 @@ p {
 }
 
 .mill-top-grid,
-.mill-bottom-grid {
+.mill-bottom-grid,
+.mill-supply-grid {
   align-items: start;
   display: grid;
   gap: 20px;
@@ -2572,14 +2573,202 @@ p {
   grid-template-columns: 500px 1fr;
 }
 
+.mill-supply-grid {
+  grid-template-columns: 500px 1fr;
+  margin-bottom: 20px;
+}
+
 .mill-inputs h2,
 .formula-audit h2,
 .mill-production h2,
-.mill-history h2 {
+.mill-history h2,
+.supply-receipt h2,
+.input-lot-history h2,
+.audit-findings h2,
+.audit-events h2 {
   color: var(--forest);
   font-size: 21px;
   letter-spacing: -0.04em;
   margin: 8px 0 16px;
+}
+
+.input-lot-history article {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: 1fr 136px 125px;
+  padding: 13px 0;
+}
+
+.input-lot-history strong {
+  color: var(--forest);
+  display: block;
+  font-size: 12px;
+}
+
+.input-lot-history small {
+  color: var(--muted);
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.input-lot-history b {
+  color: var(--forest);
+  font-size: 11px;
+  text-align: right;
+}
+
+.quality-pill {
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 8px 9px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.quality-pending {
+  background: #fff2d7;
+  color: #8c6726;
+}
+
+.quality-approved {
+  background: #e5f0df;
+  color: var(--leaf);
+}
+
+.quality-rejected {
+  background: #f5dfdb;
+  color: #8d4134;
+}
+
+.quality-actions {
+  display: flex;
+  gap: 7px;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+.quality-actions button {
+  background: #ebede6;
+  border: 0;
+  border-radius: 8px;
+  color: var(--forest);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 12px;
+}
+
+.quality-actions button:first-child {
+  background: var(--forest);
+  color: var(--white);
+}
+
+.audit-workspace {
+  margin: 0 auto;
+  max-width: 1240px;
+  padding: 0 32px 64px;
+}
+
+.audit-layout {
+  align-items: start;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 395px;
+}
+
+.audit-count {
+  background: #e9efe5;
+  border-radius: 999px;
+  color: var(--leaf);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 9px 12px;
+}
+
+.audit-issue {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 80px 1fr 70px;
+  padding: 15px 0;
+}
+
+.audit-issue > span {
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 8px;
+  text-align: center;
+}
+
+.audit-critical > span {
+  background: #f5dfdb;
+  color: #8d4134;
+}
+
+.audit-warning > span {
+  background: #fff2d7;
+  color: #8c6726;
+}
+
+.audit-issue strong {
+  color: var(--forest);
+  display: block;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.audit-issue p,
+.audit-event-note {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.audit-issue a {
+  color: var(--leaf);
+  font-size: 11px;
+  font-weight: 750;
+  text-align: right;
+}
+
+.audit-clean {
+  background: #e5f0df;
+  border-radius: 12px;
+  color: var(--forest);
+  font-size: 12px;
+  line-height: 1.55;
+  padding: 18px;
+}
+
+.audit-event-note {
+  margin: -5px 0 14px;
+}
+
+.audit-events article {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.audit-events strong,
+.audit-events span,
+.audit-events small {
+  display: block;
+}
+
+.audit-events strong {
+  color: var(--forest);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.audit-events span,
+.audit-events small {
+  color: var(--muted);
+  font-size: 10px;
 }
 
 .feed-input-list {
@@ -3222,6 +3411,8 @@ p {
   .egg-operations-grid,
   .mill-top-grid,
   .mill-bottom-grid,
+  .mill-supply-grid,
+  .audit-layout,
   .analytics-grid,
   .confidence-section {
     grid-template-columns: 1fr;
@@ -3376,7 +3567,8 @@ p {
   .inventory-workspace,
   .poultry-workspace,
   .egg-workspace,
-  .mill-workspace {
+  .mill-workspace,
+  .audit-workspace {
     padding-left: 20px;
     padding-right: 20px;
   }
@@ -3407,6 +3599,16 @@ p {
   }
 
   .mill-history b {
+    text-align: left;
+  }
+
+  .input-lot-history article,
+  .audit-issue {
+    grid-template-columns: 1fr;
+  }
+
+  .input-lot-history b,
+  .audit-issue a {
     text-align: left;
   }
 

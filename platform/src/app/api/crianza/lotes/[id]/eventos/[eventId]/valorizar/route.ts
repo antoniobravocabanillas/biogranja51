@@ -27,6 +27,7 @@ export async function PATCH(
       feedUnitCost: body.feedUnitCost,
     });
     revalidatePath("/gestion/crianza");
+    revalidatePath("/gestion/auditoria");
     return Response.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo valorizar el consumo.";

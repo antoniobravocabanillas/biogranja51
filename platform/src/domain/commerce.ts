@@ -37,6 +37,7 @@ export type LayerFlockStatus = "active" | "paused" | "closed";
 export type LayerEventType = "mortality" | "feed_consumption" | "expense";
 export type FeedFormulaStatus = "draft" | "approved" | "archived";
 export type MillBatchUsage = "internal_broiler" | "internal_layers" | "external_service";
+export type FeedInputQualityStatus = "pending" | "approved" | "rejected";
 export type BirdBatchEventType =
   | "mortality"
   | "weight_sample"
@@ -379,6 +380,24 @@ export type FeedInput = {
   supplierName: string | null;
 };
 
+export type FeedInputLot = {
+  id: string;
+  code: string;
+  inputId: string;
+  inputName: string;
+  supplierName: string;
+  supplierTaxId: string | null;
+  locationName: string;
+  receivedKg: number;
+  availableKg: number;
+  unitCost: number;
+  receivedAt: string;
+  documentReference: string;
+  qualityStatus: FeedInputQualityStatus;
+  qualityNotes: string;
+  notes: string;
+};
+
 export type FeedFormulaItem = {
   id: string;
   inputId: string;
@@ -426,13 +445,47 @@ export type MillBatch = {
 
 export type MillWorkspace = {
   inputs: FeedInput[];
+  inputLots: FeedInputLot[];
   formulas: FeedFormula[];
   batches: MillBatch[];
   activeInputCount: number;
   approvedFormulaCount: number;
+  approvedInputKg: number;
+  pendingQualityLotCount: number;
+  inputStockValue: number;
   producedKg: number;
   availableKg: number;
   averageCostPerKg: number | null;
+};
+
+export type AuditIssueSeverity = "critical" | "warning" | "info";
+
+export type AuditIssue = {
+  id: string;
+  severity: AuditIssueSeverity;
+  area: string;
+  title: string;
+  detail: string;
+  href: string;
+};
+
+export type AuditEvent = {
+  id: string;
+  action: string;
+  entity: string;
+  createdAt: string;
+};
+
+export type AuditWorkspace = {
+  issues: AuditIssue[];
+  events: AuditEvent[];
+  criticalCount: number;
+  warningCount: number;
+  auditEventCount: number;
+  traceableInventoryLots: number;
+  totalInventoryLots: number;
+  approvedInputKg: number;
+  producedFeedKg: number;
 };
 
 export type CommerceState = {
@@ -540,6 +593,12 @@ export const millBatchUsageLabels: Record<MillBatchUsage, string> = {
   internal_broiler: "Pollo de engorde",
   internal_layers: "Ponedoras",
   external_service: "Servicio a terceros",
+};
+
+export const feedInputQualityLabels: Record<FeedInputQualityStatus, string> = {
+  pending: "Pendiente de liberacion",
+  approved: "Aprobado para uso",
+  rejected: "Rechazado",
 };
 
 export function formatPrice(product: Product): string {

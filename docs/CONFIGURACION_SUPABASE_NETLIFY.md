@@ -38,6 +38,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 7. `platform/supabase/migrations/202605250005_layer_flocks_and_egg_inventory.sql`
 8. `platform/supabase/migrations/202605250006_mill_formulas_and_feed_batches.sql`
 9. `platform/supabase/migrations/202605250007_feed_lot_consumption_traceability.sql`
+10. `platform/supabase/migrations/202605250008_auditable_feed_supply_and_control.sql`
 
 La segunda migracion agrega:
 
@@ -91,6 +92,15 @@ La novena migracion conecta molino con produccion:
 - consumo trazable desde crianza o ponedoras con costo automatico por kg;
 - bloqueo de saldo insuficiente o destino productivo incorrecto;
 - auditoria del descuento de alimento.
+
+La decima migracion agrega abastecimiento auditable:
+
+- proveedores y recepcion de lotes de insumos con comprobante y calidad;
+- liberacion o rechazo de materia prima antes del uso productivo;
+- consumo FIFO de insumos aprobados al producir un lote molido;
+- costo real del alimento desde las compras consumidas;
+- acceso del personal autorizado a la bitacora para `/gestion/auditoria`;
+- transiciones de pedido registradas en auditoria.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
@@ -199,6 +209,7 @@ desde Netlify.
 - `/gestion/crianza` registra pollitos vivos, grafica su evolucion, calcula costos y genera inventario solo al registrar faena.
 - `/gestion/huevos` controla postura, descarte y genera inventario solo al empacar maples de huevos propios.
 - `/gestion/molino` valida formulas, actualiza precios y registra lotes internos de alimento.
+- `/gestion/auditoria` muestra alertas de calidad, costos y trazabilidad junto con la bitacora operativa.
 
 ## Fuentes Oficiales
 

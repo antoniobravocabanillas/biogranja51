@@ -60,6 +60,7 @@ export async function POST(
     revalidatePath("/gestion");
     revalidatePath("/gestion/crianza");
     revalidatePath("/gestion/inventario");
+    revalidatePath("/gestion/auditoria");
     return Response.json({ ok: true }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo generar el lote faenado.";

@@ -24,6 +24,9 @@ Nueva plataforma comercial y operativa de BioGranja 51.
 - Molino en `/gestion/molino` con insumos valorizados, formulas versionadas y
   lotes de alimento costeados por kilogramo, saldo disponible y consumo
   trazable desde crianza o ponedoras.
+- Abastecimiento del molino con proveedor, comprobante, control de calidad,
+  saldo por insumo y consumo FIFO al producir alimento.
+- Auditoria en `/gestion/auditoria` con excepciones operativas y bitacora.
 - Inventario comercial en `/gestion/inventario` con productos listos para
   venta, stock valorizado, mermas y reserva trazable para pedidos.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.

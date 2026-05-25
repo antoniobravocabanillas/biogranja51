@@ -6,11 +6,13 @@ import type {
   BusinessLocation,
   FeedFormula,
   FeedFormulaVersion,
+  FeedInputQualityStatus,
   MillBatchUsage,
   MillWorkspace,
 } from "@/domain/commerce";
 import {
   feedFormulaStatusLabels,
+  feedInputQualityLabels,
   millBatchUsageLabels,
 } from "@/domain/commerce";
 
@@ -88,6 +90,19 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
   });
   const [formulaDraft, setFormulaDraft] = useState<Record<string, string>>({});
   const [formulaNotes, setFormulaNotes] = useState("");
+  const [receiptDraft, setReceiptDraft] = useState({
+    inputId: initialWorkspace.inputs[0]?.id ?? "",
+    locationId: millLocations[0]?.id ?? locations[0]?.id ?? "",
+    supplierName: "",
+    supplierTaxId: "",
+    quantityKg: "",
+    unitCost: "",
+    receivedAt: dateInputValue(new Date()),
+    documentReference: "",
+    qualityStatus: "pending" as FeedInputQualityStatus,
+    qualityNotes: "",
+    notes: "",
+  });
   const [batchDraft, setBatchDraft] = useState({
     versionId: approvedVersions[0]?.version.id ?? "",
     locationId: millLocations[0]?.id ?? locations[0]?.id ?? "",
@@ -105,6 +120,67 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
     initialWorkspace.inputs.find((input) => input.id === selectedInputId) ??
     initialWorkspace.inputs[0] ??
     null;
+
+  async function receiveInput(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    const response = await fetch("/api/molino/insumos/lotes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...receiptDraft,
+        quantityKg: Number(receiptDraft.quantityKg),
+        unitCost: Number(receiptDraft.unitCost),
+        receivedAt: new Date(receiptDraft.receivedAt).toISOString(),
+      }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo recibir el insumo.");
+      setSaving(false);
+      return;
+    }
+    setMessage("Insumo recibido. Su saldo se habilita para molienda cuando la calidad esta aprobada.");
+    setReceiptDraft((current) => ({
+      ...current,
+      supplierName: "",
+      supplierTaxId: "",
+      quantityKg: "",
+      unitCost: "",
+      documentReference: "",
+      qualityStatus: "pending",
+      qualityNotes: "",
+      notes: "",
+    }));
+    setSaving(false);
+    router.refresh();
+  }
+
+  async function reviewInputLot(lotId: string, qualityStatus: "approved" | "rejected") {
+    const note = window.prompt(
+      qualityStatus === "approved"
+        ? "Describe la revision realizada para liberar este lote:"
+        : "Indica el motivo del rechazo:",
+    );
+    if (note === null) return;
+    setSaving(true);
+    setMessage("");
+    const response = await fetch(`/api/molino/insumos/lotes/${lotId}/calidad`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ qualityStatus, qualityNotes: note }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo actualizar el control de calidad.");
+      setSaving(false);
+      return;
+    }
+    setMessage(qualityStatus === "approved" ? "Lote liberado para produccion." : "Lote rechazado y bloqueado para uso.");
+    setSaving(false);
+    router.refresh();
+  }
 
   async function savePrice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -208,6 +284,8 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
       <div className="inventory-kpis">
         <article><span>Insumos activos</span><strong>{initialWorkspace.activeInputCount}</strong><small>Catálogo del molino</small></article>
         <article><span>Fórmulas aprobadas</span><strong>{initialWorkspace.approvedFormulaCount}</strong><small>Listas para producir</small></article>
+        <article><span>Materia prima aprobada</span><strong>{initialWorkspace.approvedInputKg.toFixed(2)} kg</strong><small>Disponible para molienda</small></article>
+        <article><span>Calidad pendiente</span><strong>{initialWorkspace.pendingQualityLotCount}</strong><small>Lotes por liberar</small></article>
         <article><span>Alimento producido</span><strong>{initialWorkspace.producedKg.toFixed(2)} kg</strong><small>Lotes registrados</small></article>
         <article><span>Saldo disponible</span><strong>{initialWorkspace.availableKg.toFixed(2)} kg</strong><small>Para consumo interno</small></article>
         <article><span>Costo promedio</span><strong>{money(initialWorkspace.averageCostPerKg)}</strong><small>Por kg producido</small></article>
@@ -220,6 +298,55 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
           distintos al 100% quedan en borrador hasta su corrección y aprobación.
         </p>
       </section>
+
+      <div className="mill-supply-grid">
+        <form className="settings-panel supply-receipt" onSubmit={receiveInput}>
+          <p className="eyebrow">Compras e insumos</p>
+          <h2>Recibir materia prima</h2>
+          <div className="field-pair">
+            <label className="form-field"><span>Insumo</span><select value={receiptDraft.inputId} onChange={(event) => setReceiptDraft({ ...receiptDraft, inputId: event.target.value })}>{initialWorkspace.inputs.map((input) => <option key={input.id} value={input.id}>{input.name}</option>)}</select></label>
+            <label className="form-field"><span>Almacen / molino</span><select value={receiptDraft.locationId} onChange={(event) => setReceiptDraft({ ...receiptDraft, locationId: event.target.value })}>{(millLocations.length ? millLocations : locations).map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
+          </div>
+          <div className="field-pair">
+            <label className="form-field"><span>Proveedor</span><input required value={receiptDraft.supplierName} onChange={(event) => setReceiptDraft({ ...receiptDraft, supplierName: event.target.value })} /></label>
+            <label className="form-field"><span>RUC / identificacion</span><input value={receiptDraft.supplierTaxId} onChange={(event) => setReceiptDraft({ ...receiptDraft, supplierTaxId: event.target.value })} /></label>
+          </div>
+          <div className="field-pair">
+            <label className="form-field"><span>Cantidad recibida (kg)</span><input type="number" min="0.001" step="0.001" required value={receiptDraft.quantityKg} onChange={(event) => setReceiptDraft({ ...receiptDraft, quantityKg: event.target.value })} /></label>
+            <label className="form-field"><span>Costo real S/ kg</span><input type="number" min="0" step="0.0001" required value={receiptDraft.unitCost} onChange={(event) => setReceiptDraft({ ...receiptDraft, unitCost: event.target.value })} /></label>
+          </div>
+          <div className="field-pair">
+            <label className="form-field"><span>Fecha de recepcion</span><input type="datetime-local" value={receiptDraft.receivedAt} onChange={(event) => setReceiptDraft({ ...receiptDraft, receivedAt: event.target.value })} /></label>
+            <label className="form-field"><span>Guia / comprobante</span><input required value={receiptDraft.documentReference} onChange={(event) => setReceiptDraft({ ...receiptDraft, documentReference: event.target.value })} /></label>
+          </div>
+          <label className="form-field"><span>Estado de calidad</span><select value={receiptDraft.qualityStatus} onChange={(event) => setReceiptDraft({ ...receiptDraft, qualityStatus: event.target.value as FeedInputQualityStatus })}>{Object.entries(feedInputQualityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label className="form-field"><span>Control de calidad</span><input value={receiptDraft.qualityNotes} onChange={(event) => setReceiptDraft({ ...receiptDraft, qualityNotes: event.target.value })} placeholder="Humedad, estado del saco, inspeccion visual" /></label>
+          <label className="form-field"><span>Observacion de compra</span><input value={receiptDraft.notes} onChange={(event) => setReceiptDraft({ ...receiptDraft, notes: event.target.value })} /></label>
+          <button className="save-button" type="submit" disabled={!editable || saving}>Registrar recepcion</button>
+        </form>
+
+        <section className="settings-panel input-lot-history">
+          <p className="eyebrow">Existencias auditables</p>
+          <h2>Lotes de insumo</h2>
+          {initialWorkspace.inputLots.length ? initialWorkspace.inputLots.map((lot) => (
+            <article key={lot.id}>
+              <div>
+                <strong>{lot.code} | {lot.inputName}</strong>
+                <small>{lot.supplierName} | Doc. {lot.documentReference}</small>
+                <small>{dateLabel(lot.receivedAt)} | S/ {lot.unitCost.toFixed(4)} / kg</small>
+              </div>
+              <span className={`quality-pill quality-${lot.qualityStatus}`}>{feedInputQualityLabels[lot.qualityStatus]}</span>
+              <b>{lot.availableKg.toFixed(3)} / {lot.receivedKg.toFixed(3)} kg</b>
+              {lot.qualityStatus === "pending" ? (
+                <div className="quality-actions">
+                  <button type="button" disabled={!editable || saving} onClick={() => reviewInputLot(lot.id, "approved")}>Liberar</button>
+                  <button type="button" disabled={!editable || saving} onClick={() => reviewInputLot(lot.id, "rejected")}>Rechazar</button>
+                </div>
+              ) : null}
+            </article>
+          )) : <p className="empty-history">Registra una compra para crear saldo de materia prima.</p>}
+        </section>
+      </div>
 
       <div className="mill-top-grid">
         <section className="settings-panel mill-inputs">
@@ -326,7 +453,7 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
               <button className="save-button" type="button" disabled={!editable || saving} onClick={produceBatch}>Registrar producción</button>
             </>
           ) : (
-            <p className="formula-alert">Aprueba al menos una fórmula con precios completos para producir.</p>
+            <p className="formula-alert">Aprueba al menos una fórmula con precios completos para producir. Cada molienda descontara insumos aprobados por lote.</p>
           )}
         </section>
 

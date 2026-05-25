@@ -91,6 +91,8 @@ flowchart TB
 - Ordenes de produccion, consumo real, rendimiento y costo por kg.
 - Saldo de alimento por lote, descontado al registrar consumo de pollos o
   ponedoras con costo heredado de la formula aprobada.
+- Compras de insumos recibidas por lote, proveedor, comprobante y calidad;
+  la molienda descuenta stock liberado y obtiene su costo real.
 - Servicio a terceros separado de consumo interno.
 - Publicacion comercial solo de formulas aprobadas y trazables.
 
@@ -147,6 +149,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   internos costeados por kilogramo para crianza y ponedoras.
 - Enlace Molino-Produccion que descuenta alimento por lote y lleva su costo
   real al tablero productivo.
+- Auditoria operativa con bitacora y hallazgos automáticos de costo o
+  trazabilidad incompleta.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

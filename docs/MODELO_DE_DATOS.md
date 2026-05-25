@@ -98,11 +98,15 @@ incluye la inversion de ponedoras y se estabiliza al avanzar el ciclo.
 | --- | --- |
 | `feed_inputs` | id, name, unit, active |
 | `feed_input_prices` | feed_input_id, supplier_id, effective_date, cost_per_unit |
+| `suppliers` | id, name, tax_id, category, status |
+| `feed_input_lots` | code, input_id, supplier_id, location_id, received_kg, available_kg, unit_cost, document_reference, quality_status |
+| `feed_input_lot_movements` | lot_id, movement_type, quantity_delta, mill_batch_id, actor_id |
 | `feed_formulas` | id, name, species, stage, status |
 | `feed_formula_versions` | formula_id, version, approval_status, target_kg, validated_at |
 | `feed_formula_items` | formula_version_id, input_id, percentage, quantity_kg |
 | `mill_orders` | id, type, customer_id, formula_version_id, requested_kg, status |
 | `mill_batches` | version_id, code, usage, produced_kg, available_kg, total_cost, cost_per_kg, produced_at |
+| `mill_batch_input_consumptions` | mill_batch_id, input_lot_id, quantity_kg, unit_cost, amount |
 
 Reglas obligatorias:
 
@@ -110,6 +114,8 @@ Reglas obligatorias:
 - Un ingrediente activo debe tener costo vigente para costear el lote.
 - Un consumo interno no puede exceder `available_kg` ni usar un lote destinado
   a otra linea productiva.
+- Una molienda solo consume insumos con `quality_status = approved` y el
+  costo del lote molido se calcula desde esas recepciones reales por FIFO.
 - Alimento para venta debe conservar version, lote, insumos y responsable.
 
 Implementacion inicial: las formulas de `Alimentacion Actual.xlsx` se cargan
@@ -150,4 +156,5 @@ flowchart LR
 5. Produccion avicola, huevos y consumo de alimento.
 6. Molino y versionado de formulas.
 7. Descuento trazable del alimento molido en crianza y ponedoras.
-8. Circularidad e indicadores.
+8. Recepcion, calidad y consumo FIFO de insumos; tablero de auditoria.
+9. Circularidad e indicadores.

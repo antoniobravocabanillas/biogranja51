@@ -89,8 +89,14 @@ export const managementModules = [
   {
     code: "PRO",
     name: "Abastecimiento",
-    description: "Proveedores de res y cerdo, compras, recepcion y calidad.",
-    status: "Sprint 2",
+    description: "Proveedores, recepcion de insumos y liberacion de calidad.",
+    status: "En desarrollo",
+  },
+  {
+    code: "AUD",
+    name: "Auditoria",
+    description: "Excepciones, evidencia operativa, costos y trazabilidad.",
+    status: "Operativo",
   },
   {
     code: "CIR",

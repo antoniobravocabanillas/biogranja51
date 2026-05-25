@@ -18,6 +18,8 @@ import type {
   InventoryWorkspace,
   EggCollection,
   EggWorkspace,
+  FeedInputLot,
+  FeedInputQualityStatus,
   FeedFormula,
   FeedFormulaStatus,
   FeedInput,
@@ -33,6 +35,8 @@ import type {
   Product,
   PoultryWorkspace,
   StaffRole,
+  AuditIssue,
+  AuditWorkspace,
 } from "@/domain/commerce";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
@@ -260,6 +264,23 @@ type FeedInputRow = {
   }>;
 };
 
+type FeedInputLotRow = {
+  id: string;
+  code: string;
+  input_id: string;
+  received_kg: number | string;
+  available_kg: number | string;
+  unit_cost: number | string;
+  received_at: string;
+  document_reference: string;
+  quality_status: FeedInputQualityStatus;
+  quality_notes: string | null;
+  notes: string | null;
+  feed_inputs: { name: string } | null;
+  suppliers: { name: string; tax_id: string | null } | null;
+  locations: { name: string } | null;
+};
+
 type FeedFormulaItemRow = {
   id: string;
   input_id: string;
@@ -303,6 +324,13 @@ type MillBatchRow = {
     version: number | string;
     feed_formulas: { name: string } | null;
   } | null;
+};
+
+type AuditEventRow = {
+  id: string;
+  action: string;
+  entity: string;
+  created_at: string;
 };
 
 type AssignmentOrderRow = {
@@ -593,6 +621,26 @@ function feedInputFromRow(row: FeedInputRow): FeedInput {
     latestCostPerKg: price ? Number(price.cost_per_kg) : null,
     latestCostAt: price?.effective_at ?? null,
     supplierName: price?.supplier_name ?? null,
+  };
+}
+
+function feedInputLotFromRow(row: FeedInputLotRow): FeedInputLot {
+  return {
+    id: row.id,
+    code: row.code,
+    inputId: row.input_id,
+    inputName: row.feed_inputs?.name ?? "Insumo",
+    supplierName: row.suppliers?.name ?? "Proveedor no identificado",
+    supplierTaxId: row.suppliers?.tax_id ?? null,
+    locationName: row.locations?.name ?? "Molino",
+    receivedKg: Number(row.received_kg),
+    availableKg: Number(row.available_kg),
+    unitCost: Number(row.unit_cost),
+    receivedAt: row.received_at,
+    documentReference: row.document_reference,
+    qualityStatus: row.quality_status,
+    qualityNotes: row.quality_notes ?? "",
+    notes: row.notes ?? "",
   };
 }
 
@@ -991,11 +1039,15 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
   }
 
   const supabase = await createSupabaseClient();
+  const { error: updateError } = await supabase.rpc("transition_order_status", {
+    p_order_id: id,
+    p_status: updates.status!,
+  });
+  assertDatabaseResult(updateError, "No se pudo actualizar el pedido");
   const { data, error } = await supabase
     .from("orders")
-    .update({ status: updates.status })
-    .eq("id", id)
     .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
+    .eq("id", id)
     .single();
   assertDatabaseResult(error, "No se pudo actualizar el pedido");
   return orderFromRow(data as unknown as OrderRow);
@@ -1461,10 +1513,14 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
   if (!isSupabaseConfigured()) {
     return {
       inputs: [],
+      inputLots: [],
       formulas: [],
       batches: [],
       activeInputCount: 0,
       approvedFormulaCount: 0,
+      approvedInputKg: 0,
+      pendingQualityLotCount: 0,
+      inputStockValue: 0,
       producedKg: 0,
       availableKg: 0,
       averageCostPerKg: null,
@@ -1472,11 +1528,15 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
   }
 
   const supabase = await createSupabaseClient();
-  const [inputsResult, formulasResult, batchesResult] = await Promise.all([
+  const [inputsResult, inputLotsResult, formulasResult, batchesResult] = await Promise.all([
     supabase
       .from("feed_inputs")
       .select("*, feed_input_prices(*)")
       .order("name", { ascending: true }),
+    supabase
+      .from("feed_input_lots")
+      .select("*, feed_inputs(name), suppliers(name, tax_id), locations(name)")
+      .order("received_at", { ascending: false }),
     supabase
       .from("feed_formulas")
       .select("*, feed_formula_versions(*, feed_formula_items(*, feed_inputs(*, feed_input_prices(*))))")
@@ -1487,9 +1547,11 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
       .order("produced_at", { ascending: false }),
   ]);
   assertDatabaseResult(inputsResult.error, "No se pudo leer los insumos del molino");
+  assertDatabaseResult(inputLotsResult.error, "No se pudo leer existencias de insumos");
   assertDatabaseResult(formulasResult.error, "No se pudo leer las fórmulas");
   assertDatabaseResult(batchesResult.error, "No se pudo leer la producción del molino");
   const inputs = (inputsResult.data as unknown as FeedInputRow[]).map(feedInputFromRow);
+  const inputLots = (inputLotsResult.data as unknown as FeedInputLotRow[]).map(feedInputLotFromRow);
   const formulas = (formulasResult.data as unknown as FeedFormulaRow[]).map(feedFormulaFromRow);
   const batches = (batchesResult.data as unknown as MillBatchRow[]).map(millBatchFromRow);
   const totalCost = batches.reduce((sum, batch) => sum + batch.totalCost, 0);
@@ -1499,6 +1561,7 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
     .reduce((sum, batch) => sum + batch.availableKg, 0);
   return {
     inputs,
+    inputLots,
     formulas,
     batches,
     activeInputCount: inputs.filter((input) => input.active).length,
@@ -1506,10 +1569,65 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
       (sum, formula) => sum + formula.versions.filter((version) => version.status === "approved").length,
       0,
     ),
+    approvedInputKg: inputLots
+      .filter((lot) => lot.qualityStatus === "approved")
+      .reduce((sum, lot) => sum + lot.availableKg, 0),
+    pendingQualityLotCount: inputLots.filter((lot) => lot.qualityStatus === "pending").length,
+    inputStockValue: inputLots.reduce((sum, lot) => sum + lot.availableKg * lot.unitCost, 0),
     producedKg,
     availableKg,
     averageCostPerKg: producedKg ? totalCost / producedKg : null,
   };
+}
+
+export async function receiveFeedInputLot(payload: {
+  inputId: string;
+  locationId: string;
+  supplierName: string;
+  supplierTaxId: string | null;
+  quantityKg: number;
+  unitCost: number;
+  receivedAt: string;
+  documentReference: string;
+  qualityStatus: FeedInputQualityStatus;
+  qualityNotes: string;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La recepcion de insumos requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("receive_feed_input_lot", {
+    p_input_id: payload.inputId,
+    p_location_id: payload.locationId,
+    p_supplier_name: payload.supplierName,
+    p_supplier_tax_id: payload.supplierTaxId,
+    p_quantity_kg: payload.quantityKg,
+    p_unit_cost: payload.unitCost,
+    p_received_at: payload.receivedAt,
+    p_document_reference: payload.documentReference,
+    p_quality_status: payload.qualityStatus,
+    p_quality_notes: payload.qualityNotes,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo recibir el insumo");
+}
+
+export async function reviewFeedInputLot(payload: {
+  lotId: string;
+  qualityStatus: Exclude<FeedInputQualityStatus, "pending">;
+  qualityNotes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La liberacion de insumos requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("review_feed_input_lot", {
+    p_lot_id: payload.lotId,
+    p_quality_status: payload.qualityStatus,
+    p_quality_notes: payload.qualityNotes,
+  });
+  assertDatabaseResult(error, "No se pudo actualizar el control de calidad");
 }
 
 export async function registerFeedInputPrice(payload: {
@@ -1582,4 +1700,190 @@ export async function createMillBatch(payload: {
     p_notes: payload.notes,
   });
   assertDatabaseResult(error, "No se pudo registrar el lote de alimento");
+}
+
+export async function getAuditWorkspace(): Promise<AuditWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return {
+      issues: [],
+      events: [],
+      criticalCount: 0,
+      warningCount: 0,
+      auditEventCount: 0,
+      traceableInventoryLots: 0,
+      totalInventoryLots: 0,
+      approvedInputKg: 0,
+      producedFeedKg: 0,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const [inventoryResult, inputLotsResult, formulasResult, millResult, birdEventsResult, ordersResult, eventsResult] =
+    await Promise.all([
+      supabase
+        .from("inventory_lots")
+        .select("id, code, origin_type, supplier_name, unit_cost, quantity, status, products(name)"),
+      supabase
+        .from("feed_input_lots")
+        .select("*, feed_inputs(name), suppliers(name, tax_id), locations(name)"),
+      supabase.from("feed_formula_versions").select("id, status"),
+      supabase.from("mill_batches").select("id, code, produced_kg, mill_batch_input_consumptions(id)"),
+      supabase.from("bird_batch_events").select("id, event_type, feed_kg, amount"),
+      supabase
+        .from("orders")
+        .select("id, number, status, order_items(cost_total)")
+        .in("status", ["confirmed", "preparing", "dispatched", "delivered"]),
+      supabase.from("audit_events").select("id, action, entity, created_at").order("created_at", { ascending: false }).limit(30),
+    ]);
+
+  assertDatabaseResult(inventoryResult.error, "No se pudo auditar inventario");
+  assertDatabaseResult(inputLotsResult.error, "No se pudo auditar insumos");
+  assertDatabaseResult(formulasResult.error, "No se pudo auditar formulas");
+  assertDatabaseResult(millResult.error, "No se pudo auditar produccion de alimento");
+  assertDatabaseResult(birdEventsResult.error, "No se pudo auditar alimentacion avicola");
+  assertDatabaseResult(ordersResult.error, "No se pudo auditar pedidos");
+  assertDatabaseResult(eventsResult.error, "No se pudo leer bitacora de auditoria");
+
+  const inventoryLots = (inventoryResult.data ?? []) as unknown as Array<{
+    id: string; code: string; origin_type: Product["originType"]; supplier_name: string | null;
+    unit_cost: number | string | null; quantity: number | string; status: InventoryLot["status"];
+    products: { name: string } | null;
+  }>;
+  const inputLots = (inputLotsResult.data as unknown as FeedInputLotRow[]).map(feedInputLotFromRow);
+  const formulas = (formulasResult.data ?? []) as Array<{ id: string; status: FeedFormulaStatus }>;
+  const millBatches = (millResult.data ?? []) as unknown as Array<{
+    id: string;
+    code: string;
+    produced_kg: number | string;
+    mill_batch_input_consumptions: Array<{ id: string }>;
+  }>;
+  const birdFeedEvents = (birdEventsResult.data ?? []) as Array<{
+    id: string; event_type: string; feed_kg: number | string | null; amount: number | string | null;
+  }>;
+  const controlledOrders = (ordersResult.data ?? []) as Array<{
+    id: string; number: string; status: Order["status"]; order_items: Array<{ cost_total: number | string | null }>;
+  }>;
+  const issues: AuditIssue[] = [];
+
+  for (const lot of inventoryLots) {
+    if (Number(lot.quantity) > 0 && lot.unit_cost === null) {
+      issues.push({
+        id: `inventory-cost-${lot.id}`,
+        severity: "critical" as const,
+        area: "Inventario",
+        title: `${lot.code} sin costo unitario`,
+        detail: `El lote ${lot.products?.name ?? "comercial"} no permite calcular margen real.`,
+        href: "/gestion/inventario",
+      });
+    }
+    if (lot.status === "quarantine") {
+      issues.push({
+        id: `inventory-quality-${lot.id}`,
+        severity: "warning" as const,
+        area: "Calidad",
+        title: `${lot.code} en cuarentena`,
+        detail: "Requiere liberacion o descarte documentado antes de venta.",
+        href: "/gestion/inventario",
+      });
+    }
+  }
+
+  const supplierInventoryLots = inventoryLots.filter((lot) => lot.origin_type === "selected_supplier");
+  if (supplierInventoryLots.length > 0) {
+    issues.push({
+      id: "supplier-product-evidence",
+      severity: "warning",
+      area: "Calidad",
+      title: `${supplierInventoryLots.length} lotes comprados requieren expediente de frio`,
+      detail: "Res y cerdo ya identifican proveedor, pero falta registrar temperatura, documento y liberacion sanitaria estructurada.",
+      href: "/gestion/inventario",
+    });
+  }
+
+  for (const lot of inputLots) {
+    if (lot.qualityStatus !== "approved" && lot.availableKg > 0) {
+      issues.push({
+        id: `input-quality-${lot.id}`,
+        severity: lot.qualityStatus === "rejected" ? "critical" as const : "warning" as const,
+        area: "Molino",
+        title: `${lot.code}: ${lot.qualityStatus === "rejected" ? "insumo rechazado" : "calidad pendiente"}`,
+        detail: `${lot.inputName} de ${lot.supplierName}; no puede entrar a formula productiva.`,
+        href: "/gestion/molino",
+      });
+    }
+  }
+
+  const unvaluedFeed = birdFeedEvents.filter(
+    (event) => event.event_type === "feed_consumption" && event.feed_kg !== null && event.amount === null,
+  );
+  if (unvaluedFeed.length > 0) {
+    issues.push({
+      id: "broiler-feed-cost",
+      severity: "critical" as const,
+      area: "Crianza",
+      title: `${unvaluedFeed.length} consumos de alimento sin valorizar`,
+      detail: "El costo productivo del pollo no esta completo para auditoria.",
+      href: "/gestion/crianza",
+    });
+  }
+
+  const untracedMillBatches = millBatches.filter(
+    (batch) => (batch.mill_batch_input_consumptions ?? []).length === 0,
+  );
+  if (untracedMillBatches.length > 0) {
+    issues.push({
+      id: "mill-input-history",
+      severity: "warning",
+      area: "Molino",
+      title: `${untracedMillBatches.length} lotes molidos sin insumos vinculados`,
+      detail: "Los lotes producidos antes del control FIFO conservan costo, pero no expediente completo de materia prima.",
+      href: "/gestion/molino",
+    });
+  }
+
+  const costlessOrders = controlledOrders.filter((order) =>
+    order.order_items.some((item) => item.cost_total === null),
+  );
+  if (costlessOrders.length > 0) {
+    issues.push({
+      id: "order-margin",
+      severity: "critical" as const,
+      area: "Ventas",
+      title: `${costlessOrders.length} pedidos operativos sin costo completo`,
+      detail: "No se puede certificar margen hasta asignar lotes valorizados.",
+      href: "/gestion/pedidos",
+    });
+  }
+
+  if (!formulas.some((formula) => formula.status === "approved")) {
+    issues.push({
+      id: "formula-approved",
+      severity: "warning" as const,
+      area: "Molino",
+      title: "No existe formula aprobada",
+      detail: "Corrige y aprueba una version antes de producir alimento interno.",
+      href: "/gestion/molino",
+    });
+  }
+
+  return {
+    issues,
+    events: ((eventsResult.data ?? []) as AuditEventRow[]).map((event) => ({
+      id: event.id,
+      action: event.action,
+      entity: event.entity,
+      createdAt: event.created_at,
+    })),
+    criticalCount: issues.filter((issue) => issue.severity === "critical").length,
+    warningCount: issues.filter((issue) => issue.severity === "warning").length,
+    auditEventCount: (eventsResult.data ?? []).length,
+    traceableInventoryLots: inventoryLots.filter(
+      (lot) => lot.unit_cost !== null && (lot.origin_type !== "selected_supplier" || Boolean(lot.supplier_name)),
+    ).length,
+    totalInventoryLots: inventoryLots.length,
+    approvedInputKg: inputLots
+      .filter((lot) => lot.qualityStatus === "approved")
+      .reduce((sum, lot) => sum + lot.availableKg, 0),
+    producedFeedKg: millBatches.reduce((sum, batch) => sum + Number(batch.produced_kg), 0),
+  };
 }

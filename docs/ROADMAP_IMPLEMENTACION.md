@@ -80,6 +80,13 @@ Objetivo: capturar la ventaja productiva propia.
 - Formula versionada con validaciones de porcentaje y costo. `Implementado en desarrollo`.
 - Ordenes internas de alimento y costo por lote. `Implementado en desarrollo`.
 - Comparacion alimento consumido vs. peso producido. `Implementado en desarrollo`.
+- Recepcion de insumos con proveedor, documento, costo y liberacion de
+  calidad. `Implementado en desarrollo`.
+- Descuento FIFO de insumos reales al producir alimento y costo real de
+  molienda. `Implementado en desarrollo`.
+- Tablero de auditoria operativa con alertas de costo, calidad y
+  trazabilidad. `Implementado en desarrollo`.
+- Bitacora auditable para cambios de estado de pedidos. `Implementado en desarrollo`.
 
 Definicion operativa de huevos:
 
@@ -104,6 +111,25 @@ Definicion operativa del molino:
 - El sistema guarda precios historicos por insumo y recalcula costo por kg.
 - Solo una version aprobada puede generar un lote molido con costo trazable
   para pollos, ponedoras o futuro servicio a terceros.
+- La produccion solo consume lotes de insumo liberados por calidad, por orden
+  de recepcion, dejando el movimiento y costo vinculados al lote molido.
+
+## Fase De Auditoria Integral
+
+Objetivo: poder sustentar origen, costo y movimiento de cada producto.
+
+- Tablero de excepciones y bitacora operativa. `Implementado en desarrollo`.
+- Compras de materias primas del molino con comprobante y calidad.
+  `Implementado en desarrollo`.
+- Proveedores, documentos y controles de calidad/cadena de frio para res,
+  cerdo y producto comercial comprado.
+- Margen real por pedido, producto y lote vendido.
+- Evidencias adjuntas, responsables y exportacion del expediente por lote.
+- Conciliacion de pagos y comprobantes de venta.
+
+Criterio de salida: una auditoria puede reconstruir proveedor o produccion,
+costo, calidad, inventario, pedido, pago y entrega sin depender de registros
+externos informales.
 
 ## Fase 2 - Recompra Y Expansion
 

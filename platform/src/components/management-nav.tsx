@@ -10,6 +10,7 @@ export function ManagementNav() {
       <Link href="/gestion/huevos">Huevos y ponedoras</Link>
       <Link href="/gestion/molino">Molino</Link>
       <Link href="/gestion/inventario">Inventario comercial</Link>
+      <Link href="/gestion/auditoria">Auditoria</Link>
       <Link href="/gestion/productos">Productos y precios</Link>
       <Link href="/gestion/configuracion">Configuración operativa</Link>
       <form action="/api/auth/logout" method="post">

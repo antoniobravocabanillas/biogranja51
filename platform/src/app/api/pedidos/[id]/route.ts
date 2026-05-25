@@ -36,6 +36,7 @@ export async function PATCH(
     const updated = await updateOrder(id, { status: body.status });
     revalidatePath("/gestion");
     revalidatePath("/gestion/pedidos");
+    revalidatePath("/gestion/auditoria");
     return Response.json(updated);
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo actualizar el pedido.";

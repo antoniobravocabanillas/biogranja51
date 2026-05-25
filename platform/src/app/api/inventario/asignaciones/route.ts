@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     revalidatePath("/gestion");
     revalidatePath("/gestion/pedidos");
     revalidatePath("/gestion/inventario");
+    revalidatePath("/gestion/auditoria");
     return Response.json({ ok: true }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo asignar el lote.";

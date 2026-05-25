@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       notes: body.notes?.trim() || "",
     });
     revalidatePath("/gestion/molino");
+    revalidatePath("/gestion/auditoria");
     return Response.json({ ok: true }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo producir el alimento.";
