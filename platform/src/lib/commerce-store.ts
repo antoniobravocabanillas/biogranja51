@@ -18,6 +18,12 @@ import type {
   InventoryWorkspace,
   EggCollection,
   EggWorkspace,
+  FeedFormula,
+  FeedFormulaStatus,
+  FeedInput,
+  MillBatch,
+  MillBatchUsage,
+  MillWorkspace,
   LayerEventType,
   LayerFlock,
   LayerFlockEvent,
@@ -230,6 +236,62 @@ type LayerFlockRow = {
   locations: { name: string } | null;
   layer_flock_events: LayerFlockEventRow[];
   egg_collections: EggCollectionRow[];
+};
+
+type FeedInputRow = {
+  id: string;
+  name: string;
+  unit: "kg";
+  active: boolean;
+  feed_input_prices: Array<{
+    cost_per_kg: number | string;
+    effective_at: string;
+    supplier_name: string | null;
+  }>;
+};
+
+type FeedFormulaItemRow = {
+  id: string;
+  input_id: string;
+  quantity_kg: number | string;
+  percentage: number | string;
+  feed_inputs: FeedInputRow | null;
+};
+
+type FeedFormulaVersionRow = {
+  id: string;
+  version: number | string;
+  status: FeedFormulaStatus;
+  target_kg: number | string;
+  notes: string | null;
+  created_at: string;
+  feed_formula_items: FeedFormulaItemRow[];
+};
+
+type FeedFormulaRow = {
+  id: string;
+  code: string;
+  name: string;
+  species: string;
+  stage: string;
+  active: boolean;
+  feed_formula_versions: FeedFormulaVersionRow[];
+};
+
+type MillBatchRow = {
+  id: string;
+  code: string;
+  usage: MillBatchUsage;
+  produced_kg: number | string;
+  total_cost: number | string;
+  cost_per_kg: number | string;
+  produced_at: string;
+  notes: string | null;
+  locations: { name: string } | null;
+  feed_formula_versions: {
+    version: number | string;
+    feed_formulas: { name: string } | null;
+  } | null;
 };
 
 type AssignmentOrderRow = {
@@ -499,6 +561,71 @@ function layerFlockFromRow(row: LayerFlockRow): LayerFlock {
     events,
     collections,
     createdAt: row.created_at,
+  };
+}
+
+function feedInputFromRow(row: FeedInputRow): FeedInput {
+  const price = [...(row.feed_input_prices ?? [])].sort((a, b) =>
+    b.effective_at.localeCompare(a.effective_at),
+  )[0];
+  return {
+    id: row.id,
+    name: row.name,
+    unit: row.unit,
+    active: row.active,
+    latestCostPerKg: price ? Number(price.cost_per_kg) : null,
+    latestCostAt: price?.effective_at ?? null,
+    supplierName: price?.supplier_name ?? null,
+  };
+}
+
+function feedFormulaFromRow(row: FeedFormulaRow): FeedFormula {
+  return {
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    species: row.species,
+    stage: row.stage,
+    active: row.active,
+    versions: (row.feed_formula_versions ?? [])
+      .map((version) => ({
+        id: version.id,
+        version: Number(version.version),
+        status: version.status,
+        targetKg: Number(version.target_kg),
+        notes: version.notes ?? "",
+        createdAt: version.created_at,
+        items: (version.feed_formula_items ?? []).map((item) => {
+          const price = item.feed_inputs ? feedInputFromRow(item.feed_inputs).latestCostPerKg : null;
+          const quantityKg = Number(item.quantity_kg);
+          return {
+            id: item.id,
+            inputId: item.input_id,
+            inputName: item.feed_inputs?.name ?? "Insumo",
+            quantityKg,
+            percentage: Number(item.percentage),
+            costPerKg: price,
+            subtotal: price === null ? null : quantityKg * price,
+          };
+        }),
+      }))
+      .sort((a, b) => b.version - a.version),
+  };
+}
+
+function millBatchFromRow(row: MillBatchRow): MillBatch {
+  return {
+    id: row.id,
+    code: row.code,
+    formulaName: row.feed_formula_versions?.feed_formulas?.name ?? "Fórmula",
+    formulaVersion: Number(row.feed_formula_versions?.version ?? 0),
+    locationName: row.locations?.name ?? "Molino",
+    usage: row.usage,
+    producedKg: Number(row.produced_kg),
+    totalCost: Number(row.total_cost),
+    costPerKg: Number(row.cost_per_kg),
+    producedAt: row.produced_at,
+    notes: row.notes ?? "",
   };
 }
 
@@ -1306,4 +1433,126 @@ export async function packEggMaples(payload: {
     p_notes: payload.notes,
   });
   assertDatabaseResult(error, "No se pudo enviar los maples al inventario");
+}
+
+export async function getMillWorkspace(): Promise<MillWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return {
+      inputs: [],
+      formulas: [],
+      batches: [],
+      activeInputCount: 0,
+      approvedFormulaCount: 0,
+      producedKg: 0,
+      averageCostPerKg: null,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const [inputsResult, formulasResult, batchesResult] = await Promise.all([
+    supabase
+      .from("feed_inputs")
+      .select("*, feed_input_prices(*)")
+      .order("name", { ascending: true }),
+    supabase
+      .from("feed_formulas")
+      .select("*, feed_formula_versions(*, feed_formula_items(*, feed_inputs(*, feed_input_prices(*))))")
+      .order("name", { ascending: true }),
+    supabase
+      .from("mill_batches")
+      .select("*, locations(name), feed_formula_versions(version, feed_formulas(name))")
+      .order("produced_at", { ascending: false }),
+  ]);
+  assertDatabaseResult(inputsResult.error, "No se pudo leer los insumos del molino");
+  assertDatabaseResult(formulasResult.error, "No se pudo leer las fórmulas");
+  assertDatabaseResult(batchesResult.error, "No se pudo leer la producción del molino");
+  const inputs = (inputsResult.data as unknown as FeedInputRow[]).map(feedInputFromRow);
+  const formulas = (formulasResult.data as unknown as FeedFormulaRow[]).map(feedFormulaFromRow);
+  const batches = (batchesResult.data as unknown as MillBatchRow[]).map(millBatchFromRow);
+  const totalCost = batches.reduce((sum, batch) => sum + batch.totalCost, 0);
+  const producedKg = batches.reduce((sum, batch) => sum + batch.producedKg, 0);
+  return {
+    inputs,
+    formulas,
+    batches,
+    activeInputCount: inputs.filter((input) => input.active).length,
+    approvedFormulaCount: formulas.reduce(
+      (sum, formula) => sum + formula.versions.filter((version) => version.status === "approved").length,
+      0,
+    ),
+    producedKg,
+    averageCostPerKg: producedKg ? totalCost / producedKg : null,
+  };
+}
+
+export async function registerFeedInputPrice(payload: {
+  inputId: string;
+  costPerKg: number;
+  effectiveAt: string;
+  supplierName: string | null;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El módulo Molino requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("register_feed_input_price", {
+    p_input_id: payload.inputId,
+    p_cost_per_kg: payload.costPerKg,
+    p_effective_at: payload.effectiveAt,
+    p_supplier_name: payload.supplierName,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el precio del insumo");
+}
+
+export async function createFeedFormulaVersion(payload: {
+  formulaId: string;
+  targetKg: number;
+  notes: string;
+  items: Array<{ inputId: string; quantityKg: number }>;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El módulo Molino requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("create_feed_formula_version", {
+    p_formula_id: payload.formulaId,
+    p_target_kg: payload.targetKg,
+    p_notes: payload.notes,
+    p_items: payload.items,
+  });
+  assertDatabaseResult(error, "No se pudo crear la versión de fórmula");
+}
+
+export async function approveFeedFormulaVersion(versionId: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El módulo Molino requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("approve_feed_formula_version", {
+    p_version_id: versionId,
+  });
+  assertDatabaseResult(error, "No se pudo aprobar la fórmula");
+}
+
+export async function createMillBatch(payload: {
+  versionId: string;
+  locationId: string;
+  usage: MillBatchUsage;
+  producedKg: number;
+  producedAt: string;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El módulo Molino requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("create_mill_batch", {
+    p_version_id: payload.versionId,
+    p_location_id: payload.locationId,
+    p_usage: payload.usage,
+    p_produced_kg: payload.producedKg,
+    p_produced_at: payload.producedAt,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el lote de alimento");
 }

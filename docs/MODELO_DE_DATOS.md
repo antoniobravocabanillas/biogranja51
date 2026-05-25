@@ -108,6 +108,11 @@ Reglas obligatorias:
 - Un ingrediente activo debe tener costo vigente para costear el lote.
 - Alimento para venta debe conservar version, lote, insumos y responsable.
 
+Implementacion inicial: las formulas de `Alimentacion Actual.xlsx` se cargan
+como versiones borrador para lotes objetivo de 40 kg. Se registra la
+diferencia contra el objetivo y se bloquea la aprobacion hasta alcanzar el
+total esperado y contar con costo vigente para cada insumo utilizado.
+
 ### Circularidad
 
 | Entidad | Campos esenciales |

@@ -74,9 +74,9 @@ Objetivo: capturar la ventaja productiva propia.
 - Lotes de pollitos de engorde, ingreso y salida faenada. `Implementado en desarrollo`.
 - Consumos, mortalidad, pesos y costos del pollo de engorde. `Implementado en desarrollo`.
 - Lotes de ponedoras, postura, cosecha y empaque trazable de huevos. `Implementado en desarrollo`.
-- Catalogo de insumos del molino y precios historicos.
-- Formula versionada con validaciones de porcentaje y costo.
-- Ordenes internas de alimento y costo por lote.
+- Catalogo de insumos del molino y precios historicos. `Implementado en desarrollo`.
+- Formula versionada con validaciones de porcentaje y costo. `Implementado en desarrollo`.
+- Ordenes internas de alimento y costo por lote. `Implementado en desarrollo`.
 - Comparacion alimento consumido vs. peso producido.
 
 Definicion operativa de huevos:
@@ -91,6 +91,17 @@ Definicion operativa de huevos:
   de aves y disminuye a medida que aumenta la postura acumulada.
 
 Criterio de salida: se conoce el costo real de producir pollo y huevos.
+
+Definicion operativa del molino:
+
+- `Alimentacion Actual.xlsx` se importa como referencia inicial para lotes de
+  40 kg de Inicio, Crecimiento, Engorde y Mantenimiento.
+- Las formulas ingresan como borradores: Crecimiento, Engorde y Mantenimiento
+  exceden actualmente el 100% del lote, por lo que deben corregirse antes de
+  aprobacion productiva.
+- El sistema guarda precios historicos por insumo y recalcula costo por kg.
+- Solo una version aprobada puede generar un lote molido con costo trazable
+  para pollos, ponedoras o futuro servicio a terceros.
 
 ## Fase 2 - Recompra Y Expansion
 

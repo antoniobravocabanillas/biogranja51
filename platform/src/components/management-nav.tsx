@@ -8,6 +8,7 @@ export function ManagementNav() {
       <Link href="/gestion/clientes">Clientes</Link>
       <Link href="/gestion/crianza">Crianza avícola</Link>
       <Link href="/gestion/huevos">Huevos y ponedoras</Link>
+      <Link href="/gestion/molino">Molino</Link>
       <Link href="/gestion/inventario">Inventario comercial</Link>
       <Link href="/gestion/productos">Productos y precios</Link>
       <Link href="/gestion/configuracion">Configuración operativa</Link>

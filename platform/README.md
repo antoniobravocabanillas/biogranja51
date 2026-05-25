@@ -21,6 +21,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
   hacia inventario.
 - Huevos en `/gestion/huevos` con lotes de ponedoras, recoleccion, descarte,
   costos y empaque de maples trazables hacia inventario.
+- Molino en `/gestion/molino` con insumos valorizados, formulas versionadas y
+  lotes de alimento costeados por kilogramo.
 - Inventario comercial en `/gestion/inventario` con productos listos para
   venta, stock valorizado, mermas y reserva trazable para pedidos.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.

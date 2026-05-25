@@ -36,6 +36,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 5. `platform/supabase/migrations/202605250003_poultry_rearing_and_commercial_handoff.sql`
 6. `platform/supabase/migrations/202605250004_poultry_metrics_and_cost_tracking.sql`
 7. `platform/supabase/migrations/202605250005_layer_flocks_and_egg_inventory.sql`
+8. `platform/supabase/migrations/202605250006_mill_formulas_and_feed_batches.sql`
 
 La segunda migracion agrega:
 
@@ -75,6 +76,13 @@ La septima migracion agrega produccion de huevos:
 - lotes continuos de ponedoras y sus costos productivos;
 - recolecciones diarias con descarte y saldo de huevos aptos;
 - empaque de maples de 30 unidades que genera inventario comercial trazable.
+
+La octava migracion agrega molino y formulacion:
+
+- insumos con historial de precio por kg;
+- formulas de alimento versionadas e importacion inicial de `Alimentacion Actual.xlsx`;
+- aprobacion bloqueada si el lote no totaliza el objetivo o faltan precios;
+- lotes molidos internos con costo trazable por kg.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
@@ -182,6 +190,7 @@ desde Netlify.
 - `/gestion/inventario` permite recibir lotes, registrar mermas y asignar stock a pedidos.
 - `/gestion/crianza` registra pollitos vivos, grafica su evolucion, calcula costos y genera inventario solo al registrar faena.
 - `/gestion/huevos` controla postura, descarte y genera inventario solo al empacar maples de huevos propios.
+- `/gestion/molino` valida formulas, actualiza precios y registra lotes internos de alimento.
 
 ## Fuentes Oficiales
 

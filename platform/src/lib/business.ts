@@ -84,7 +84,7 @@ export const managementModules = [
     code: "MOL",
     name: "Molino",
     description: "Fórmulas, insumos, costos por kg y órdenes de molienda.",
-    status: "Sprint 3",
+    status: "Operativo",
   },
   {
     code: "PRO",

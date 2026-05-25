@@ -35,6 +35,8 @@ export type PoultryExpenseCategory =
   | "other";
 export type LayerFlockStatus = "active" | "paused" | "closed";
 export type LayerEventType = "mortality" | "feed_consumption" | "expense";
+export type FeedFormulaStatus = "draft" | "approved" | "archived";
+export type MillBatchUsage = "internal_broiler" | "internal_layers" | "external_service";
 export type BirdBatchEventType =
   | "mortality"
   | "weight_sample"
@@ -361,6 +363,70 @@ export type EggWorkspace = {
   packedMapleCount: number;
 };
 
+export type FeedInput = {
+  id: string;
+  name: string;
+  unit: "kg";
+  active: boolean;
+  latestCostPerKg: number | null;
+  latestCostAt: string | null;
+  supplierName: string | null;
+};
+
+export type FeedFormulaItem = {
+  id: string;
+  inputId: string;
+  inputName: string;
+  quantityKg: number;
+  percentage: number;
+  costPerKg: number | null;
+  subtotal: number | null;
+};
+
+export type FeedFormulaVersion = {
+  id: string;
+  version: number;
+  status: FeedFormulaStatus;
+  targetKg: number;
+  notes: string;
+  createdAt: string;
+  items: FeedFormulaItem[];
+};
+
+export type FeedFormula = {
+  id: string;
+  code: string;
+  name: string;
+  species: string;
+  stage: string;
+  active: boolean;
+  versions: FeedFormulaVersion[];
+};
+
+export type MillBatch = {
+  id: string;
+  code: string;
+  formulaName: string;
+  formulaVersion: number;
+  locationName: string;
+  usage: MillBatchUsage;
+  producedKg: number;
+  totalCost: number;
+  costPerKg: number;
+  producedAt: string;
+  notes: string;
+};
+
+export type MillWorkspace = {
+  inputs: FeedInput[];
+  formulas: FeedFormula[];
+  batches: MillBatch[];
+  activeInputCount: number;
+  approvedFormulaCount: number;
+  producedKg: number;
+  averageCostPerKg: number | null;
+};
+
 export type CommerceState = {
   products: Product[];
   deliveryZones: DeliveryZone[];
@@ -454,6 +520,18 @@ export const layerEventLabels: Record<LayerEventType, string> = {
   mortality: "Mortalidad",
   feed_consumption: "Alimento consumido",
   expense: "Costo operativo",
+};
+
+export const feedFormulaStatusLabels: Record<FeedFormulaStatus, string> = {
+  draft: "Borrador",
+  approved: "Aprobada",
+  archived: "Archivada",
+};
+
+export const millBatchUsageLabels: Record<MillBatchUsage, string> = {
+  internal_broiler: "Pollo de engorde",
+  internal_layers: "Ponedoras",
+  external_service: "Servicio a terceros",
 };
 
 export function formatPrice(product: Product): string {

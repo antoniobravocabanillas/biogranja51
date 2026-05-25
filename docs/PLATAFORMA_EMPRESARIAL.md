@@ -141,6 +141,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   alimento, y salida faenada que alimenta inventario comercial.
 - Produccion de huevos con lotes de ponedoras, postura, descarte, costo
   acumulado y empaque de maples trazable hacia inventario.
+- Molino con insumos valorizados, formulas versionadas y lotes de alimento
+  internos costeados por kilogramo para crianza y ponedoras.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y
