@@ -209,6 +209,7 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
         <article><span>Insumos activos</span><strong>{initialWorkspace.activeInputCount}</strong><small>Catálogo del molino</small></article>
         <article><span>Fórmulas aprobadas</span><strong>{initialWorkspace.approvedFormulaCount}</strong><small>Listas para producir</small></article>
         <article><span>Alimento producido</span><strong>{initialWorkspace.producedKg.toFixed(2)} kg</strong><small>Lotes registrados</small></article>
+        <article><span>Saldo disponible</span><strong>{initialWorkspace.availableKg.toFixed(2)} kg</strong><small>Para consumo interno</small></article>
         <article><span>Costo promedio</span><strong>{money(initialWorkspace.averageCostPerKg)}</strong><small>Por kg producido</small></article>
       </div>
 
@@ -336,7 +337,7 @@ export function MillAdmin({ initialWorkspace, locations, editable }: MillAdminPr
             <article key={batch.id}>
               <div><strong>{batch.code}</strong><small>{batch.formulaName} v{batch.formulaVersion} | {dateLabel(batch.producedAt)}</small></div>
               <span>{millBatchUsageLabels[batch.usage]}</span>
-              <b>{batch.producedKg.toFixed(3)} kg | {money(batch.costPerKg)}/kg</b>
+              <b>{batch.availableKg.toFixed(3)} kg disponibles<br />{batch.producedKg.toFixed(3)} kg producidos | {money(batch.costPerKg)}/kg</b>
             </article>
           )) : <p className="empty-history">Todavía no hay lotes de alimento producidos.</p>}
         </section>

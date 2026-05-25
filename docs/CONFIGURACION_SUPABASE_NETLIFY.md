@@ -37,6 +37,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 6. `platform/supabase/migrations/202605250004_poultry_metrics_and_cost_tracking.sql`
 7. `platform/supabase/migrations/202605250005_layer_flocks_and_egg_inventory.sql`
 8. `platform/supabase/migrations/202605250006_mill_formulas_and_feed_batches.sql`
+9. `platform/supabase/migrations/202605250007_feed_lot_consumption_traceability.sql`
 
 La segunda migracion agrega:
 
@@ -83,6 +84,13 @@ La octava migracion agrega molino y formulacion:
 - formulas de alimento versionadas e importacion inicial de `Alimentacion Actual.xlsx`;
 - aprobacion bloqueada si el lote no totaliza el objetivo o faltan precios;
 - lotes molidos internos con costo trazable por kg.
+
+La novena migracion conecta molino con produccion:
+
+- saldo disponible por lote de alimento producido;
+- consumo trazable desde crianza o ponedoras con costo automatico por kg;
+- bloqueo de saldo insuficiente o destino productivo incorrecto;
+- auditoria del descuento de alimento.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.

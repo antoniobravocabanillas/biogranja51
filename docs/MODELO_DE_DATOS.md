@@ -68,9 +68,9 @@ que la empresa confirme y registre su procedencia.
 | --- | --- |
 | `production_units` | id, type, name, capacity, status |
 | `bird_batches` | id, code, breed, received_at, initial_count, current_count, processed_count, stage, unit_id |
-| `bird_batch_events` | batch_id, event_type, event_at, count, avg_weight_grams, feed_kg, feed_unit_cost, amount, expense_category, notes |
+| `bird_batch_events` | batch_id, event_type, event_at, count, avg_weight_grams, feed_kg, feed_unit_cost, amount, expense_category, mill_batch_id, notes |
 | `layer_flocks` | id, code, location_id, started_at, initial_hens, current_hens, available_eggs, packed_maples, cost_per_hen, status |
-| `layer_flock_events` | flock_id, event_type, event_at, count, feed_kg, feed_unit_cost, amount, expense_category, notes |
+| `layer_flock_events` | flock_id, event_type, event_at, count, feed_kg, feed_unit_cost, amount, expense_category, mill_batch_id, notes |
 | `egg_collections` | flock_id, collected_at, collected_eggs, rejected_eggs, notes |
 | `feed_consumption` | batch_id, formula_version_id, quantity_kg, consumed_at |
 | `harvest_batches` | bird_batch_id, lot_id, processed_at, final_weight_kg |
@@ -79,6 +79,8 @@ Los eventos de alimento pueden llevar costo por kg y los eventos de gasto
 clasifican sanidad, cama, energia, mano de obra, transporte u otros costos.
 Los consumos todavia sin costo permanecen visibles como pendientes de
 valorizacion y se pueden valorizar posteriormente desde el tablero del lote.
+Cuando se selecciona alimento producido en Molino, el costo se toma del lote
+y el saldo se descuenta en la misma transaccion.
 
 Indicadores calculables: mortalidad, supervivencia, evolucion de peso,
 consumo por ave, conversion alimenticia referencial, costo acumulado y costo
@@ -100,12 +102,14 @@ incluye la inversion de ponedoras y se estabiliza al avanzar el ciclo.
 | `feed_formula_versions` | formula_id, version, approval_status, target_kg, validated_at |
 | `feed_formula_items` | formula_version_id, input_id, percentage, quantity_kg |
 | `mill_orders` | id, type, customer_id, formula_version_id, requested_kg, status |
-| `mill_batches` | mill_order_id, code, produced_kg, total_cost, produced_at |
+| `mill_batches` | version_id, code, usage, produced_kg, available_kg, total_cost, cost_per_kg, produced_at |
 
 Reglas obligatorias:
 
 - Una version de formula aprobada debe totalizar exactamente `100%`.
 - Un ingrediente activo debe tener costo vigente para costear el lote.
+- Un consumo interno no puede exceder `available_kg` ni usar un lote destinado
+  a otra linea productiva.
 - Alimento para venta debe conservar version, lote, insumos y responsable.
 
 Implementacion inicial: las formulas de `Alimentacion Actual.xlsx` se cargan
@@ -145,4 +149,5 @@ flowchart LR
 4. Proveedores, lotes, inventario y calidad.
 5. Produccion avicola, huevos y consumo de alimento.
 6. Molino y versionado de formulas.
-7. Circularidad e indicadores.
+7. Descuento trazable del alimento molido en crianza y ponedoras.
+8. Circularidad e indicadores.

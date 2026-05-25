@@ -64,6 +64,8 @@ Definicion operativa corregida:
   conversion alimenticia referencial.
 - El costo acumulado integra pollitos, alimento valorizado y gastos de
   sanidad u operacion; el alimento sin precio permanece pendiente de valorizar.
+- El alimento producido en Molino se consume por lote, descontando saldo y
+  heredando automaticamente su costo por kg.
 
 Criterio de salida: cada venta tiene costo y origen identificables.
 
@@ -77,7 +79,7 @@ Objetivo: capturar la ventaja productiva propia.
 - Catalogo de insumos del molino y precios historicos. `Implementado en desarrollo`.
 - Formula versionada con validaciones de porcentaje y costo. `Implementado en desarrollo`.
 - Ordenes internas de alimento y costo por lote. `Implementado en desarrollo`.
-- Comparacion alimento consumido vs. peso producido.
+- Comparacion alimento consumido vs. peso producido. `Implementado en desarrollo`.
 
 Definicion operativa de huevos:
 

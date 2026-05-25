@@ -4,7 +4,7 @@ import { EggsAdmin } from "@/components/eggs-admin";
 import { ManagementNav } from "@/components/management-nav";
 import { SiteHeader } from "@/components/site-header";
 import { managementAccessIsEnabled, writesAreEnabled } from "@/lib/admin-guard";
-import { getCommerceState, getEggWorkspace } from "@/lib/commerce-store";
+import { getCommerceState, getEggWorkspace, getMillWorkspace } from "@/lib/commerce-store";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
@@ -18,9 +18,10 @@ export default async function HuevosPage() {
   if (isSupabaseConfigured() && !(await managementAccessIsEnabled())) {
     redirect("/gestion/login");
   }
-  const [state, eggs, editable] = await Promise.all([
+  const [state, eggs, mill, editable] = await Promise.all([
     getCommerceState(),
     getEggWorkspace(),
+    getMillWorkspace(),
     writesAreEnabled(),
   ]);
 
@@ -49,6 +50,7 @@ export default async function HuevosPage() {
         initialWorkspace={eggs}
         locations={state.locations}
         products={state.products}
+        millBatches={mill.batches.filter((batch) => batch.usage === "internal_layers" && batch.availableKg > 0)}
         editable={editable}
       />
     </main>

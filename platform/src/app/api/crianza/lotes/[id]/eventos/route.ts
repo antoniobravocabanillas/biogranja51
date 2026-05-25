@@ -17,6 +17,7 @@ type EventRequest = {
   feedUnitCost?: number | null;
   amount?: number | null;
   expenseCategory?: PoultryExpenseCategory | null;
+  millBatchId?: string | null;
   stage?: BirdBatchStage | null;
   notes?: string;
 };
@@ -73,6 +74,7 @@ export async function POST(
       feedUnitCost: body.type === "feed_consumption" ? body.feedUnitCost ?? null : null,
       amount: body.type === "expense" ? body.amount! : null,
       expenseCategory: body.type === "expense" ? body.expenseCategory! : null,
+      millBatchId: body.type === "feed_consumption" ? body.millBatchId ?? null : null,
       stage: body.type === "stage_change" ? body.stage! : null,
       notes: body.notes?.trim() || "",
     });

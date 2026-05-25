@@ -8,6 +8,7 @@ import type {
   EggWorkspace,
   LayerEventType,
   LayerFlock,
+  MillBatch,
   PoultryExpenseCategory,
   Product,
 } from "@/domain/commerce";
@@ -22,6 +23,7 @@ type EggsAdminProps = {
   initialWorkspace: EggWorkspace;
   locations: BusinessLocation[];
   products: Product[];
+  millBatches: MillBatch[];
   editable: boolean;
 };
 
@@ -114,7 +116,7 @@ function ProductionBars({ flock }: { flock: LayerFlock }) {
   );
 }
 
-export function EggsAdmin({ initialWorkspace, locations, products, editable }: EggsAdminProps) {
+export function EggsAdmin({ initialWorkspace, locations, products, millBatches, editable }: EggsAdminProps) {
   const router = useRouter();
   const farmLocations = locations.filter((location) => location.type === "farm");
   const commercialLocations = locations.filter((location) => location.type !== "farm");
@@ -150,6 +152,7 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
     count: string;
     feedKg: string;
     feedUnitCost: string;
+    millBatchId: string;
     amount: string;
     expenseCategory: PoultryExpenseCategory;
     notes: string;
@@ -159,6 +162,7 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
     count: "",
     feedKg: "",
     feedUnitCost: "",
+    millBatchId: "",
     amount: "",
     expenseCategory: "health",
     notes: "",
@@ -172,6 +176,7 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
     expiresAt: "",
     notes: "",
   });
+  const selectedFeedBatch = millBatches.find((batch) => batch.id === eventDraft.millBatchId) ?? null;
 
   async function submitFlock(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -238,6 +243,7 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
         count: eventDraft.count ? Number(eventDraft.count) : null,
         feedKg: eventDraft.feedKg ? Number(eventDraft.feedKg) : null,
         feedUnitCost: eventDraft.feedUnitCost ? Number(eventDraft.feedUnitCost) : null,
+        millBatchId: eventDraft.type === "feed_consumption" ? eventDraft.millBatchId || null : null,
         amount: eventDraft.amount ? Number(eventDraft.amount) : null,
         expenseCategory: eventDraft.type === "expense" ? eventDraft.expenseCategory : null,
         notes: eventDraft.notes,
@@ -250,7 +256,7 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
       return;
     }
     setMessage("Seguimiento productivo registrado.");
-    setEventDraft((current) => ({ ...current, count: "", feedKg: "", feedUnitCost: "", amount: "", notes: "" }));
+    setEventDraft((current) => ({ ...current, count: "", feedKg: "", feedUnitCost: "", millBatchId: "", amount: "", notes: "" }));
     setSaving(false);
     router.refresh();
   }
@@ -398,10 +404,14 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
                 <label className="form-field"><span>Fecha</span><input type="datetime-local" value={eventDraft.eventAt} onChange={(event) => setEventDraft({ ...eventDraft, eventAt: event.target.value })} /></label>
               </div>
               {eventDraft.type === "feed_consumption" ? (
-                <div className="field-pair">
-                  <label className="form-field"><span>Alimento (kg)</span><input type="number" min="0.001" step="0.001" value={eventDraft.feedKg} onChange={(event) => setEventDraft({ ...eventDraft, feedKg: event.target.value })} /></label>
-                  <label className="form-field"><span>Costo S/ kg</span><input type="number" min="0" step="0.0001" value={eventDraft.feedUnitCost} onChange={(event) => setEventDraft({ ...eventDraft, feedUnitCost: event.target.value })} /></label>
-                </div>
+                <>
+                  <label className="form-field"><span>Origen del alimento</span><select value={eventDraft.millBatchId} onChange={(event) => setEventDraft({ ...eventDraft, millBatchId: event.target.value, feedUnitCost: "" })}><option value="">Alimento externo / costo manual</option>{millBatches.map((batch) => <option key={batch.id} value={batch.id}>{batch.code} | {batch.formulaName} | saldo {batch.availableKg.toFixed(3)} kg</option>)}</select></label>
+                  <div className="field-pair">
+                    <label className="form-field"><span>Alimento (kg)</span><input type="number" min="0.001" step="0.001" value={eventDraft.feedKg} onChange={(event) => setEventDraft({ ...eventDraft, feedKg: event.target.value })} /></label>
+                    <label className="form-field"><span>Costo S/ kg</span><input type="number" min="0" step="0.0001" value={selectedFeedBatch ? selectedFeedBatch.costPerKg.toFixed(4) : eventDraft.feedUnitCost} onChange={(event) => setEventDraft({ ...eventDraft, feedUnitCost: event.target.value })} disabled={Boolean(selectedFeedBatch)} /></label>
+                  </div>
+                  {selectedFeedBatch ? <p className="feed-source-note">Se descontara del lote {selectedFeedBatch.code}; el costo se calcula desde Molino.</p> : null}
+                </>
               ) : null}
               {eventDraft.type === "mortality" ? (
                 <label className="form-field"><span>Ponedoras fallecidas</span><input type="number" min="1" step="1" value={eventDraft.count} onChange={(event) => setEventDraft({ ...eventDraft, count: event.target.value })} /></label>
@@ -416,7 +426,7 @@ export function EggsAdmin({ initialWorkspace, locations, products, editable }: E
               <button className="save-button" type="button" disabled={!editable || saving} onClick={recordEvent}>Guardar seguimiento</button>
               <div className="egg-history">
                 {selected.events.slice(0, 6).map((entry) => (
-                  <div key={entry.id}><span>{layerEventLabels[entry.type]}</span><strong>{entry.type === "mortality" ? `-${entry.count} aves` : entry.type === "feed_consumption" ? `${entry.feedKg} kg` : money(entry.amount)}</strong><small>{dateLabel(entry.eventAt)}</small></div>
+                  <div key={entry.id}><span>{layerEventLabels[entry.type]}</span><strong>{entry.type === "mortality" ? `-${entry.count} aves` : entry.type === "feed_consumption" ? `${entry.feedKg} kg${entry.millBatchCode ? ` | ${entry.millBatchCode}` : ""}` : money(entry.amount)}</strong><small>{dateLabel(entry.eventAt)}</small></div>
                 ))}
               </div>
             </>

@@ -89,6 +89,8 @@ flowchart TB
 - Catalogo de insumos y precios historicos.
 - Formulas versionadas por especie y etapa.
 - Ordenes de produccion, consumo real, rendimiento y costo por kg.
+- Saldo de alimento por lote, descontado al registrar consumo de pollos o
+  ponedoras con costo heredado de la formula aprobada.
 - Servicio a terceros separado de consumo interno.
 - Publicacion comercial solo de formulas aprobadas y trazables.
 
@@ -143,6 +145,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   acumulado y empaque de maples trazable hacia inventario.
 - Molino con insumos valorizados, formulas versionadas y lotes de alimento
   internos costeados por kilogramo para crianza y ponedoras.
+- Enlace Molino-Produccion que descuenta alimento por lote y lleva su costo
+  real al tablero productivo.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

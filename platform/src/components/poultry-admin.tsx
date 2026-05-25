@@ -8,6 +8,7 @@ import type {
   BirdBatchEventType,
   BirdBatchStage,
   BusinessLocation,
+  MillBatch,
   PoultryExpenseCategory,
   PoultryWorkspace,
   Product,
@@ -24,6 +25,7 @@ type PoultryAdminProps = {
   initialWorkspace: PoultryWorkspace;
   locations: BusinessLocation[];
   products: Product[];
+  millBatches: MillBatch[];
   editable: boolean;
 };
 
@@ -188,6 +190,7 @@ export function PoultryAdmin({
   initialWorkspace,
   locations,
   products,
+  millBatches,
   editable,
 }: PoultryAdminProps) {
   const router = useRouter();
@@ -221,6 +224,7 @@ export function PoultryAdmin({
     avgWeightGrams: string;
     feedKg: string;
     feedUnitCost: string;
+    millBatchId: string;
     amount: string;
     expenseCategory: PoultryExpenseCategory;
     stage: BirdBatchStage;
@@ -232,6 +236,7 @@ export function PoultryAdmin({
     avgWeightGrams: "",
     feedKg: "",
     feedUnitCost: "",
+    millBatchId: "",
     amount: "",
     expenseCategory: "health",
     stage: "brooding",
@@ -255,6 +260,7 @@ export function PoultryAdmin({
     metrics?.unvaluedFeedEvents.some((event) => event.id === valuationDraft.eventId)
       ? valuationDraft.eventId
       : metrics?.unvaluedFeedEvents[0]?.id ?? "";
+  const selectedFeedBatch = millBatches.find((batch) => batch.id === eventDraft.millBatchId) ?? null;
 
   async function submitBatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -307,6 +313,7 @@ export function PoultryAdmin({
         avgWeightGrams: eventDraft.avgWeightGrams ? Number(eventDraft.avgWeightGrams) : null,
         feedKg: eventDraft.feedKg ? Number(eventDraft.feedKg) : null,
         feedUnitCost: eventDraft.feedUnitCost ? Number(eventDraft.feedUnitCost) : null,
+        millBatchId: eventDraft.type === "feed_consumption" ? eventDraft.millBatchId || null : null,
         amount: eventDraft.amount ? Number(eventDraft.amount) : null,
         expenseCategory: eventDraft.type === "expense" ? eventDraft.expenseCategory : null,
         stage: eventDraft.type === "stage_change" ? eventDraft.stage : null,
@@ -326,6 +333,7 @@ export function PoultryAdmin({
       avgWeightGrams: "",
       feedKg: "",
       feedUnitCost: "",
+      millBatchId: "",
       amount: "",
       notes: "",
     }));
@@ -764,29 +772,53 @@ export function PoultryAdmin({
                   </label>
                 ) : null}
                 {eventDraft.type === "feed_consumption" ? (
-                  <div className="field-pair">
+                  <>
                     <label className="form-field">
-                      <span>Alimento consumido (kg)</span>
-                      <input
-                        type="number"
-                        min="0.001"
-                        step="0.001"
-                        value={eventDraft.feedKg}
-                        onChange={(event) => setEventDraft({ ...eventDraft, feedKg: event.target.value })}
-                      />
+                      <span>Origen del alimento</span>
+                      <select
+                        value={eventDraft.millBatchId}
+                        onChange={(event) =>
+                          setEventDraft({ ...eventDraft, millBatchId: event.target.value, feedUnitCost: "" })
+                        }
+                      >
+                        <option value="">Alimento externo / costo manual</option>
+                        {millBatches.map((batch) => (
+                          <option key={batch.id} value={batch.id}>
+                            {batch.code} | {batch.formulaName} | saldo {batch.availableKg.toFixed(3)} kg
+                          </option>
+                        ))}
+                      </select>
                     </label>
-                    <label className="form-field">
-                      <span>Costo del alimento S/ kg</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.0001"
-                        value={eventDraft.feedUnitCost}
-                        onChange={(event) => setEventDraft({ ...eventDraft, feedUnitCost: event.target.value })}
-                        placeholder="Puede valorizarse luego"
-                      />
-                    </label>
-                  </div>
+                    <div className="field-pair">
+                      <label className="form-field">
+                        <span>Alimento consumido (kg)</span>
+                        <input
+                          type="number"
+                          min="0.001"
+                          step="0.001"
+                          value={eventDraft.feedKg}
+                          onChange={(event) => setEventDraft({ ...eventDraft, feedKg: event.target.value })}
+                        />
+                      </label>
+                      <label className="form-field">
+                        <span>Costo del alimento S/ kg</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.0001"
+                          value={selectedFeedBatch ? selectedFeedBatch.costPerKg.toFixed(4) : eventDraft.feedUnitCost}
+                          onChange={(event) => setEventDraft({ ...eventDraft, feedUnitCost: event.target.value })}
+                          placeholder="Puede valorizarse luego"
+                          disabled={Boolean(selectedFeedBatch)}
+                        />
+                      </label>
+                    </div>
+                    {selectedFeedBatch ? (
+                      <p className="feed-source-note">
+                        Se descontara del lote {selectedFeedBatch.code}; el costo se toma automaticamente de Molino.
+                      </p>
+                    ) : null}
+                  </>
                 ) : null}
                 {eventDraft.type === "expense" ? (
                   <div className="field-pair">
@@ -858,7 +890,7 @@ export function PoultryAdmin({
                       {event.type === "mortality" ? `-${event.count} aves` : null}
                       {event.type === "weight_sample" ? `${event.avgWeightGrams} g` : null}
                       {event.type === "feed_consumption"
-                        ? `${event.feedKg} kg${event.amount === null ? "" : ` | ${money(event.amount)}`}`
+                        ? `${event.feedKg} kg${event.amount === null ? "" : ` | ${money(event.amount)}`}${event.millBatchCode ? ` | ${event.millBatchCode}` : ""}`
                         : null}
                       {event.type === "expense" && event.expenseCategory
                         ? `${poultryExpenseCategoryLabels[event.expenseCategory]} | ${money(event.amount)}`

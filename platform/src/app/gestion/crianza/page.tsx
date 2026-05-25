@@ -4,7 +4,7 @@ import { PoultryAdmin } from "@/components/poultry-admin";
 import { ManagementNav } from "@/components/management-nav";
 import { SiteHeader } from "@/components/site-header";
 import { managementAccessIsEnabled, writesAreEnabled } from "@/lib/admin-guard";
-import { getCommerceState, getPoultryWorkspace } from "@/lib/commerce-store";
+import { getCommerceState, getMillWorkspace, getPoultryWorkspace } from "@/lib/commerce-store";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata: Metadata = {
@@ -18,9 +18,10 @@ export default async function CrianzaPage() {
   if (isSupabaseConfigured() && !(await managementAccessIsEnabled())) {
     redirect("/gestion/login");
   }
-  const [state, poultry, editable] = await Promise.all([
+  const [state, poultry, mill, editable] = await Promise.all([
     getCommerceState(),
     getPoultryWorkspace(),
+    getMillWorkspace(),
     writesAreEnabled(),
   ]);
 
@@ -49,6 +50,7 @@ export default async function CrianzaPage() {
         initialWorkspace={poultry}
         locations={state.locations}
         products={state.products}
+        millBatches={mill.batches.filter((batch) => batch.usage === "internal_broiler" && batch.availableKg > 0)}
         editable={editable}
       />
     </main>

@@ -283,6 +283,9 @@ export type BirdBatchEvent = {
   feedUnitCost: number | null;
   amount: number | null;
   expenseCategory: PoultryExpenseCategory | null;
+  millBatchId: string | null;
+  millBatchCode: string | null;
+  formulaName: string | null;
   stage: BirdBatchStage | null;
   notes: string;
 };
@@ -323,6 +326,9 @@ export type LayerFlockEvent = {
   feedUnitCost: number | null;
   amount: number | null;
   expenseCategory: PoultryExpenseCategory | null;
+  millBatchId: string | null;
+  millBatchCode: string | null;
+  formulaName: string | null;
   notes: string;
 };
 
@@ -411,6 +417,7 @@ export type MillBatch = {
   locationName: string;
   usage: MillBatchUsage;
   producedKg: number;
+  availableKg: number;
   totalCost: number;
   costPerKg: number;
   producedAt: string;
@@ -424,6 +431,7 @@ export type MillWorkspace = {
   activeInputCount: number;
   approvedFormulaCount: number;
   producedKg: number;
+  availableKg: number;
   averageCostPerKg: number | null;
 };
 

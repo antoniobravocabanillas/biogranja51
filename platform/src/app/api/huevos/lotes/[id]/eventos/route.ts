@@ -11,6 +11,7 @@ type EventRequest = {
   feedUnitCost?: number | null;
   amount?: number | null;
   expenseCategory?: PoultryExpenseCategory | null;
+  millBatchId?: string | null;
   notes?: string;
 };
 
@@ -36,6 +37,7 @@ export async function POST(
     }
     if (
       body.type === "feed_consumption" &&
+      !body.millBatchId &&
       (body.feedUnitCost === null ||
         body.feedUnitCost === undefined ||
         !Number.isFinite(body.feedUnitCost) ||
@@ -60,6 +62,7 @@ export async function POST(
       feedUnitCost: body.type === "feed_consumption" ? body.feedUnitCost! : null,
       amount: body.type === "expense" ? body.amount! : null,
       expenseCategory: body.type === "expense" ? body.expenseCategory! : null,
+      millBatchId: body.type === "feed_consumption" ? body.millBatchId ?? null : null,
       notes: body.notes?.trim() || "",
     });
     revalidatePath("/gestion/huevos");

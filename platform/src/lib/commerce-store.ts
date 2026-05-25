@@ -175,6 +175,11 @@ type BirdBatchEventRow = {
   feed_unit_cost?: number | string | null;
   amount?: number | string | null;
   expense_category?: PoultryExpenseCategory | null;
+  mill_batch_id?: string | null;
+  mill_batches?: {
+    code: string;
+    feed_formula_versions: { feed_formulas: { name: string } | null } | null;
+  } | null;
   stage: BirdBatchStage | null;
   notes: string | null;
 };
@@ -207,6 +212,11 @@ type LayerFlockEventRow = {
   feed_unit_cost: number | string | null;
   amount: number | string | null;
   expense_category: PoultryExpenseCategory | null;
+  mill_batch_id?: string | null;
+  mill_batches?: {
+    code: string;
+    feed_formula_versions: { feed_formulas: { name: string } | null } | null;
+  } | null;
   notes: string | null;
 };
 
@@ -283,6 +293,7 @@ type MillBatchRow = {
   code: string;
   usage: MillBatchUsage;
   produced_kg: number | string;
+  available_kg: number | string;
   total_cost: number | string;
   cost_per_kg: number | string;
   produced_at: string;
@@ -513,6 +524,9 @@ function birdBatchFromRow(row: BirdBatchRow): BirdBatch {
         feedUnitCost: numberValue(event.feed_unit_cost ?? null),
         amount: numberValue(event.amount ?? null),
         expenseCategory: event.expense_category ?? null,
+        millBatchId: event.mill_batch_id ?? null,
+        millBatchCode: event.mill_batches?.code ?? null,
+        formulaName: event.mill_batches?.feed_formula_versions?.feed_formulas?.name ?? null,
         stage: event.stage,
         notes: event.notes ?? "",
       }))
@@ -531,6 +545,9 @@ function layerFlockFromRow(row: LayerFlockRow): LayerFlock {
       feedUnitCost: numberValue(event.feed_unit_cost),
       amount: numberValue(event.amount),
       expenseCategory: event.expense_category,
+      millBatchId: event.mill_batch_id ?? null,
+      millBatchCode: event.mill_batches?.code ?? null,
+      formulaName: event.mill_batches?.feed_formula_versions?.feed_formulas?.name ?? null,
       notes: event.notes ?? "",
     }))
     .sort((a, b) => b.eventAt.localeCompare(a.eventAt));
@@ -622,6 +639,7 @@ function millBatchFromRow(row: MillBatchRow): MillBatch {
     locationName: row.locations?.name ?? "Molino",
     usage: row.usage,
     producedKg: Number(row.produced_kg),
+    availableKg: Number(row.available_kg),
     totalCost: Number(row.total_cost),
     costPerKg: Number(row.cost_per_kg),
     producedAt: row.produced_at,
@@ -1174,7 +1192,7 @@ export async function getPoultryWorkspace(): Promise<PoultryWorkspace> {
   const supabase = await createSupabaseClient();
   const { data, error } = await supabase
     .from("bird_batches")
-    .select("*, locations(name), bird_batch_events(*)")
+    .select("*, locations(name), bird_batch_events(*, mill_batches(code, feed_formula_versions(feed_formulas(name))))")
     .order("created_at", { ascending: false });
   assertDatabaseResult(error, "No se pudo leer la crianza avícola");
   const batches = (data as unknown as BirdBatchRow[]).map(birdBatchFromRow);
@@ -1231,6 +1249,7 @@ export async function recordBirdBatchEvent(payload: {
   feedUnitCost: number | null;
   amount: number | null;
   expenseCategory: PoultryExpenseCategory | null;
+  millBatchId: string | null;
   stage: BirdBatchStage | null;
   notes: string;
 }): Promise<void> {
@@ -1250,6 +1269,7 @@ export async function recordBirdBatchEvent(payload: {
     p_expense_category: payload.expenseCategory,
     p_stage: payload.stage,
     p_notes: payload.notes,
+    p_mill_batch_id: payload.millBatchId,
   });
   assertDatabaseResult(error, "No se pudo registrar el evento de crianza");
 }
@@ -1315,7 +1335,7 @@ export async function getEggWorkspace(): Promise<EggWorkspace> {
   const supabase = await createSupabaseClient();
   const { data, error } = await supabase
     .from("layer_flocks")
-    .select("*, locations(name), layer_flock_events(*), egg_collections(*)")
+    .select("*, locations(name), layer_flock_events(*, mill_batches(code, feed_formula_versions(feed_formulas(name)))), egg_collections(*)")
     .order("created_at", { ascending: false });
   assertDatabaseResult(error, "No se pudo leer la producción de huevos");
   const flocks = (data as unknown as LayerFlockRow[]).map(layerFlockFromRow);
@@ -1367,6 +1387,7 @@ export async function recordLayerFlockEvent(payload: {
   feedUnitCost: number | null;
   amount: number | null;
   expenseCategory: PoultryExpenseCategory | null;
+  millBatchId: string | null;
   notes: string;
 }): Promise<void> {
   if (!isSupabaseConfigured()) {
@@ -1383,6 +1404,7 @@ export async function recordLayerFlockEvent(payload: {
     p_amount: payload.amount,
     p_expense_category: payload.expenseCategory,
     p_notes: payload.notes,
+    p_mill_batch_id: payload.millBatchId,
   });
   assertDatabaseResult(error, "No se pudo registrar el seguimiento de ponedoras");
 }
@@ -1444,6 +1466,7 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
       activeInputCount: 0,
       approvedFormulaCount: 0,
       producedKg: 0,
+      availableKg: 0,
       averageCostPerKg: null,
     };
   }
@@ -1471,6 +1494,9 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
   const batches = (batchesResult.data as unknown as MillBatchRow[]).map(millBatchFromRow);
   const totalCost = batches.reduce((sum, batch) => sum + batch.totalCost, 0);
   const producedKg = batches.reduce((sum, batch) => sum + batch.producedKg, 0);
+  const availableKg = batches
+    .filter((batch) => batch.usage !== "external_service")
+    .reduce((sum, batch) => sum + batch.availableKg, 0);
   return {
     inputs,
     formulas,
@@ -1481,6 +1507,7 @@ export async function getMillWorkspace(): Promise<MillWorkspace> {
       0,
     ),
     producedKg,
+    availableKg,
     averageCostPerKg: producedKg ? totalCost / producedKg : null,
   };
 }
