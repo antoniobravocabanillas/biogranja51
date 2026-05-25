@@ -1,8 +1,11 @@
 import { promises as fs } from "node:fs";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type {
   BusinessLocation,
   CommerceState,
+  Customer,
+  CustomerMetrics,
   DeliveryZone,
   Order,
   PaymentMethod,
@@ -64,6 +67,7 @@ type RoleRow = {
 
 type OrderRow = {
   id: string;
+  customer_id: string | null;
   number: string;
   address: string;
   delivery_zone_id: string;
@@ -82,6 +86,21 @@ type OrderRow = {
     subtotal: number | string | null;
     products: { name: string; presentation: string } | null;
   }>;
+};
+
+type CustomerRow = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  document: string | null;
+  notes: string | null;
+  segment: Customer["segment"] | null;
+  subscription_interest: boolean | null;
+  last_address: string | null;
+  last_delivery_zone_id: string | null;
+  created_at: string;
+  updated_at: string | null;
 };
 
 type StorefrontOrderResult = {
@@ -155,6 +174,7 @@ function paymentFromRow(row: PaymentMethodRow): PaymentMethod {
 function orderFromRow(row: OrderRow): Order {
   return {
     id: row.id,
+    customerId: row.customer_id,
     number: row.number,
     customerName: row.customers?.name ?? "Cliente",
     phone: row.customers?.phone ?? "",
@@ -176,6 +196,47 @@ function orderFromRow(row: OrderRow): Order {
     hasPendingPrice: row.has_pending_price,
     createdAt: row.created_at,
   };
+}
+
+function customerFromRow(row: CustomerRow): Customer {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    document: row.document,
+    notes: row.notes ?? "",
+    segment: row.segment ?? "hogar",
+    subscriptionInterest: row.subscription_interest ?? false,
+    lastAddress: row.last_address,
+    deliveryZoneId: row.last_delivery_zone_id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at ?? row.created_at,
+  };
+}
+
+function customerWithMetrics(customer: Customer, orders: Order[]): CustomerMetrics {
+  const customerOrders = orders
+    .filter(
+      (order) =>
+        order.customerId === customer.id ||
+        (!order.customerId && normalizePhone(order.phone) === normalizePhone(customer.phone)),
+    )
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return {
+    ...customer,
+    orders: customerOrders,
+    orderCount: customerOrders.length,
+    deliveredOrders: customerOrders.filter((order) => order.status === "delivered").length,
+    lifetimeValue: customerOrders
+      .filter((order) => order.status !== "cancelled")
+      .reduce((sum, order) => sum + (order.total ?? 0), 0),
+    lastOrderAt: customerOrders[0]?.createdAt ?? null,
+  };
+}
+
+function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, "");
 }
 
 function assertDatabaseResult(error: { message: string } | null, context: string) {
@@ -409,8 +470,40 @@ export async function createOrder(order: Order): Promise<Order> {
     throw new Error("Los pedidos productivos deben crearse mediante la función segura.");
   }
   const state = await getLocalState();
-  await writeLocalState({ ...state, orders: [order, ...state.orders] });
-  return order;
+  const normalizedPhone = normalizePhone(order.phone);
+  const existing = (state.customers ?? []).find(
+    (customer) => normalizePhone(customer.phone) === normalizedPhone,
+  );
+  const now = new Date().toISOString();
+  const customer: Customer = existing
+    ? {
+        ...existing,
+        name: order.customerName,
+        phone: order.phone,
+        lastAddress: order.address,
+        deliveryZoneId: order.deliveryZoneId,
+        updatedAt: now,
+      }
+    : {
+        id: `cus-${randomUUID()}`,
+        name: order.customerName,
+        phone: order.phone,
+        email: null,
+        document: null,
+        notes: "",
+        segment: "hogar",
+        subscriptionInterest: false,
+        lastAddress: order.address,
+        deliveryZoneId: order.deliveryZoneId,
+        createdAt: now,
+        updatedAt: now,
+      };
+  const created = { ...order, customerId: customer.id };
+  const customers = existing
+    ? (state.customers ?? []).map((current) => (current.id === customer.id ? customer : current))
+    : [customer, ...(state.customers ?? [])];
+  await writeLocalState({ ...state, customers, orders: [created, ...state.orders] });
+  return created;
 }
 
 export async function createStorefrontOrder(payload: {
@@ -466,4 +559,66 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
     .single();
   assertDatabaseResult(error, "No se pudo actualizar el pedido");
   return orderFromRow(data as unknown as OrderRow);
+}
+
+export async function listCustomersWithMetrics(): Promise<CustomerMetrics[]> {
+  if (!isSupabaseConfigured()) {
+    const state = await getLocalState();
+    return (state.customers ?? [])
+      .map((customer) => customerWithMetrics(customer, state.orders))
+      .sort((a, b) => (b.lastOrderAt ?? b.createdAt).localeCompare(a.lastOrderAt ?? a.createdAt));
+  }
+
+  const supabase = await createSupabaseClient();
+  const [customersResult, ordersResult] = await Promise.all([
+    supabase.from("customers").select("*").order("updated_at", { ascending: false }),
+    supabase
+      .from("orders")
+      .select("*, customers(name, phone), order_items(*, products(name, presentation))")
+      .order("created_at", { ascending: false }),
+  ]);
+  assertDatabaseResult(customersResult.error, "No se pudo leer clientes");
+  assertDatabaseResult(ordersResult.error, "No se pudo leer historial de clientes");
+  const orders = (ordersResult.data as unknown as OrderRow[]).map(orderFromRow);
+  return (customersResult.data as CustomerRow[])
+    .map((row) => customerWithMetrics(customerFromRow(row), orders))
+    .sort((a, b) => (b.lastOrderAt ?? b.createdAt).localeCompare(a.lastOrderAt ?? a.createdAt));
+}
+
+export async function updateCustomer(
+  id: string,
+  updates: Pick<Customer, "name" | "phone" | "email" | "document" | "notes" | "segment" | "subscriptionInterest">,
+): Promise<Customer> {
+  if (!isSupabaseConfigured()) {
+    const state = await getLocalState();
+    const current = (state.customers ?? []).find((customer) => customer.id === id);
+    if (!current) {
+      throw new Error("Cliente no encontrado.");
+    }
+    const next = { ...current, ...updates, updatedAt: new Date().toISOString() };
+    await writeLocalState({
+      ...state,
+      customers: (state.customers ?? []).map((customer) => (customer.id === id ? next : customer)),
+    });
+    return next;
+  }
+
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .update({
+      name: updates.name,
+      phone: updates.phone,
+      phone_normalized: normalizePhone(updates.phone),
+      email: updates.email,
+      document: updates.document,
+      notes: updates.notes,
+      segment: updates.segment,
+      subscription_interest: updates.subscriptionInterest,
+    })
+    .eq("id", id)
+    .select("*")
+    .single();
+  assertDatabaseResult(error, "No se pudo actualizar el cliente");
+  return customerFromRow(data as CustomerRow);
 }

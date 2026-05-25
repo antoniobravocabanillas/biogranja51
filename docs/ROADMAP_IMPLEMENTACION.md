@@ -46,7 +46,7 @@ Objetivo: controlar margen y cumplimiento.
   `Implementado en desarrollo`.
 - Indicadores iniciales de pedidos, venta estimada, entregas y trazabilidad.
   `Implementado en desarrollo`.
-- Clientes, direcciones, notas y recurrencia.
+- Clientes, direcciones, notas y recurrencia. `Implementado en desarrollo`.
 - Compras a proveedores de res y cerdo.
 - Recepcion, lotes, inventario y mermas.
 - Despacho asociado a lote.

@@ -8,6 +8,13 @@ export type OrderStatus =
   | "dispatched"
   | "delivered"
   | "cancelled";
+export type CustomerSegment =
+  | "hogar"
+  | "recurrente"
+  | "fitness"
+  | "parrilla"
+  | "restaurante"
+  | "distribuidor";
 
 export const originTypes: OriginType[] = [
   "own",
@@ -23,6 +30,14 @@ export const orderStatuses: OrderStatus[] = [
   "delivered",
   "cancelled",
 ];
+export const customerSegments: CustomerSegment[] = [
+  "hogar",
+  "recurrente",
+  "fitness",
+  "parrilla",
+  "restaurante",
+  "distribuidor",
+];
 
 export function isOriginType(value: unknown): value is OriginType {
   return originTypes.includes(value as OriginType);
@@ -34,6 +49,10 @@ export function isPriceUnit(value: unknown): value is PriceUnit {
 
 export function isOrderStatus(value: unknown): value is OrderStatus {
   return orderStatuses.includes(value as OrderStatus);
+}
+
+export function isCustomerSegment(value: unknown): value is CustomerSegment {
+  return customerSegments.includes(value as CustomerSegment);
 }
 
 export type Product = {
@@ -96,6 +115,7 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
+  customerId: string | null;
   number: string;
   customerName: string;
   phone: string;
@@ -111,6 +131,29 @@ export type Order = {
   createdAt: string;
 };
 
+export type Customer = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  document: string | null;
+  notes: string;
+  segment: CustomerSegment;
+  subscriptionInterest: boolean;
+  lastAddress: string | null;
+  deliveryZoneId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CustomerMetrics = Customer & {
+  orders: Order[];
+  orderCount: number;
+  deliveredOrders: number;
+  lifetimeValue: number;
+  lastOrderAt: string | null;
+};
+
 export type CommerceState = {
   products: Product[];
   deliveryZones: DeliveryZone[];
@@ -118,6 +161,7 @@ export type CommerceState = {
   locations: BusinessLocation[];
   roles: StaffRole[];
   orders: Order[];
+  customers?: Customer[];
   updatedAt: string;
 };
 
@@ -141,6 +185,15 @@ export const orderStatusActions: Partial<Record<OrderStatus, OrderStatus[]>> = {
   confirmed: ["preparing", "cancelled"],
   preparing: ["dispatched", "cancelled"],
   dispatched: ["delivered"],
+};
+
+export const customerSegmentLabels: Record<CustomerSegment, string> = {
+  hogar: "Hogar",
+  recurrente: "Recurrente",
+  fitness: "Fitness",
+  parrilla: "Parrilla",
+  restaurante: "Restaurante",
+  distribuidor: "Distribuidor",
 };
 
 export function formatPrice(product: Product): string {

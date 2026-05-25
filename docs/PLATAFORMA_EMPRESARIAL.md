@@ -131,6 +131,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   para replicar sedes.
 - Migracion PostgreSQL/Supabase con productos, pedidos, lotes, roles,
   auditoria y politicas de seguridad.
+- CRM comercial con consolidacion por celular, historial de compra, notas,
+  segmentacion e interes en suscripcion.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

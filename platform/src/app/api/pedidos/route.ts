@@ -111,6 +111,7 @@ export async function POST(request: Request) {
       });
       revalidatePath("/gestion");
       revalidatePath("/gestion/pedidos");
+      revalidatePath("/gestion/clientes");
       return orderResponse(created.order, created.zoneName, created.paymentName);
     }
 
@@ -156,6 +157,7 @@ export async function POST(request: Request) {
     const number = nextOrderNumber(state.orders.length);
     const order: Order = {
       id: `ord-${randomUUID()}`,
+      customerId: null,
       number,
       customerName,
       phone,
@@ -170,10 +172,11 @@ export async function POST(request: Request) {
       hasPendingPrice,
       createdAt: new Date().toISOString(),
     };
-    await createOrder(order);
+    const createdOrder = await createOrder(order);
     revalidatePath("/gestion");
     revalidatePath("/gestion/pedidos");
-    return orderResponse(order, zone.name, payment.name);
+    revalidatePath("/gestion/clientes");
+    return orderResponse(createdOrder, zone.name, payment.name);
   } catch (error) {
     const message = error instanceof Error ? error.message : "No se pudo crear el pedido.";
     return Response.json({ error: message }, { status: 400 });

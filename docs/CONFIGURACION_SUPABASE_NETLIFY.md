@@ -31,6 +31,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 
 1. `platform/supabase/migrations/202605240001_commerce_foundation.sql`
 2. `platform/supabase/migrations/202605240002_production_auth_orders_storage.sql`
+3. `platform/supabase/migrations/202605250001_customer_relationship_management.sql`
 
 La segunda migracion agrega:
 
@@ -38,6 +39,12 @@ La segunda migracion agrega:
 - checkout publico seguro mediante `create_storefront_order`;
 - estados y acceso privado de pedidos;
 - bucket `product-images` para fotos de productos.
+
+La tercera migracion agrega:
+
+- ficha comercial de clientes con segmento, notas e interes en suscripcion;
+- ultima direccion y zona utilizada para seguimiento de delivery;
+- consolidacion automatica por celular para que una recompra no duplique clientes.
 
 Si el proyecto ya contiene la primera migracion, ejecutar solamente la
 segunda.
@@ -141,6 +148,7 @@ desde Netlify.
 - El administrador puede editar precios e imagenes.
 - Una imagen subida retorna URL publica de Supabase Storage.
 - Un pedido avanza por confirmacion, preparacion, despacho y entrega.
+- `/gestion/clientes` muestra recurrencia y permite registrar preferencias comerciales.
 
 ## Fuentes Oficiales
 
