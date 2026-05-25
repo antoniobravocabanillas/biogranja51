@@ -16,6 +16,12 @@ import type {
   InventoryMovement,
   InventoryUnit,
   InventoryWorkspace,
+  EggCollection,
+  EggWorkspace,
+  LayerEventType,
+  LayerFlock,
+  LayerFlockEvent,
+  LayerFlockStatus,
   Order,
   PaymentMethod,
   Product,
@@ -143,11 +149,13 @@ type InventoryLotRow = {
   status: InventoryLot["status"];
   notes: string | null;
   source_bird_batch_id?: string | null;
+  source_layer_flock_id?: string | null;
   processed_units?: number | string | null;
   created_at: string;
   products: { name: string; presentation: string } | null;
   locations: { name: string } | null;
   bird_batches?: { code: string } | null;
+  layer_flocks?: { code: string } | null;
   inventory_movements: InventoryMovementRow[];
 };
 
@@ -182,6 +190,46 @@ type BirdBatchRow = {
   created_at: string;
   locations: { name: string } | null;
   bird_batch_events: BirdBatchEventRow[];
+};
+
+type LayerFlockEventRow = {
+  id: string;
+  event_type: LayerEventType;
+  event_at: string;
+  count: number | null;
+  feed_kg: number | string | null;
+  feed_unit_cost: number | string | null;
+  amount: number | string | null;
+  expense_category: PoultryExpenseCategory | null;
+  notes: string | null;
+};
+
+type EggCollectionRow = {
+  id: string;
+  collected_at: string;
+  collected_eggs: number | string;
+  rejected_eggs: number | string;
+  notes: string | null;
+};
+
+type LayerFlockRow = {
+  id: string;
+  code: string;
+  location_id: string;
+  source_name: string;
+  breed: string | null;
+  started_at: string;
+  initial_hens: number | string;
+  current_hens: number | string;
+  available_eggs: number | string;
+  packed_maples: number | string;
+  cost_per_hen: number | string | null;
+  status: LayerFlockStatus;
+  notes: string | null;
+  created_at: string;
+  locations: { name: string } | null;
+  layer_flock_events: LayerFlockEventRow[];
+  egg_collections: EggCollectionRow[];
 };
 
 type AssignmentOrderRow = {
@@ -359,6 +407,8 @@ function inventoryLotFromRow(row: InventoryLotRow): InventoryLot {
     notes: row.notes ?? "",
     sourceBirdBatchId: row.source_bird_batch_id ?? null,
     sourceBirdBatchCode: row.bird_batches?.code ?? null,
+    sourceLayerFlockId: row.source_layer_flock_id ?? null,
+    sourceLayerFlockCode: row.layer_flocks?.code ?? null,
     processedUnits: numberValue(row.processed_units ?? null),
     createdAt: row.created_at,
     movements: (row.inventory_movements ?? []).map((movement) => ({
@@ -405,6 +455,50 @@ function birdBatchFromRow(row: BirdBatchRow): BirdBatch {
         notes: event.notes ?? "",
       }))
       .sort((a, b) => b.eventAt.localeCompare(a.eventAt)),
+  };
+}
+
+function layerFlockFromRow(row: LayerFlockRow): LayerFlock {
+  const events: LayerFlockEvent[] = (row.layer_flock_events ?? [])
+    .map((event) => ({
+      id: event.id,
+      type: event.event_type,
+      eventAt: event.event_at,
+      count: event.count,
+      feedKg: numberValue(event.feed_kg),
+      feedUnitCost: numberValue(event.feed_unit_cost),
+      amount: numberValue(event.amount),
+      expenseCategory: event.expense_category,
+      notes: event.notes ?? "",
+    }))
+    .sort((a, b) => b.eventAt.localeCompare(a.eventAt));
+  const collections: EggCollection[] = (row.egg_collections ?? [])
+    .map((collection) => ({
+      id: collection.id,
+      collectedAt: collection.collected_at,
+      collectedEggs: Number(collection.collected_eggs),
+      rejectedEggs: Number(collection.rejected_eggs),
+      notes: collection.notes ?? "",
+    }))
+    .sort((a, b) => b.collectedAt.localeCompare(a.collectedAt));
+  return {
+    id: row.id,
+    code: row.code,
+    locationId: row.location_id,
+    locationName: row.locations?.name ?? "Unidad productiva",
+    sourceName: row.source_name,
+    breed: row.breed,
+    startedAt: row.started_at,
+    initialHens: Number(row.initial_hens),
+    currentHens: Number(row.current_hens),
+    availableEggs: Number(row.available_eggs),
+    packedMaples: Number(row.packed_maples),
+    costPerHen: numberValue(row.cost_per_hen),
+    status: row.status,
+    notes: row.notes ?? "",
+    events,
+    collections,
+    createdAt: row.created_at,
   };
 }
 
@@ -840,7 +934,7 @@ export async function getInventoryWorkspace(): Promise<InventoryWorkspace> {
   const [lotsResult, ordersResult] = await Promise.all([
     supabase
       .from("inventory_lots")
-      .select("*, products(name, presentation), locations(name), bird_batches(code), inventory_movements(*)")
+      .select("*, products(name, presentation), locations(name), bird_batches(code), layer_flocks(code), inventory_movements(*)")
       .order("created_at", { ascending: false }),
     supabase
       .from("orders")
@@ -1077,4 +1171,139 @@ export async function harvestBirdBatch(payload: {
     p_notes: payload.notes,
   });
   assertDatabaseResult(error, "No se pudo transferir el pollo faenado a inventario");
+}
+
+export async function getEggWorkspace(): Promise<EggWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return {
+      flocks: [],
+      activeFlockCount: 0,
+      liveHenCount: 0,
+      collectedEggCount: 0,
+      availableEggCount: 0,
+      packedMapleCount: 0,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase
+    .from("layer_flocks")
+    .select("*, locations(name), layer_flock_events(*), egg_collections(*)")
+    .order("created_at", { ascending: false });
+  assertDatabaseResult(error, "No se pudo leer la producción de huevos");
+  const flocks = (data as unknown as LayerFlockRow[]).map(layerFlockFromRow);
+  return {
+    flocks,
+    activeFlockCount: flocks.filter((flock) => flock.status === "active").length,
+    liveHenCount: flocks.reduce((sum, flock) => sum + flock.currentHens, 0),
+    collectedEggCount: flocks.reduce(
+      (sum, flock) =>
+        sum + flock.collections.reduce((flockSum, collection) => flockSum + collection.collectedEggs, 0),
+      0,
+    ),
+    availableEggCount: flocks.reduce((sum, flock) => sum + flock.availableEggs, 0),
+    packedMapleCount: flocks.reduce((sum, flock) => sum + flock.packedMaples, 0),
+  };
+}
+
+export async function createLayerFlock(payload: {
+  locationId: string;
+  sourceName: string;
+  breed: string | null;
+  startedAt: string;
+  initialHens: number;
+  costPerHen: number | null;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La producción de huevos requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("create_layer_flock", {
+    p_location_id: payload.locationId,
+    p_source_name: payload.sourceName,
+    p_breed: payload.breed,
+    p_started_at: payload.startedAt,
+    p_initial_hens: payload.initialHens,
+    p_cost_per_hen: payload.costPerHen,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el lote de ponedoras");
+}
+
+export async function recordLayerFlockEvent(payload: {
+  flockId: string;
+  type: LayerEventType;
+  eventAt: string;
+  count: number | null;
+  feedKg: number | null;
+  feedUnitCost: number | null;
+  amount: number | null;
+  expenseCategory: PoultryExpenseCategory | null;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La producción de huevos requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("record_layer_flock_event", {
+    p_flock_id: payload.flockId,
+    p_event_type: payload.type,
+    p_event_at: payload.eventAt,
+    p_count: payload.count,
+    p_feed_kg: payload.feedKg,
+    p_feed_unit_cost: payload.feedUnitCost,
+    p_amount: payload.amount,
+    p_expense_category: payload.expenseCategory,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el seguimiento de ponedoras");
+}
+
+export async function collectEggs(payload: {
+  flockId: string;
+  collectedAt: string;
+  collectedEggs: number;
+  rejectedEggs: number;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La producción de huevos requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("collect_layer_eggs", {
+    p_flock_id: payload.flockId,
+    p_collected_at: payload.collectedAt,
+    p_collected_eggs: payload.collectedEggs,
+    p_rejected_eggs: payload.rejectedEggs,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar la cosecha de huevos");
+}
+
+export async function packEggMaples(payload: {
+  flockId: string;
+  productId: string;
+  locationId: string;
+  mapleCount: number;
+  unitCost: number | null;
+  packedAt: string;
+  expiresAt: string | null;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("El empaque de maples requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("pack_egg_maples_to_inventory", {
+    p_flock_id: payload.flockId,
+    p_product_id: payload.productId,
+    p_location_id: payload.locationId,
+    p_maple_count: payload.mapleCount,
+    p_unit_cost: payload.unitCost,
+    p_packed_at: payload.packedAt,
+    p_expires_at: payload.expiresAt,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo enviar los maples al inventario");
 }

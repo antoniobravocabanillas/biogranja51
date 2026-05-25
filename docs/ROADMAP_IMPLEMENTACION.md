@@ -73,11 +73,22 @@ Objetivo: capturar la ventaja productiva propia.
 
 - Lotes de pollitos de engorde, ingreso y salida faenada. `Implementado en desarrollo`.
 - Consumos, mortalidad, pesos y costos del pollo de engorde. `Implementado en desarrollo`.
-- Lotes de ponedoras, postura y cosecha de huevos.
+- Lotes de ponedoras, postura, cosecha y empaque trazable de huevos. `Implementado en desarrollo`.
 - Catalogo de insumos del molino y precios historicos.
 - Formula versionada con validaciones de porcentaje y costo.
 - Ordenes internas de alimento y costo por lote.
 - Comparacion alimento consumido vs. peso producido.
+
+Definicion operativa de huevos:
+
+- Las ponedoras se controlan como lote vivo continuo, separado del pollo de engorde.
+- Cada recoleccion registra huevos cosechados y descarte; solo los aptos
+  quedan disponibles para empaque.
+- Un maple comercial descuenta 30 huevos aptos del lote y genera inventario
+  trazable cuando el producto esta configurado como origen propio.
+- El costo absorbido del maple se puede sugerir desde costo acumulado de
+  ponedoras, alimento y operacion; al inicio del ciclo incluye la inversion
+  de aves y disminuye a medida que aumenta la postura acumulada.
 
 Criterio de salida: se conoce el costo real de producir pollo y huevos.
 

@@ -33,6 +33,8 @@ export type PoultryExpenseCategory =
   | "labor"
   | "transport"
   | "other";
+export type LayerFlockStatus = "active" | "paused" | "closed";
+export type LayerEventType = "mortality" | "feed_consumption" | "expense";
 export type BirdBatchEventType =
   | "mortality"
   | "weight_sample"
@@ -81,6 +83,7 @@ export const poultryExpenseCategories: PoultryExpenseCategory[] = [
   "transport",
   "other",
 ];
+export const layerFlockStatuses: LayerFlockStatus[] = ["active", "paused", "closed"];
 
 export function isOriginType(value: unknown): value is OriginType {
   return originTypes.includes(value as OriginType);
@@ -239,6 +242,8 @@ export type InventoryLot = {
   notes: string;
   sourceBirdBatchId: string | null;
   sourceBirdBatchCode: string | null;
+  sourceLayerFlockId: string | null;
+  sourceLayerFlockCode: string | null;
   processedUnits: number | null;
   createdAt: string;
   movements: InventoryMovement[];
@@ -305,6 +310,55 @@ export type PoultryWorkspace = {
   liveBirdCount: number;
   mortalityCount: number;
   processedCount: number;
+};
+
+export type LayerFlockEvent = {
+  id: string;
+  type: LayerEventType;
+  eventAt: string;
+  count: number | null;
+  feedKg: number | null;
+  feedUnitCost: number | null;
+  amount: number | null;
+  expenseCategory: PoultryExpenseCategory | null;
+  notes: string;
+};
+
+export type EggCollection = {
+  id: string;
+  collectedAt: string;
+  collectedEggs: number;
+  rejectedEggs: number;
+  notes: string;
+};
+
+export type LayerFlock = {
+  id: string;
+  code: string;
+  locationId: string;
+  locationName: string;
+  sourceName: string;
+  breed: string | null;
+  startedAt: string;
+  initialHens: number;
+  currentHens: number;
+  availableEggs: number;
+  packedMaples: number;
+  costPerHen: number | null;
+  status: LayerFlockStatus;
+  notes: string;
+  events: LayerFlockEvent[];
+  collections: EggCollection[];
+  createdAt: string;
+};
+
+export type EggWorkspace = {
+  flocks: LayerFlock[];
+  activeFlockCount: number;
+  liveHenCount: number;
+  collectedEggCount: number;
+  availableEggCount: number;
+  packedMapleCount: number;
 };
 
 export type CommerceState = {
@@ -388,6 +442,18 @@ export const poultryExpenseCategoryLabels: Record<PoultryExpenseCategory, string
   labor: "Mano de obra",
   transport: "Transporte",
   other: "Otro costo",
+};
+
+export const layerFlockStatusLabels: Record<LayerFlockStatus, string> = {
+  active: "En postura",
+  paused: "Pausado",
+  closed: "Cerrado",
+};
+
+export const layerEventLabels: Record<LayerEventType, string> = {
+  mortality: "Mortalidad",
+  feed_consumption: "Alimento consumido",
+  expense: "Costo operativo",
 };
 
 export function formatPrice(product: Product): string {

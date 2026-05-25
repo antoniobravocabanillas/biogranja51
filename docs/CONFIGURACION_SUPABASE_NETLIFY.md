@@ -35,6 +35,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 4. `platform/supabase/migrations/202605250002_inventory_lots_movements_dispatch.sql`
 5. `platform/supabase/migrations/202605250003_poultry_rearing_and_commercial_handoff.sql`
 6. `platform/supabase/migrations/202605250004_poultry_metrics_and_cost_tracking.sql`
+7. `platform/supabase/migrations/202605250005_layer_flocks_and_egg_inventory.sql`
 
 La segunda migracion agrega:
 
@@ -68,6 +69,12 @@ La sexta migracion agrega control tecnico y economico de crianza:
 - valorizacion posterior de consumos registrados inicialmente sin precio;
 - gastos de sanidad, cama, energia, mano de obra, transporte u otros;
 - datos para peso, conversion alimenticia y costo por ave o kg vivo.
+
+La septima migracion agrega produccion de huevos:
+
+- lotes continuos de ponedoras y sus costos productivos;
+- recolecciones diarias con descarte y saldo de huevos aptos;
+- empaque de maples de 30 unidades que genera inventario comercial trazable.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
@@ -174,6 +181,7 @@ desde Netlify.
 - `/gestion/clientes` muestra recurrencia y permite registrar preferencias comerciales.
 - `/gestion/inventario` permite recibir lotes, registrar mermas y asignar stock a pedidos.
 - `/gestion/crianza` registra pollitos vivos, grafica su evolucion, calcula costos y genera inventario solo al registrar faena.
+- `/gestion/huevos` controla postura, descarte y genera inventario solo al empacar maples de huevos propios.
 
 ## Fuentes Oficiales
 

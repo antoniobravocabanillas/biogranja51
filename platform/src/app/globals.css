@@ -2361,6 +2361,165 @@ p {
   text-align: center;
 }
 
+.egg-workspace {
+  margin: 0 auto;
+  max-width: 1240px;
+  padding: 0 32px 64px;
+}
+
+.egg-flow {
+  align-items: center;
+  background: #fff2d7;
+  border-radius: 18px;
+  color: var(--forest);
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+}
+
+.egg-flow strong {
+  font-size: 12px;
+}
+
+.egg-flow span {
+  color: var(--leaf);
+  font-weight: 800;
+}
+
+.egg-top-grid,
+.egg-operations-grid {
+  align-items: start;
+  display: grid;
+  gap: 20px;
+}
+
+.egg-top-grid {
+  grid-template-columns: 1fr 525px;
+  margin-bottom: 20px;
+}
+
+.egg-operations-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.egg-entry h2,
+.egg-operations-grid h2 {
+  color: var(--forest);
+  font-size: 21px;
+  letter-spacing: -0.04em;
+  margin: 8px 0 16px;
+}
+
+.egg-list button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 112px 72px;
+  padding: 17px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.egg-list button.selected {
+  background: #f2f5ed;
+}
+
+.egg-list strong {
+  color: var(--forest);
+  display: block;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.egg-list small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.egg-list b {
+  color: var(--forest);
+  font-size: 12px;
+  text-align: right;
+}
+
+.egg-dashboard {
+  margin-bottom: 20px;
+}
+
+.egg-dashboard-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr 340px;
+}
+
+.egg-bars {
+  align-items: end;
+  display: flex;
+  gap: 7px;
+  height: 129px;
+  padding-top: 8px;
+}
+
+.egg-bars div {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  justify-content: end;
+}
+
+.egg-bars span {
+  background: #d39b39;
+  border-radius: 6px 6px 2px 2px;
+  display: block;
+  min-width: 18px;
+  width: 72%;
+}
+
+.egg-bars small {
+  color: var(--muted);
+  font-size: 9px;
+  margin-top: 7px;
+}
+
+.egg-bars b {
+  color: var(--forest);
+  font-size: 10px;
+}
+
+.egg-history {
+  border-top: 1px solid var(--line);
+  margin-top: 19px;
+  padding-top: 8px;
+}
+
+.egg-history div {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr auto;
+  padding: 9px 0;
+}
+
+.egg-history span,
+.egg-history small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.egg-history strong {
+  color: var(--forest);
+  font-size: 11px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
 .status-filter {
   align-items: start;
   color: var(--muted);
@@ -2763,6 +2922,9 @@ p {
   .inventory-bottom-grid,
   .poultry-top-grid,
   .poultry-bottom-grid,
+  .egg-top-grid,
+  .egg-dashboard-grid,
+  .egg-operations-grid,
   .analytics-grid,
   .confidence-section {
     grid-template-columns: 1fr;
@@ -2791,6 +2953,11 @@ p {
   .dashboard-intro,
   .delivery-experience,
   .flow-definition {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .egg-flow {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -2910,7 +3077,8 @@ p {
   .orders-layout,
   .customers-layout,
   .inventory-workspace,
-  .poultry-workspace {
+  .poultry-workspace,
+  .egg-workspace {
     padding-left: 20px;
     padding-right: 20px;
   }

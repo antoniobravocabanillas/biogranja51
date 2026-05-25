@@ -378,6 +378,7 @@ export function InventoryAdmin({
                   <p>
                     {selectedLot.productName} | {originLabels[selectedLot.originType]}
                     {selectedLot.sourceBirdBatchCode ? ` | Crianza ${selectedLot.sourceBirdBatchCode}` : ""}
+                    {selectedLot.sourceLayerFlockCode ? ` | Ponedoras ${selectedLot.sourceLayerFlockCode}` : ""}
                   </p>
                 </div>
                 <strong>{quantityLabel(selectedLot.quantity, selectedLot.unit)}</strong>

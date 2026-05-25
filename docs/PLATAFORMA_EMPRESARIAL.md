@@ -139,6 +139,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   saldo valorizado y reserva de lote por pedido.
 - Crianza avicola con ingreso de pollitos, seguimiento de mortalidad, peso y
   alimento, y salida faenada que alimenta inventario comercial.
+- Produccion de huevos con lotes de ponedoras, postura, descarte, costo
+  acumulado y empaque de maples trazable hacia inventario.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

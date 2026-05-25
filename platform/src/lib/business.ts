@@ -75,6 +75,12 @@ export const managementModules = [
     status: "Operativo",
   },
   {
+    code: "HUE",
+    name: "Huevos y ponedoras",
+    description: "Postura, descarte, costos y empaque trazable de maples.",
+    status: "Operativo",
+  },
+  {
     code: "MOL",
     name: "Molino",
     description: "Fórmulas, insumos, costos por kg y órdenes de molienda.",

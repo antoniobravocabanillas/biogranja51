@@ -19,6 +19,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
 - Crianza en `/gestion/crianza` con ingreso de pollitos vivos, mortalidad,
   curva de peso, consumo valorizable, costos productivos y salida faenada
   hacia inventario.
+- Huevos en `/gestion/huevos` con lotes de ponedoras, recoleccion, descarte,
+  costos y empaque de maples trazables hacia inventario.
 - Inventario comercial en `/gestion/inventario` con productos listos para
   venta, stock valorizado, mermas y reserva trazable para pedidos.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.

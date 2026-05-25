@@ -69,7 +69,9 @@ que la empresa confirme y registre su procedencia.
 | `production_units` | id, type, name, capacity, status |
 | `bird_batches` | id, code, breed, received_at, initial_count, current_count, processed_count, stage, unit_id |
 | `bird_batch_events` | batch_id, event_type, event_at, count, avg_weight_grams, feed_kg, feed_unit_cost, amount, expense_category, notes |
-| `egg_collections` | batch_id, collected_at, quantity, grade, rejected_quantity |
+| `layer_flocks` | id, code, location_id, started_at, initial_hens, current_hens, available_eggs, packed_maples, cost_per_hen, status |
+| `layer_flock_events` | flock_id, event_type, event_at, count, feed_kg, feed_unit_cost, amount, expense_category, notes |
+| `egg_collections` | flock_id, collected_at, collected_eggs, rejected_eggs, notes |
 | `feed_consumption` | batch_id, formula_version_id, quantity_kg, consumed_at |
 | `harvest_batches` | bird_batch_id, lot_id, processed_at, final_weight_kg |
 
@@ -81,6 +83,12 @@ valorizacion y se pueden valorizar posteriormente desde el tablero del lote.
 Indicadores calculables: mortalidad, supervivencia, evolucion de peso,
 consumo por ave, conversion alimenticia referencial, costo acumulado y costo
 por ave o kg vivo antes de faena.
+
+Para huevos, la recoleccion suma unidades aptas disponibles y el empaque
+descarga 30 huevos por maple para generar `inventory_lots` vendibles,
+relacionados al lote de ponedoras. Asi se calculan postura reciente, tasa de
+aprovechamiento y costo por absorcion acumulada por huevo o maple, que
+incluye la inversion de ponedoras y se estabiliza al avanzar el ciclo.
 
 ### Molino
 
