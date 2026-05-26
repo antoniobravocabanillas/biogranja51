@@ -5,7 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function PasswordResetForm() {
+type PasswordResetFormProps = {
+  customer?: boolean;
+};
+
+export function PasswordResetForm({ customer = false }: PasswordResetFormProps) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
@@ -91,7 +95,7 @@ export function PasswordResetForm() {
       return;
     }
 
-    router.replace("/gestion");
+    router.replace(customer ? "/mi-cuenta" : "/gestion");
     router.refresh();
   }
 
@@ -99,7 +103,7 @@ export function PasswordResetForm() {
     <form className="login-panel" onSubmit={updatePassword}>
       <p className="eyebrow">Recuperación segura</p>
       <h1>Nueva contraseña</h1>
-      <p>Define una nueva contraseña para volver al centro de gestión.</p>
+      <p>Define una nueva contraseña para volver {customer ? "a tu cuenta BioGranja" : "al centro de gestión"}.</p>
       {ready ? (
         <>
           <div className="form-field">
@@ -144,7 +148,7 @@ export function PasswordResetForm() {
           {loading ? "Guardando..." : "Guardar nueva contraseña"}
         </button>
       ) : null}
-      <Link className="password-back-link" href="/gestion/recuperar">
+      <Link className="password-back-link" href={customer ? "/cuenta/recuperar" : "/gestion/recuperar"}>
         Solicitar nuevo enlace
       </Link>
     </form>

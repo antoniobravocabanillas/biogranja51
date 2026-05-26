@@ -6,9 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 
 type PasswordRecoveryRequestProps = {
   configured: boolean;
+  customer?: boolean;
 };
 
-export function PasswordRecoveryRequest({ configured }: PasswordRecoveryRequestProps) {
+export function PasswordRecoveryRequest({ configured, customer = false }: PasswordRecoveryRequestProps) {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
@@ -24,7 +25,7 @@ export function PasswordRecoveryRequest({ configured }: PasswordRecoveryRequestP
     setMessage("");
     const supabase = createClient();
     const redirectTo =
-      `${window.location.origin}/auth/confirm?next=/gestion/restablecer`;
+      `${window.location.origin}/auth/confirm?next=${customer ? "/cuenta/restablecer" : "/gestion/restablecer"}`;
     const { error } = await supabase.auth.resetPasswordForEmail(
       email.trim().toLowerCase(),
       { redirectTo },
@@ -49,11 +50,11 @@ export function PasswordRecoveryRequest({ configured }: PasswordRecoveryRequestP
 
   return (
     <form className="login-panel" onSubmit={sendRecovery}>
-      <p className="eyebrow">Recuperación segura</p>
+      <p className="eyebrow">{customer ? "Mi cuenta" : "Recuperación segura"}</p>
       <h1>Restablecer contraseña</h1>
       <p>
-        Ingresa el correo de tu cuenta administrativa. Te enviaremos un enlace
-        temporal para definir una nueva contraseña.
+        Ingresa el correo de tu {customer ? "cuenta BioGranja" : "cuenta administrativa"}.
+        Te enviaremos un enlace temporal para definir una nueva contraseña.
       </p>
       <label className="form-field">
         <span>Correo</span>
@@ -72,7 +73,7 @@ export function PasswordRecoveryRequest({ configured }: PasswordRecoveryRequestP
           {loading ? "Enviando..." : "Enviar enlace"}
         </button>
       ) : null}
-      <Link className="password-back-link" href="/gestion/login">
+      <Link className="password-back-link" href={customer ? "/cuenta" : "/gestion/login"}>
         Volver al acceso
       </Link>
     </form>

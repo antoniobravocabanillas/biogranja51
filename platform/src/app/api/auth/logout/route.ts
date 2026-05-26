@@ -8,7 +8,11 @@ export async function POST(request: Request) {
     await supabase.auth.signOut();
   }
 
-  return NextResponse.redirect(new URL("/gestion/login", request.url), {
+  const formData = await request.formData().catch(() => null);
+  const requestedNext = formData?.get("next");
+  const next = requestedNext === "/cuenta" ? "/cuenta" : "/gestion/login";
+
+  return NextResponse.redirect(new URL(next, request.url), {
     status: 303,
   });
 }

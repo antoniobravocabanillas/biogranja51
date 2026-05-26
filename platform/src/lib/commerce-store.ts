@@ -10,6 +10,8 @@ import type {
   CommerceState,
   Customer,
   CustomerMetrics,
+  CustomerPortalProfile,
+  CustomerPortalWorkspace,
   DeliveryZone,
   DispatchableOrderItem,
   InventoryLot,
@@ -1212,6 +1214,29 @@ export async function createStorefrontOrder(payload: {
     paymentName: string;
   };
   return result;
+}
+
+export async function getCustomerPortalWorkspace(): Promise<CustomerPortalWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return { profile: null, orders: [] };
+  }
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.rpc("get_my_customer_portal");
+  assertDatabaseResult(error, "No se pudo leer tu cuenta");
+  return data as CustomerPortalWorkspace;
+}
+
+export async function saveCustomerPortalProfile(payload: {
+  name: string;
+  phone: string;
+}): Promise<CustomerPortalProfile> {
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.rpc("upsert_my_customer_profile", {
+    p_name: payload.name,
+    p_phone: payload.phone,
+  });
+  assertDatabaseResult(error, "No se pudo guardar tu perfil");
+  return data as CustomerPortalProfile;
 }
 
 export async function updateOrder(id: string, updates: Partial<Order>): Promise<Order> {

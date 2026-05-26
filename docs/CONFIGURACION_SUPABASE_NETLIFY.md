@@ -44,6 +44,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 13. `platform/supabase/migrations/202605250011_private_audit_evidence_and_dossiers.sql`
 14. `platform/supabase/migrations/202605250012_public_lot_traceability_qr.sql`
 15. `platform/supabase/migrations/202605250013_delivery_operations_and_cold_chain.sql`
+16. `platform/supabase/migrations/202605250014_customer_accounts_and_order_tracking.sql`
 
 La segunda migracion agrega:
 
@@ -144,6 +145,14 @@ La decimoquinta migracion agrega control profesional de ultima milla:
 - bloqueo de despacho sin lotes asignados y cierre sin control termico;
 - eventos auditables para programacion, despacho y recepcion.
 
+La decimosexta migracion agrega portal privado para clientes:
+
+- perfil de cliente vinculado a su usuario autenticado de Supabase;
+- registro de compras nuevas en la cuenta cuando el cliente inicia sesion antes de comprar;
+- consulta privada de pedidos y avance de entrega mediante RPC seguro;
+- proteccion contra apropiacion de pedidos antiguos solo por conocer un celular;
+- base para historial, recompra y futuras suscripciones.
+
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
 
@@ -194,6 +203,8 @@ Site URL: https://biogranja51.com
 Redirect URL: https://**--biogranja51.netlify.app/**
 Redirect URL: http://localhost:3100/**
 Redirect URL: https://biogranja51.com/gestion/restablecer
+Redirect URL: https://biogranja51.com/mi-cuenta
+Redirect URL: https://biogranja51.com/cuenta/restablecer
 Redirect URL: https://biogranja51.com/**
 ```
 
@@ -201,6 +212,11 @@ El acceso de gestion expone `/gestion/recuperar`, que envia el correo seguro,
 `/auth/confirm`, que valida `token_hash` del correo del lado servidor, y
 `/gestion/restablecer`, que permite definir una nueva clave mediante Supabase
 Auth.
+
+La cuenta de cliente utiliza `/cuenta` para registro e ingreso, confirma el
+correo mediante `/auth/confirm?next=/mi-cuenta` y recupera la clave desde
+`/cuenta/recuperar`. Personalizar tambien la plantilla `Confirm signup` para
+mantener el lenguaje y marca BioGranja en el alta de clientes.
 
 Personalizar la plantilla `Reset password` en Supabase con marca BioGranja y
 un enlace basado en `{{ .RedirectTo }}`, `{{ .TokenHash }}` y `type=recovery`.

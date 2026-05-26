@@ -162,6 +162,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   sin exponer documentos internos, costos ni identidad del proveedor.
 - Operacion de ultima milla con ventana de entrega, control termico en salida
   y recepcion, y evidencia asociada al pedido.
+- Portal autenticado del cliente para consultar pedidos propios, progreso de
+  entrega e historial sin exponer informacion de terceros.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

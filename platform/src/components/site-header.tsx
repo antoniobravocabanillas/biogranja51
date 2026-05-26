@@ -24,11 +24,11 @@ export function SiteHeader({ management = false }: SiteHeaderProps) {
           </>
         ) : (
           <>
-            <a href="#productos">Productos</a>
-            <a href="#modelo">Nuestro origen</a>
-            <a href="#suscripcion">Suscripciones</a>
-            <Link className="nav-action" href="/gestion">
-              Gestión
+            <a className="nav-secondary" href="#productos">Productos</a>
+            <a className="nav-secondary" href="#modelo">Nuestro origen</a>
+            <Link className="nav-account" href="/cuenta">Mi cuenta</Link>
+            <Link className="nav-action" href="/#productos">
+              Comprar
             </Link>
           </>
         )}

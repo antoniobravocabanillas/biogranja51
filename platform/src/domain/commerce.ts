@@ -236,6 +236,41 @@ export type Order = {
   delivery?: OrderDelivery | null;
 };
 
+export type CustomerPortalProfile = {
+  name: string;
+  phone: string;
+  email: string | null;
+  lastAddress: string | null;
+};
+
+export type CustomerPortalOrder = {
+  id: string;
+  number: string;
+  address: string;
+  status: OrderStatus;
+  subtotal: number;
+  deliveryFee: number;
+  total: number | null;
+  hasPendingPrice: boolean;
+  createdAt: string;
+  items: Array<{
+    name: string;
+    presentation: string;
+    quantity: number;
+    subtotal: number | null;
+  }>;
+  delivery: {
+    status: DeliveryOperationStatus;
+    windowStart: string;
+    windowEnd: string;
+  } | null;
+};
+
+export type CustomerPortalWorkspace = {
+  profile: CustomerPortalProfile | null;
+  orders: CustomerPortalOrder[];
+};
+
 export type OrderPayment = {
   id: string;
   orderId: string;

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { DeliveryZone, PaymentMethod, Product } from "@/domain/commerce";
 import {
@@ -114,7 +115,7 @@ export function StorefrontCatalog({
       return;
     }
 
-    setOrderFeedback(`Pedido ${result.order.number} registrado. Abriendo WhatsApp...`);
+    setOrderFeedback(`Pedido ${result.order.number} registrado. Puedes seguirlo desde Mi cuenta. Abriendo WhatsApp...`);
     window.open(result.whatsappUrl, "_blank", "noopener,noreferrer");
     setSubmitting(false);
   }
@@ -165,6 +166,10 @@ export function StorefrontCatalog({
           <h3>Tu pedido</h3>
           <span>{cartItems.length} productos</span>
         </div>
+        <p className="customer-order-prompt">
+          <Link href="/cuenta">Ingresa o crea tu cuenta</Link> antes de pedir para
+          seguir preparación y entrega en línea.
+        </p>
 
         {cartItems.length === 0 ? (
           <p className="empty-order">
@@ -282,7 +287,11 @@ export function StorefrontCatalog({
         <p className="payments-accepted">
           Pago: {activePayments.map((payment) => payment.name).join(", ")}
         </p>
-        {orderFeedback ? <p className="order-feedback">{orderFeedback}</p> : null}
+        {orderFeedback ? (
+          <p className="order-feedback">
+            {orderFeedback} <Link href="/mi-cuenta">Ver mis pedidos</Link>
+          </p>
+        ) : null}
         <button
           className="checkout-link"
           type="button"
