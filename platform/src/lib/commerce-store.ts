@@ -23,6 +23,11 @@ import type {
   FeedInputQualityStatus,
   FinanceOrder,
   FinanceWorkspace,
+  AuditEvidence,
+  DossierTarget,
+  DossierWorkspace,
+  EvidenceCategory,
+  EvidenceEntityType,
   FeedFormula,
   FeedFormulaStatus,
   FeedInput,
@@ -47,6 +52,7 @@ import type {
   AuditIssue,
   AuditWorkspace,
 } from "@/domain/commerce";
+import { evidenceCategoryLabels } from "@/domain/commerce";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
 
@@ -160,6 +166,22 @@ type OrderExpenseRow = {
   incurred_at: string;
   reference: string;
   notes: string;
+};
+
+type AuditEvidenceRow = {
+  id: string;
+  entity_type: EvidenceEntityType;
+  entity_id: string;
+  category: EvidenceCategory;
+  title: string;
+  storage_path: string;
+  file_name: string;
+  mime_type: string;
+  file_size: number | string;
+  notes: string;
+  status: AuditEvidence["status"];
+  void_reason: string;
+  created_at: string;
 };
 
 type CustomerRow = {
@@ -540,6 +562,24 @@ function orderExpenseFromRow(row: OrderExpenseRow): OrderExpense {
     incurredAt: row.incurred_at,
     reference: row.reference,
     notes: row.notes,
+  };
+}
+
+function auditEvidenceFromRow(row: AuditEvidenceRow): AuditEvidence {
+  return {
+    id: row.id,
+    entityType: row.entity_type,
+    entityId: row.entity_id,
+    category: row.category,
+    title: row.title,
+    storagePath: row.storage_path,
+    fileName: row.file_name,
+    mimeType: row.mime_type,
+    fileSize: Number(row.file_size),
+    notes: row.notes,
+    status: row.status,
+    voidReason: row.void_reason,
+    createdAt: row.created_at,
   };
 }
 
@@ -1335,6 +1375,209 @@ export async function recordOrderExpense(payload: {
   assertDatabaseResult(error, "No se pudo registrar el gasto");
 }
 
+export async function getDossierWorkspace(): Promise<DossierWorkspace> {
+  if (!isSupabaseConfigured()) {
+    return {
+      targets: [],
+      evidence: [],
+      activeEvidenceCount: 0,
+      completeTargetCount: 0,
+      pendingTargetCount: 0,
+      coveragePercent: null,
+    };
+  }
+
+  const supabase = await createSupabaseClient();
+  const [evidenceResult, inventoryResult, birdResult, inputResult, ordersResult, paymentsResult, receiptsResult] =
+    await Promise.all([
+      supabase.from("audit_evidence").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("inventory_lots")
+        .select("id, code, origin_type, sanitary_status, products(name)")
+        .neq("origin_type", "own"),
+      supabase.from("bird_batches").select("id, code, stage").neq("stage", "closed"),
+      supabase
+        .from("feed_input_lots")
+        .select("id, code, quality_status, feed_inputs(name)")
+        .eq("quality_status", "approved"),
+      supabase.from("orders").select("id, number, status").eq("status", "delivered"),
+      supabase
+        .from("order_payments")
+        .select("id, order_id, operation_reference, status")
+        .eq("status", "reconciled"),
+      supabase
+        .from("sales_receipts")
+        .select("id, order_id, series_number, status")
+        .eq("status", "issued"),
+    ]);
+  assertDatabaseResult(evidenceResult.error, "No se pudo leer evidencias");
+  assertDatabaseResult(inventoryResult.error, "No se pudo leer lotes documentables");
+  assertDatabaseResult(birdResult.error, "No se pudo leer lotes de crianza documentables");
+  assertDatabaseResult(inputResult.error, "No se pudo leer insumos documentables");
+  assertDatabaseResult(ordersResult.error, "No se pudo leer entregas documentables");
+  assertDatabaseResult(paymentsResult.error, "No se pudo leer pagos documentables");
+  assertDatabaseResult(receiptsResult.error, "No se pudo leer comprobantes documentables");
+
+  const evidence = (evidenceResult.data as AuditEvidenceRow[]).map(auditEvidenceFromRow);
+  const activeEvidence = evidence.filter((entry) => entry.status === "active");
+  const targets: DossierTarget[] = [];
+  const addTarget = (
+    id: string,
+    type: EvidenceEntityType,
+    label: string,
+    detail: string,
+    href: string,
+    expectedCategories: EvidenceCategory[],
+  ) => {
+    const matching = activeEvidence.filter((entry) => entry.entityType === type && entry.entityId === id);
+    targets.push({
+      key: `${type}:${id}`,
+      id,
+      type,
+      label,
+      detail,
+      href,
+      expectedCategories,
+      evidence: matching,
+      complete: expectedCategories.every((category) =>
+        matching.some((entry) => entry.category === category),
+      ),
+    });
+  };
+
+  const commercialLots = (inventoryResult.data ?? []) as unknown as Array<{
+    id: string;
+    code: string;
+    sanitary_status: InventorySanitaryStatus | null;
+    products: { name: string } | null;
+  }>;
+  commercialLots.forEach((lot) =>
+    addTarget(
+      lot.id,
+      "inventory_lot",
+      `Lote ${lot.code}`,
+      `${lot.products?.name ?? "Producto comprado"} | ${lot.sanitary_status === "approved" ? "Liberado" : "En control sanitario"}`,
+      "/gestion/inventario",
+      ["supplier_document", "temperature_record", "sanitary_release"],
+    ),
+  );
+
+  ((birdResult.data ?? []) as Array<{ id: string; code: string; stage: BirdBatchStage }>).forEach((lot) =>
+    addTarget(
+      lot.id,
+      "bird_batch",
+      `Crianza ${lot.code}`,
+      `Etapa ${lot.stage}`,
+      "/gestion/crianza",
+      ["production_record"],
+    ),
+  );
+
+  ((inputResult.data ?? []) as unknown as Array<{
+    id: string;
+    code: string;
+    feed_inputs: { name: string } | null;
+  }>).forEach((lot) =>
+    addTarget(
+      lot.id,
+      "feed_input_lot",
+      `Insumo ${lot.code}`,
+      lot.feed_inputs?.name ?? "Insumo aprobado",
+      "/gestion/molino",
+      ["supplier_document"],
+    ),
+  );
+
+  ((ordersResult.data ?? []) as Array<{ id: string; number: string }>).forEach((order) =>
+    addTarget(
+      order.id,
+      "order",
+      order.number,
+      "Entrega finalizada",
+      "/gestion/pedidos",
+      ["delivery_proof"],
+    ),
+  );
+
+  ((paymentsResult.data ?? []) as Array<{ id: string; operation_reference: string }>).forEach((payment) =>
+    addTarget(
+      payment.id,
+      "order_payment",
+      `Cobro ${payment.operation_reference}`,
+      "Pago conciliado",
+      "/gestion/finanzas",
+      ["payment_proof"],
+    ),
+  );
+
+  ((receiptsResult.data ?? []) as Array<{ id: string; series_number: string }>).forEach((receipt) =>
+    addTarget(
+      receipt.id,
+      "sales_receipt",
+      `Comprobante ${receipt.series_number}`,
+      "Comprobante emitido",
+      "/gestion/finanzas",
+      ["sales_receipt"],
+    ),
+  );
+
+  targets.sort((a, b) => Number(a.complete) - Number(b.complete) || a.label.localeCompare(b.label));
+  const completeTargetCount = targets.filter((target) => target.complete).length;
+  return {
+    targets,
+    evidence,
+    activeEvidenceCount: activeEvidence.length,
+    completeTargetCount,
+    pendingTargetCount: targets.length - completeTargetCount,
+    coveragePercent: targets.length ? (completeTargetCount / targets.length) * 100 : null,
+  };
+}
+
+export async function registerAuditEvidence(payload: {
+  entityType: EvidenceEntityType;
+  entityId: string;
+  category: EvidenceCategory;
+  title: string;
+  storagePath: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  notes: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("Los expedientes privados requieren Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("register_audit_evidence", {
+    p_entity_type: payload.entityType,
+    p_entity_id: payload.entityId,
+    p_category: payload.category,
+    p_title: payload.title,
+    p_storage_path: payload.storagePath,
+    p_file_name: payload.fileName,
+    p_mime_type: payload.mimeType,
+    p_file_size: payload.fileSize,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo registrar la evidencia");
+}
+
+export async function voidAuditEvidence(payload: { evidenceId: string; reason: string }): Promise<void> {
+  if (!isSupabaseConfigured()) throw new Error("Los expedientes privados requieren Supabase activo.");
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("void_audit_evidence", {
+    p_evidence_id: payload.evidenceId,
+    p_reason: payload.reason,
+  });
+  assertDatabaseResult(error, "No se pudo anular la evidencia");
+}
+
+export async function getAuditEvidence(id: string): Promise<AuditEvidence | null> {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.from("audit_evidence").select("*").eq("id", id).single();
+  assertDatabaseResult(error, "No se pudo leer la evidencia");
+  return data ? auditEvidenceFromRow(data as AuditEvidenceRow) : null;
+}
+
 export async function listCustomersWithMetrics(): Promise<CustomerMetrics[]> {
   if (!isSupabaseConfigured()) {
     const state = await getLocalState();
@@ -2060,11 +2303,13 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
       reconciledRevenue: 0,
       accountsReceivable: 0,
       auditedMargin: 0,
+      activeEvidenceCount: 0,
+      documentaryCoveragePercent: null,
     };
   }
 
   const supabase = await createSupabaseClient();
-  const [inventoryResult, inputLotsResult, formulasResult, millResult, birdEventsResult, ordersResult, eventsResult, financeWorkspace] =
+  const [inventoryResult, inputLotsResult, formulasResult, millResult, birdEventsResult, ordersResult, eventsResult, financeWorkspace, dossierWorkspace] =
     await Promise.all([
       supabase
         .from("inventory_lots")
@@ -2081,6 +2326,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
         .in("status", ["confirmed", "preparing", "dispatched", "delivered"]),
       supabase.from("audit_events").select("id, action, entity, created_at").order("created_at", { ascending: false }).limit(30),
       getFinanceWorkspace(),
+      getDossierWorkspace(),
     ]);
 
   assertDatabaseResult(inventoryResult.error, "No se pudo auditar inventario");
@@ -2265,6 +2511,22 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     });
   }
 
+  for (const target of dossierWorkspace.targets.filter((entry) => !entry.complete)) {
+    const missingLabels = target.expectedCategories
+      .filter((category) => !target.evidence.some((entry) => entry.category === category))
+      .map((category) => evidenceCategoryLabels[category])
+      .join(", ");
+    const critical = ["inventory_lot", "order", "order_payment", "sales_receipt"].includes(target.type);
+    issues.push({
+      id: `documentary-${target.key}`,
+      severity: critical ? "critical" : "warning",
+      area: "Expediente",
+      title: `${target.label} sin respaldo completo`,
+      detail: `Adjunta: ${missingLabels}.`,
+      href: "/gestion/expedientes",
+    });
+  }
+
   if (!formulas.some((formula) => formula.status === "approved")) {
     issues.push({
       id: "formula-approved",
@@ -2300,5 +2562,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     reconciledRevenue: financeWorkspace.reconciledRevenue,
     accountsReceivable: financeWorkspace.accountsReceivable,
     auditedMargin: financeWorkspace.auditableMargin,
+    activeEvidenceCount: dossierWorkspace.activeEvidenceCount,
+    documentaryCoveragePercent: dossierWorkspace.coveragePercent,
   };
 }

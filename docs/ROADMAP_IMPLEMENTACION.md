@@ -128,6 +128,7 @@ Objetivo: poder sustentar origen, costo y movimiento de cada producto.
 - Margen por pedido desde venta, lote asignado y gastos registrados.
   `Implementado en desarrollo`.
 - Evidencias adjuntas, responsables y exportacion del expediente por lote.
+  `Implementado en desarrollo`.
 - Conciliacion de pagos Yape/Plin/transferencia y comprobantes de venta.
   `Implementado en desarrollo`.
 

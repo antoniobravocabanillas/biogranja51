@@ -43,6 +43,25 @@ export type OrderPaymentStatus = "pending" | "reconciled" | "rejected";
 export type SalesReceiptStatus = "issued" | "voided";
 export type SalesReceiptType = "boleta" | "factura";
 export type OrderExpenseCategory = "delivery" | "packaging" | "commission" | "other";
+export type EvidenceEntityType =
+  | "inventory_lot"
+  | "bird_batch"
+  | "layer_flock"
+  | "feed_input_lot"
+  | "mill_batch"
+  | "order"
+  | "order_payment"
+  | "sales_receipt";
+export type EvidenceCategory =
+  | "supplier_document"
+  | "temperature_record"
+  | "sanitary_release"
+  | "payment_proof"
+  | "sales_receipt"
+  | "delivery_proof"
+  | "production_record"
+  | "other";
+export type EvidenceStatus = "active" | "voided";
 export type BirdBatchEventType =
   | "mortality"
   | "weight_sample"
@@ -252,6 +271,43 @@ export type FinanceWorkspace = {
   auditableMargin: number;
   pendingReconciliationCount: number;
   missingReceiptCount: number;
+};
+
+export type AuditEvidence = {
+  id: string;
+  entityType: EvidenceEntityType;
+  entityId: string;
+  category: EvidenceCategory;
+  title: string;
+  storagePath: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  notes: string;
+  status: EvidenceStatus;
+  voidReason: string;
+  createdAt: string;
+};
+
+export type DossierTarget = {
+  key: string;
+  id: string;
+  type: EvidenceEntityType;
+  label: string;
+  detail: string;
+  href: string;
+  expectedCategories: EvidenceCategory[];
+  evidence: AuditEvidence[];
+  complete: boolean;
+};
+
+export type DossierWorkspace = {
+  targets: DossierTarget[];
+  evidence: AuditEvidence[];
+  activeEvidenceCount: number;
+  completeTargetCount: number;
+  pendingTargetCount: number;
+  coveragePercent: number | null;
 };
 
 export type Customer = {
@@ -563,6 +619,8 @@ export type AuditWorkspace = {
   reconciledRevenue: number;
   accountsReceivable: number;
   auditedMargin: number;
+  activeEvidenceCount: number;
+  documentaryCoveragePercent: number | null;
 };
 
 export type CommerceState = {
@@ -642,6 +700,28 @@ export const orderExpenseCategoryLabels: Record<OrderExpenseCategory, string> = 
   packaging: "Empaque",
   commission: "Comision",
   other: "Otro",
+};
+
+export const evidenceEntityLabels: Record<EvidenceEntityType, string> = {
+  inventory_lot: "Lote comercial",
+  bird_batch: "Lote de crianza",
+  layer_flock: "Lote de ponedoras",
+  feed_input_lot: "Lote de insumo",
+  mill_batch: "Lote de molino",
+  order: "Pedido",
+  order_payment: "Cobro",
+  sales_receipt: "Comprobante",
+};
+
+export const evidenceCategoryLabels: Record<EvidenceCategory, string> = {
+  supplier_document: "Documento de proveedor",
+  temperature_record: "Registro de temperatura",
+  sanitary_release: "Liberacion sanitaria",
+  payment_proof: "Constancia de pago",
+  sales_receipt: "Archivo de comprobante",
+  delivery_proof: "Prueba de entrega",
+  production_record: "Registro productivo",
+  other: "Otro respaldo",
 };
 
 export const birdBatchStageLabels: Record<BirdBatchStage, string> = {

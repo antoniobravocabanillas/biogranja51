@@ -41,6 +41,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 10. `platform/supabase/migrations/202605250008_auditable_feed_supply_and_control.sql`
 11. `platform/supabase/migrations/202605250009_commercial_cold_chain_and_sanitary_release.sql`
 12. `platform/supabase/migrations/202605250010_financial_reconciliation_and_order_margin.sql`
+13. `platform/supabase/migrations/202605250011_private_audit_evidence_and_dossiers.sql`
 
 La segunda migracion agrega:
 
@@ -118,6 +119,13 @@ La duodecima migracion agrega cierre financiero:
 - anulacion de comprobantes conservando motivo y evento auditable;
 - gastos por pedido para reparto, empaque, comision u otros;
 - alertas y margen auditado solo para pedidos entregados y cerrados.
+
+La decimotercera migracion agrega expedientes documentales privados:
+
+- bucket privado `audit-evidence` para PDF o imagen, sin URL publica;
+- evidencias asociadas a lote, pedido, cobro o comprobante;
+- anulacion conservando motivo, usuario y bitacora auditable;
+- cobertura documental y reporte imprimible en `/gestion/expedientes`.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.

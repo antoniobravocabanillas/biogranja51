@@ -34,6 +34,8 @@ function eventLabel(action: string): string {
     "sales_receipt.issued": "Comprobante emitido",
     "sales_receipt.voided": "Comprobante anulado",
     "order_expense.recorded": "Gasto de pedido registrado",
+    "audit_evidence.registered": "Evidencia privada anexada",
+    "audit_evidence.voided": "Evidencia anulada",
   };
   return labels[action] ?? action;
 }
@@ -91,6 +93,15 @@ export function AuditDashboard({ workspace }: AuditDashboardProps) {
           <span>Margen auditado</span>
           <strong>S/ {workspace.auditedMargin.toFixed(2)}</strong>
           <small>Entregado y cerrado</small>
+        </article>
+        <article>
+          <span>Expediente digital</span>
+          <strong>
+            {workspace.documentaryCoveragePercent === null
+              ? "Sin casos"
+              : `${workspace.documentaryCoveragePercent.toFixed(0)}%`}
+          </strong>
+          <small>{workspace.activeEvidenceCount} archivos privados activos</small>
         </article>
       </div>
 

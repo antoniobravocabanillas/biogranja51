@@ -156,6 +156,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   real al tablero productivo.
 - Auditoria operativa con bitacora y hallazgos automáticos de costo o
   trazabilidad incompleta.
+- Expedientes digitales privados con evidencia por lote, cobro y entrega,
+  cobertura automatica y reporte imprimible para auditoria.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

@@ -105,6 +105,12 @@ export const managementModules = [
     status: "Operativo",
   },
   {
+    code: "DOC",
+    name: "Expedientes digitales",
+    description: "Evidencias privadas, respaldos de entrega y dossiers auditables.",
+    status: "Operativo",
+  },
+  {
     code: "CIR",
     name: "Circularidad",
     description: "Subproductos, compost, indicadores y aprovechamiento.",

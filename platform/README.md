@@ -33,6 +33,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
   cuarentena y liberacion sanitaria antes del despacho.
 - Finanzas en `/gestion/finanzas` con cobros, conciliacion, comprobantes,
   gastos por pedido y margen auditado.
+- Expedientes en `/gestion/expedientes` con evidencias privadas, cobertura
+  documental y reporte imprimible para exportar a PDF.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
 
 La web estatica existente permanece en la raiz del repositorio mientras se
@@ -58,6 +60,8 @@ Las migraciones de PostgreSQL/Supabase están en `supabase/migrations/` e incluy
 Con Supabase activo, los datos de pedidos y las escrituras del panel requieren
 sesión de un usuario asignado en `staff_assignments`. Las imágenes se guardan
 en Supabase Storage, preparado para el runtime de Netlify.
+Las evidencias operativas se almacenan en un bucket privado y se abren solo
+mediante enlaces temporales para personal autenticado.
 
 ## Supabase Y Netlify
 
