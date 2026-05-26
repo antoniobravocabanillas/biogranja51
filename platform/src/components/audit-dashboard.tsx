@@ -38,6 +38,9 @@ function eventLabel(action: string): string {
     "audit_evidence.voided": "Evidencia anulada",
     "inventory_lot.traceability_published": "Ficha QR de lote publicada",
     "inventory_lot.traceability_unpublished": "Ficha QR de lote ocultada",
+    "order_delivery.scheduled": "Ruta de entrega programada",
+    "order_delivery.dispatched": "Despacho con temperatura registrado",
+    "order_delivery.delivered": "Recepcion de pedido controlada",
   };
   return labels[action] ?? action;
 }
@@ -109,6 +112,11 @@ export function AuditDashboard({ workspace }: AuditDashboardProps) {
           <span>QR trazables</span>
           <strong>{workspace.publishedTraceabilityLots}</strong>
           <small>Lotes con ficha publica activa</small>
+        </article>
+        <article>
+          <span>Entregas controladas</span>
+          <strong>{workspace.completedControlledDeliveryCount}/{workspace.scheduledDeliveryCount}</strong>
+          <small>Rutas con recepcion y frio</small>
         </article>
       </div>
 

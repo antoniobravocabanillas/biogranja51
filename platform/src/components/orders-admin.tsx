@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { type FormEvent, useMemo, useState } from "react";
 import type {
   DeliveryZone,
   Order,
@@ -8,6 +9,7 @@ import type {
   PaymentMethod,
 } from "@/domain/commerce";
 import {
+  deliveryOperationStatusLabels,
   orderStatusActions,
   orderStatusLabels,
   orderStatuses,
@@ -32,6 +34,35 @@ function orderDate(value: string): string {
   }).format(new Date(value));
 }
 
+function inputDate(value?: string | null): string {
+  const date = value ? new Date(value) : new Date();
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return localDate.toISOString().slice(0, 16);
+}
+
+function timestamp(value: string): string {
+  return new Date(value).toISOString();
+}
+
+function deliveryDraft(order: Order | null) {
+  const delivery = order?.delivery;
+  const initialEnd = new Date(Date.now() + 2 * 60 * 60_000).toISOString();
+  return {
+    windowStart: inputDate(delivery?.windowStart),
+    windowEnd: inputDate(delivery?.windowEnd ?? initialEnd),
+    driverName: delivery?.driverName ?? "",
+    vehicleReference: delivery?.vehicleReference ?? "",
+    planningNotes: delivery?.planningNotes ?? "",
+    dispatchedAt: inputDate(delivery?.dispatchedAt),
+    dispatchTemperatureC: delivery?.dispatchTemperatureC?.toString() ?? "",
+    packagingCondition: delivery?.packagingCondition ?? "",
+    deliveredAt: inputDate(delivery?.deliveredAt),
+    deliveryTemperatureC: delivery?.deliveryTemperatureC?.toString() ?? "",
+    receivedBy: delivery?.receivedBy ?? "",
+    deliveryNotes: delivery?.deliveryNotes ?? "",
+  };
+}
+
 export function OrdersAdmin({
   initialOrders,
   deliveryZones,
@@ -50,6 +81,7 @@ export function OrdersAdmin({
   );
   const selected =
     visibleOrders.find((order) => order.id === selectedId) ?? visibleOrders[0] ?? null;
+  const [logistics, setLogistics] = useState(() => deliveryDraft(selected));
 
   async function changeStatus(nextStatus: OrderStatus) {
     if (!selected || !editable) {
@@ -71,7 +103,38 @@ export function OrdersAdmin({
     setOrders((current) =>
       current.map((order) => (order.id === result.id ? result : order)),
     );
+    setLogistics(deliveryDraft(result));
     setMessage(`Pedido ${result.number}: ${orderStatusLabels[result.status]}.`);
+    setSaving(false);
+  }
+
+  async function submitLogistics(
+    event: FormEvent<HTMLFormElement>,
+    endpoint: string,
+    method: "POST" | "PATCH",
+    payload: object,
+    success: string,
+  ) {
+    event.preventDefault();
+    if (!selected || !editable) {
+      return;
+    }
+    setSaving(true);
+    setMessage("");
+    const response = await fetch(`/api/pedidos/${selected.id}/entrega${endpoint}`, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = (await response.json()) as Order & { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo guardar el control de entrega.");
+      setSaving(false);
+      return;
+    }
+    setOrders((current) => current.map((order) => (order.id === result.id ? result : order)));
+    setLogistics(deliveryDraft(result));
+    setMessage(success);
     setSaving(false);
   }
 
@@ -95,7 +158,17 @@ export function OrdersAdmin({
             <span>Filtrar</span>
             <select
               value={filter}
-              onChange={(event) => setFilter(event.target.value as "all" | OrderStatus)}
+              onChange={(event) => {
+                const nextFilter = event.target.value as "all" | OrderStatus;
+                const nextSelected = orders.find(
+                  (order) => nextFilter === "all" || order.status === nextFilter,
+                ) ?? null;
+                setFilter(nextFilter);
+                if (nextSelected) {
+                  setSelectedId(nextSelected.id);
+                  setLogistics(deliveryDraft(nextSelected));
+                }
+              }}
             >
               <option value="all">Todos</option>
               {orderStatuses.map((status) => (
@@ -119,7 +192,10 @@ export function OrdersAdmin({
                 className={selected?.id === order.id ? "selected" : ""}
                 type="button"
                 key={order.id}
-                onClick={() => setSelectedId(order.id)}
+                onClick={() => {
+                  setSelectedId(order.id);
+                  setLogistics(deliveryDraft(order));
+                }}
               >
                 <div>
                   <strong>{order.number}</strong>
@@ -173,7 +249,9 @@ export function OrdersAdmin({
               <div><dt>Total</dt><dd>{currency(selected.total)}</dd></div>
             </dl>
             <div className="status-actions">
-              {(orderStatusActions[selected.status] ?? []).map((status) => (
+              {(orderStatusActions[selected.status] ?? [])
+                .filter((status) => status !== "dispatched" && status !== "delivered")
+                .map((status) => (
                 <button
                   className={status === "cancelled" ? "cancel" : ""}
                   disabled={!editable || saving}
@@ -184,10 +262,103 @@ export function OrdersAdmin({
                   {status === "cancelled" ? "Cancelar" : `Marcar: ${orderStatusLabels[status]}`}
                 </button>
               ))}
-              {selected.status === "delivered" || selected.status === "cancelled" ? (
+              {selected.status === "cancelled" ? (
                 <p className="terminal-order">Pedido finalizado sin acciones pendientes.</p>
               ) : null}
             </div>
+            {selected.status !== "pending_confirmation" && selected.status !== "cancelled" ? (
+              <section className="delivery-control">
+                <div className="delivery-heading">
+                  <div>
+                    <p className="eyebrow">Ultima milla</p>
+                    <h3>Control de entrega</h3>
+                  </div>
+                  {selected.delivery ? (
+                    <span>{deliveryOperationStatusLabels[selected.delivery.status]}</span>
+                  ) : null}
+                </div>
+                {selected.delivery ? (
+                  <dl className="delivery-summary">
+                    <div><dt>Ventana</dt><dd>{orderDate(selected.delivery.windowStart)} - {orderDate(selected.delivery.windowEnd)}</dd></div>
+                    <div><dt>Responsable</dt><dd>{selected.delivery.driverName}{selected.delivery.vehicleReference ? ` | ${selected.delivery.vehicleReference}` : ""}</dd></div>
+                    {selected.delivery.dispatchTemperatureC !== null ? (
+                      <div><dt>Salida</dt><dd>{selected.delivery.dispatchTemperatureC.toFixed(1)} C | {selected.delivery.packagingCondition}</dd></div>
+                    ) : null}
+                    {selected.delivery.deliveryTemperatureC !== null ? (
+                      <div><dt>Recepcion</dt><dd>{selected.delivery.deliveryTemperatureC.toFixed(1)} C | {selected.delivery.receivedBy}</dd></div>
+                    ) : null}
+                  </dl>
+                ) : null}
+                {(selected.status === "confirmed" || selected.status === "preparing") &&
+                (!selected.delivery || selected.delivery.status === "planned") ? (
+                  <form
+                    className="delivery-form"
+                    onSubmit={(event) => submitLogistics(event, "", "POST", {
+                      windowStart: timestamp(logistics.windowStart),
+                      windowEnd: timestamp(logistics.windowEnd),
+                      driverName: logistics.driverName,
+                      vehicleReference: logistics.vehicleReference,
+                      planningNotes: logistics.planningNotes,
+                    }, "Ruta de entrega programada.")}
+                  >
+                    <strong>Programar ruta</strong>
+                    <div className="delivery-fields two-columns">
+                      <label><span>Desde</span><input type="datetime-local" value={logistics.windowStart} onChange={(event) => setLogistics({ ...logistics, windowStart: event.target.value })} required /></label>
+                      <label><span>Hasta</span><input type="datetime-local" value={logistics.windowEnd} onChange={(event) => setLogistics({ ...logistics, windowEnd: event.target.value })} required /></label>
+                    </div>
+                    <div className="delivery-fields two-columns">
+                      <label><span>Repartidor</span><input value={logistics.driverName} onChange={(event) => setLogistics({ ...logistics, driverName: event.target.value })} required /></label>
+                      <label><span>Vehiculo / placa</span><input value={logistics.vehicleReference} onChange={(event) => setLogistics({ ...logistics, vehicleReference: event.target.value })} /></label>
+                    </div>
+                    <label><span>Notas de ruta</span><textarea value={logistics.planningNotes} onChange={(event) => setLogistics({ ...logistics, planningNotes: event.target.value })} /></label>
+                    <button disabled={!editable || saving} type="submit">Guardar programacion</button>
+                  </form>
+                ) : null}
+                {selected.status === "preparing" && selected.delivery?.status === "planned" ? (
+                  <form
+                    className="delivery-form"
+                    onSubmit={(event) => submitLogistics(event, "/despacho", "PATCH", {
+                      dispatchedAt: timestamp(logistics.dispatchedAt),
+                      temperatureC: Number(logistics.dispatchTemperatureC),
+                      packagingCondition: logistics.packagingCondition,
+                    }, "Pedido despachado con temperatura registrada.")}
+                  >
+                    <strong>Registrar salida</strong>
+                    <div className="delivery-fields two-columns">
+                      <label><span>Hora de salida</span><input type="datetime-local" value={logistics.dispatchedAt} onChange={(event) => setLogistics({ ...logistics, dispatchedAt: event.target.value })} required /></label>
+                      <label><span>Temperatura C</span><input type="number" min="-5" max="12" step="0.1" value={logistics.dispatchTemperatureC} onChange={(event) => setLogistics({ ...logistics, dispatchTemperatureC: event.target.value })} required /></label>
+                    </div>
+                    <label><span>Estado de empaque / frio</span><input value={logistics.packagingCondition} onChange={(event) => setLogistics({ ...logistics, packagingCondition: event.target.value })} required /></label>
+                    <button disabled={!editable || saving} type="submit">Despachar pedido</button>
+                  </form>
+                ) : null}
+                {selected.status === "dispatched" && selected.delivery?.status === "dispatched" ? (
+                  <form
+                    className="delivery-form"
+                    onSubmit={(event) => submitLogistics(event, "/recepcion", "PATCH", {
+                      deliveredAt: timestamp(logistics.deliveredAt),
+                      temperatureC: Number(logistics.deliveryTemperatureC),
+                      receivedBy: logistics.receivedBy,
+                      notes: logistics.deliveryNotes,
+                    }, "Entrega confirmada con recepcion controlada.")}
+                  >
+                    <strong>Confirmar recepcion</strong>
+                    <div className="delivery-fields two-columns">
+                      <label><span>Hora de entrega</span><input type="datetime-local" value={logistics.deliveredAt} onChange={(event) => setLogistics({ ...logistics, deliveredAt: event.target.value })} required /></label>
+                      <label><span>Temperatura C</span><input type="number" min="-5" max="12" step="0.1" value={logistics.deliveryTemperatureC} onChange={(event) => setLogistics({ ...logistics, deliveryTemperatureC: event.target.value })} required /></label>
+                    </div>
+                    <label><span>Persona que recibe</span><input value={logistics.receivedBy} onChange={(event) => setLogistics({ ...logistics, receivedBy: event.target.value })} required /></label>
+                    <label><span>Observaciones</span><textarea value={logistics.deliveryNotes} onChange={(event) => setLogistics({ ...logistics, deliveryNotes: event.target.value })} /></label>
+                    <button disabled={!editable || saving} type="submit">Cerrar entrega</button>
+                  </form>
+                ) : null}
+                {selected.status === "delivered" ? (
+                  <p className="delivery-evidence">
+                    Entrega cerrada. <Link href="/gestion/expedientes">Adjuntar evidencia de entrega</Link>
+                  </p>
+                ) : null}
+              </section>
+            ) : null}
             {message ? <p className="form-message">{message}</p> : null}
           </>
         ) : (

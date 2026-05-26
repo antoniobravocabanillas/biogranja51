@@ -8,6 +8,7 @@ export type OrderStatus =
   | "dispatched"
   | "delivered"
   | "cancelled";
+export type DeliveryOperationStatus = "planned" | "dispatched" | "delivered";
 export type CustomerSegment =
   | "hogar"
   | "recurrente"
@@ -198,6 +199,24 @@ export type OrderItem = {
   costTotal: number | null;
 };
 
+export type OrderDelivery = {
+  id: string;
+  orderId: string;
+  status: DeliveryOperationStatus;
+  windowStart: string;
+  windowEnd: string;
+  driverName: string;
+  vehicleReference: string;
+  planningNotes: string;
+  dispatchedAt: string | null;
+  dispatchTemperatureC: number | null;
+  packagingCondition: string;
+  deliveredAt: string | null;
+  deliveryTemperatureC: number | null;
+  receivedBy: string;
+  deliveryNotes: string;
+};
+
 export type Order = {
   id: string;
   customerId: string | null;
@@ -214,6 +233,7 @@ export type Order = {
   total: number | null;
   hasPendingPrice: boolean;
   createdAt: string;
+  delivery?: OrderDelivery | null;
 };
 
 export type OrderPayment = {
@@ -640,6 +660,8 @@ export type AuditWorkspace = {
   activeEvidenceCount: number;
   documentaryCoveragePercent: number | null;
   publishedTraceabilityLots: number;
+  scheduledDeliveryCount: number;
+  completedControlledDeliveryCount: number;
 };
 
 export type CommerceState = {
@@ -673,6 +695,12 @@ export const orderStatusActions: Partial<Record<OrderStatus, OrderStatus[]>> = {
   confirmed: ["preparing", "cancelled"],
   preparing: ["dispatched", "cancelled"],
   dispatched: ["delivered"],
+};
+
+export const deliveryOperationStatusLabels: Record<DeliveryOperationStatus, string> = {
+  planned: "Programada",
+  dispatched: "En ruta",
+  delivered: "Recibida",
 };
 
 export const customerSegmentLabels: Record<CustomerSegment, string> = {

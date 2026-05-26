@@ -133,6 +133,8 @@ Objetivo: poder sustentar origen, costo y movimiento de cada producto.
   `Implementado en desarrollo`.
 - QR publico por lote con publicacion controlada y datos sensibles excluidos.
   `Implementado en desarrollo`.
+- Ultima milla con ruta, responsable, temperatura de salida y recepcion.
+  `Implementado en desarrollo`.
 
 Criterio de salida: una auditoria puede reconstruir proveedor o produccion,
 costo, calidad, inventario, pedido, pago y entrega sin depender de registros

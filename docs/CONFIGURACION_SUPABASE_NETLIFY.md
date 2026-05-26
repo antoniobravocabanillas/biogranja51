@@ -43,6 +43,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 12. `platform/supabase/migrations/202605250010_financial_reconciliation_and_order_margin.sql`
 13. `platform/supabase/migrations/202605250011_private_audit_evidence_and_dossiers.sql`
 14. `platform/supabase/migrations/202605250012_public_lot_traceability_qr.sql`
+15. `platform/supabase/migrations/202605250013_delivery_operations_and_cold_chain.sql`
 
 La segunda migracion agrega:
 
@@ -134,6 +135,14 @@ La decimocuarta migracion agrega trazabilidad publica por QR:
 - publicacion de compras solo tras liberacion sanitaria y evidencia completa;
 - publicacion de producto propio solo con origen productivo enlazado;
 - consulta publica limitada a origen, fechas y estado verificable, sin datos internos.
+
+La decimoquinta migracion agrega control profesional de ultima milla:
+
+- programacion de ventana, repartidor y vehiculo para cada entrega;
+- registro obligatorio de temperatura y empaque al salir;
+- registro de temperatura y receptor al finalizar la entrega;
+- bloqueo de despacho sin lotes asignados y cierre sin control termico;
+- eventos auditables para programacion, despacho y recepcion.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.

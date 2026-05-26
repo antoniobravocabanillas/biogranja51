@@ -160,6 +160,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   cobertura automatica y reporte imprimible para auditoria.
 - Ficha publica por QR para lotes habilitados, con origen y control verificable
   sin exponer documentos internos, costos ni identidad del proveedor.
+- Operacion de ultima milla con ventana de entrega, control termico en salida
+  y recepcion, y evidencia asociada al pedido.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

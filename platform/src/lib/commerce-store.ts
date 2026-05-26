@@ -40,6 +40,7 @@ import type {
   LayerFlockEvent,
   LayerFlockStatus,
   Order,
+  OrderDelivery,
   OrderExpense,
   OrderExpenseCategory,
   OrderPayment,
@@ -132,6 +133,25 @@ type OrderRow = {
     products: { name: string; presentation: string } | null;
     inventory_lots?: { code: string } | null;
   }>;
+  order_deliveries?: OrderDeliveryRow[];
+};
+
+type OrderDeliveryRow = {
+  id: string;
+  order_id: string;
+  status: OrderDelivery["status"];
+  window_start: string;
+  window_end: string;
+  driver_name: string;
+  vehicle_reference: string;
+  planning_notes: string;
+  dispatched_at: string | null;
+  dispatch_temperature_c: number | string | null;
+  packaging_condition: string;
+  delivered_at: string | null;
+  delivery_temperature_c: number | string | null;
+  received_by: string;
+  delivery_notes: string;
 };
 
 type OrderPaymentRow = {
@@ -498,6 +518,26 @@ function paymentFromRow(row: PaymentMethodRow): PaymentMethod {
   };
 }
 
+function orderDeliveryFromRow(row: OrderDeliveryRow): OrderDelivery {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    status: row.status,
+    windowStart: row.window_start,
+    windowEnd: row.window_end,
+    driverName: row.driver_name,
+    vehicleReference: row.vehicle_reference,
+    planningNotes: row.planning_notes,
+    dispatchedAt: row.dispatched_at,
+    dispatchTemperatureC: numberValue(row.dispatch_temperature_c),
+    packagingCondition: row.packaging_condition,
+    deliveredAt: row.delivered_at,
+    deliveryTemperatureC: numberValue(row.delivery_temperature_c),
+    receivedBy: row.received_by,
+    deliveryNotes: row.delivery_notes,
+  };
+}
+
 function orderFromRow(row: OrderRow): Order {
   return {
     id: row.id,
@@ -526,6 +566,7 @@ function orderFromRow(row: OrderRow): Order {
     total: numberValue(row.total),
     hasPendingPrice: row.has_pending_price,
     createdAt: row.created_at,
+    delivery: row.order_deliveries?.[0] ? orderDeliveryFromRow(row.order_deliveries[0]) : null,
   };
 }
 
@@ -920,7 +961,7 @@ async function getSupabaseCommerceState(includeProtected: boolean): Promise<Comm
       supabase.from("staff_roles").select("*").order("name"),
       supabase
         .from("orders")
-        .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
+        .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code)), order_deliveries(*)")
         .order("created_at", { ascending: false }),
     ]);
     assertDatabaseResult(locationsResult.error, "No se pudo leer sedes");
@@ -1196,11 +1237,76 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
   assertDatabaseResult(updateError, "No se pudo actualizar el pedido");
   const { data, error } = await supabase
     .from("orders")
-    .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code))")
+    .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code)), order_deliveries(*)")
     .eq("id", id)
     .single();
   assertDatabaseResult(error, "No se pudo actualizar el pedido");
   return orderFromRow(data as unknown as OrderRow);
+}
+
+async function getOrderWithDelivery(id: string): Promise<Order> {
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code)), order_deliveries(*)")
+    .eq("id", id)
+    .single();
+  assertDatabaseResult(error, "No se pudo leer la operacion de entrega");
+  return orderFromRow(data as unknown as OrderRow);
+}
+
+export async function scheduleOrderDelivery(id: string, payload: {
+  windowStart: string;
+  windowEnd: string;
+  driverName: string;
+  vehicleReference: string;
+  planningNotes: string;
+}): Promise<Order> {
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("schedule_order_delivery", {
+    p_order_id: id,
+    p_window_start: payload.windowStart,
+    p_window_end: payload.windowEnd,
+    p_driver_name: payload.driverName,
+    p_vehicle_reference: payload.vehicleReference,
+    p_notes: payload.planningNotes,
+  });
+  assertDatabaseResult(error, "No se pudo programar la entrega");
+  return getOrderWithDelivery(id);
+}
+
+export async function dispatchOrderDelivery(id: string, payload: {
+  dispatchedAt: string;
+  temperatureC: number;
+  packagingCondition: string;
+}): Promise<Order> {
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("dispatch_order_delivery", {
+    p_order_id: id,
+    p_dispatched_at: payload.dispatchedAt,
+    p_temperature_c: payload.temperatureC,
+    p_packaging_condition: payload.packagingCondition,
+  });
+  assertDatabaseResult(error, "No se pudo despachar la entrega");
+  return getOrderWithDelivery(id);
+}
+
+export async function completeOrderDelivery(id: string, payload: {
+  deliveredAt: string;
+  temperatureC: number;
+  receivedBy: string;
+  notes: string;
+}): Promise<Order> {
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("complete_order_delivery", {
+    p_order_id: id,
+    p_delivered_at: payload.deliveredAt,
+    p_temperature_c: payload.temperatureC,
+    p_received_by: payload.receivedBy,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo confirmar la entrega");
+  return getOrderWithDelivery(id);
 }
 
 export async function getFinanceWorkspace(): Promise<FinanceWorkspace> {
@@ -2371,6 +2477,8 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
       activeEvidenceCount: 0,
       documentaryCoveragePercent: null,
       publishedTraceabilityLots: 0,
+      scheduledDeliveryCount: 0,
+      completedControlledDeliveryCount: 0,
     };
   }
 
@@ -2388,7 +2496,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
       supabase.from("bird_batch_events").select("id, event_type, feed_kg, amount"),
       supabase
         .from("orders")
-        .select("id, number, status, order_items(cost_total)")
+        .select("id, number, status, order_items(cost_total), order_deliveries(*)")
         .in("status", ["confirmed", "preparing", "dispatched", "delivered"]),
       supabase.from("audit_events").select("id, action, entity, created_at").order("created_at", { ascending: false }).limit(30),
       getFinanceWorkspace(),
@@ -2425,6 +2533,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
   }>;
   const controlledOrders = (ordersResult.data ?? []) as Array<{
     id: string; number: string; status: Order["status"]; order_items: Array<{ cost_total: number | string | null }>;
+    order_deliveries: OrderDeliveryRow[];
   }>;
   const issues: AuditIssue[] = [];
 
@@ -2534,6 +2643,43 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     });
   }
 
+  for (const order of controlledOrders) {
+    const delivery = order.order_deliveries?.[0];
+    if (order.status === "preparing" && !delivery) {
+      issues.push({
+        id: `delivery-window-${order.id}`,
+        severity: "warning",
+        area: "Delivery",
+        title: `${order.number} sin ruta programada`,
+        detail: "Programa ventana horaria y responsable antes de despachar.",
+        href: "/gestion/pedidos",
+      });
+    }
+    if (order.status === "dispatched" && (!delivery || delivery.status !== "dispatched")) {
+      issues.push({
+        id: `delivery-dispatch-${order.id}`,
+        severity: "critical",
+        area: "Cadena de frio",
+        title: `${order.number} despachado sin control de salida`,
+        detail: "La ruta o temperatura de salida no permiten sustentar la cadena de frio.",
+        href: "/gestion/pedidos",
+      });
+    }
+    if (
+      order.status === "delivered" &&
+      (!delivery || delivery.status !== "delivered" || delivery.delivery_temperature_c === null)
+    ) {
+      issues.push({
+        id: `delivery-reception-${order.id}`,
+        severity: "critical",
+        area: "Cadena de frio",
+        title: `${order.number} entregado sin recepcion controlada`,
+        detail: "Registra temperatura de entrega y persona que recibio el pedido.",
+        href: "/gestion/pedidos",
+      });
+    }
+  }
+
   const deliveredFinancialOrders = financeWorkspace.orders.filter((order) => order.status === "delivered");
   for (const order of deliveredFinancialOrders) {
     if (order.total !== null && order.reconciledAmount < order.total) {
@@ -2632,5 +2778,9 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     activeEvidenceCount: dossierWorkspace.activeEvidenceCount,
     documentaryCoveragePercent: dossierWorkspace.coveragePercent,
     publishedTraceabilityLots: inventoryLots.filter((lot) => lot.traceability_published).length,
+    scheduledDeliveryCount: controlledOrders.filter((order) => (order.order_deliveries ?? []).length > 0).length,
+    completedControlledDeliveryCount: controlledOrders.filter(
+      (order) => order.order_deliveries?.[0]?.status === "delivered",
+    ).length,
   };
 }

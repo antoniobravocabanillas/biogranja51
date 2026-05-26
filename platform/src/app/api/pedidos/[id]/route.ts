@@ -32,6 +32,12 @@ export async function PATCH(
         { status: 409 },
       );
     }
+    if (body.status === "dispatched" || body.status === "delivered") {
+      return Response.json(
+        { error: "Registra despacho y recepcion desde el control de entrega." },
+        { status: 409 },
+      );
+    }
 
     const updated = await updateOrder(id, { status: body.status });
     revalidatePath("/gestion");

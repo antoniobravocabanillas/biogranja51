@@ -4005,6 +4005,137 @@ p {
   text-align: center;
 }
 
+.delivery-control {
+  background: #f5f3ed;
+  border-radius: 16px;
+  margin-top: 20px;
+  padding: 18px;
+}
+
+.delivery-heading {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.delivery-heading .eyebrow {
+  margin-bottom: 6px;
+}
+
+.delivery-heading h3 {
+  color: var(--forest);
+  font-size: 18px;
+}
+
+.delivery-heading > span {
+  background: #dceadf;
+  border-radius: 999px;
+  color: #195632;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+}
+
+.delivery-summary {
+  border-bottom: 1px solid var(--line);
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+}
+
+.delivery-summary div {
+  display: flex;
+  font-size: 12px;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.delivery-summary dt {
+  color: var(--muted);
+}
+
+.delivery-summary dd {
+  color: var(--forest);
+  font-weight: 650;
+  margin: 0;
+  text-align: right;
+}
+
+.delivery-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 13px;
+}
+
+.delivery-form strong {
+  color: var(--forest);
+  font-size: 13px;
+}
+
+.delivery-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.delivery-fields.two-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.delivery-form label {
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.delivery-form input,
+.delivery-form textarea {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--forest);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px;
+  text-transform: none;
+}
+
+.delivery-form textarea {
+  min-height: 55px;
+  resize: vertical;
+}
+
+.delivery-form button {
+  background: var(--forest);
+  border: 0;
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 750;
+  padding: 12px;
+}
+
+.delivery-form button:disabled {
+  opacity: 0.55;
+}
+
+.delivery-evidence {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 14px 0 0;
+}
+
+.delivery-evidence a {
+  color: var(--forest);
+  font-weight: 700;
+}
+
 .orders-empty {
   background: #f2efe7;
   border-radius: 14px;
