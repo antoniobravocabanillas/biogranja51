@@ -36,6 +36,8 @@ function eventLabel(action: string): string {
     "order_expense.recorded": "Gasto de pedido registrado",
     "audit_evidence.registered": "Evidencia privada anexada",
     "audit_evidence.voided": "Evidencia anulada",
+    "inventory_lot.traceability_published": "Ficha QR de lote publicada",
+    "inventory_lot.traceability_unpublished": "Ficha QR de lote ocultada",
   };
   return labels[action] ?? action;
 }
@@ -102,6 +104,11 @@ export function AuditDashboard({ workspace }: AuditDashboardProps) {
               : `${workspace.documentaryCoveragePercent.toFixed(0)}%`}
           </strong>
           <small>{workspace.activeEvidenceCount} archivos privados activos</small>
+        </article>
+        <article>
+          <span>QR trazables</span>
+          <strong>{workspace.publishedTraceabilityLots}</strong>
+          <small>Lotes con ficha publica activa</small>
         </article>
       </div>
 

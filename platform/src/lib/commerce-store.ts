@@ -17,6 +17,7 @@ import type {
   InventorySanitaryStatus,
   InventoryUnit,
   InventoryWorkspace,
+  PublicLotTraceability,
   EggCollection,
   EggWorkspace,
   FeedInputLot,
@@ -235,6 +236,10 @@ type InventoryLotRow = {
   source_bird_batch_id?: string | null;
   source_layer_flock_id?: string | null;
   processed_units?: number | string | null;
+  public_trace_token?: string | null;
+  traceability_published?: boolean | null;
+  public_trace_summary?: string | null;
+  traceability_published_at?: string | null;
   created_at: string;
   products: { name: string; presentation: string } | null;
   locations: { name: string } | null;
@@ -652,6 +657,10 @@ function inventoryLotFromRow(row: InventoryLotRow): InventoryLot {
     sourceLayerFlockId: row.source_layer_flock_id ?? null,
     sourceLayerFlockCode: row.layer_flocks?.code ?? null,
     processedUnits: numberValue(row.processed_units ?? null),
+    publicTraceToken: row.public_trace_token ?? null,
+    traceabilityPublished: row.traceability_published ?? false,
+    publicTraceSummary: row.public_trace_summary ?? "",
+    traceabilityPublishedAt: row.traceability_published_at ?? null,
     createdAt: row.created_at,
     movements: (row.inventory_movements ?? []).map((movement) => ({
       id: movement.id,
@@ -1778,6 +1787,62 @@ export async function recordInventorySanitaryEvidence(payload: {
   assertDatabaseResult(error, "No se pudo registrar el expediente sanitario");
 }
 
+export async function publishInventoryLotTraceability(payload: {
+  lotId: string;
+  published: boolean;
+  publicSummary: string;
+}): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("La trazabilidad publica requiere Supabase activo.");
+  }
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("publish_inventory_lot_traceability", {
+    p_lot_id: payload.lotId,
+    p_published: payload.published,
+    p_public_summary: payload.publicSummary,
+  });
+  assertDatabaseResult(error, "No se pudo actualizar la trazabilidad publica");
+}
+
+export async function getPublicLotTraceability(token: string): Promise<PublicLotTraceability | null> {
+  if (!isSupabaseConfigured()) return null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token)) {
+    return null;
+  }
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.rpc("get_public_lot_traceability", {
+    p_token: token,
+  });
+  assertDatabaseResult(error, "No se pudo consultar la trazabilidad");
+  const record = (data as Array<{
+    token: string;
+    lot_code: string;
+    product_name: string;
+    presentation: string;
+    origin_type: Product["originType"];
+    produced_or_received_at: string;
+    expires_at: string | null;
+    source_label: string;
+    verification_label: string;
+    public_summary: string;
+    published_at: string;
+  }> | null)?.[0];
+  if (!record) return null;
+  return {
+    token: record.token,
+    lotCode: record.lot_code,
+    productName: record.product_name,
+    presentation: record.presentation,
+    originType: record.origin_type,
+    producedOrReceivedAt: record.produced_or_received_at,
+    expiresAt: record.expires_at,
+    sourceLabel: record.source_label,
+    verificationLabel: record.verification_label,
+    publicSummary: record.public_summary,
+    publishedAt: record.published_at,
+  };
+}
+
 export async function recordInventoryMovement(payload: {
   lotId: string;
   type: "adjustment_in" | "waste";
@@ -2305,6 +2370,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
       auditedMargin: 0,
       activeEvidenceCount: 0,
       documentaryCoveragePercent: null,
+      publishedTraceabilityLots: 0,
     };
   }
 
@@ -2313,7 +2379,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     await Promise.all([
       supabase
         .from("inventory_lots")
-        .select("id, code, origin_type, supplier_name, supplier_document, supplier_lot_code, arrival_temperature_c, storage_temperature_c, sanitary_status, unit_cost, quantity, status, products(name)"),
+        .select("id, code, origin_type, supplier_name, supplier_document, supplier_lot_code, arrival_temperature_c, storage_temperature_c, sanitary_status, unit_cost, quantity, status, traceability_published, products(name)"),
       supabase
         .from("feed_input_lots")
         .select("*, feed_inputs(name), suppliers(name, tax_id), locations(name)"),
@@ -2343,6 +2409,7 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     supplier_document: string | null; supplier_lot_code: string | null;
     arrival_temperature_c: number | string | null; storage_temperature_c: number | string | null;
     sanitary_status: InventorySanitaryStatus | null;
+    traceability_published: boolean | null;
     products: { name: string } | null;
   }>;
   const inputLots = (inputLotsResult.data as unknown as FeedInputLotRow[]).map(feedInputLotFromRow);
@@ -2564,5 +2631,6 @@ export async function getAuditWorkspace(): Promise<AuditWorkspace> {
     auditedMargin: financeWorkspace.auditableMargin,
     activeEvidenceCount: dossierWorkspace.activeEvidenceCount,
     documentaryCoveragePercent: dossierWorkspace.coveragePercent,
+    publishedTraceabilityLots: inventoryLots.filter((lot) => lot.traceability_published).length,
   };
 }

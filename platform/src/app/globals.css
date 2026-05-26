@@ -1988,6 +1988,83 @@ p {
   color: var(--white);
 }
 
+.public-trace-panel {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.public-trace-panel h3 {
+  color: var(--forest);
+  font-size: 17px;
+}
+
+.public-trace-note {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+  margin: 13px 0 16px;
+}
+
+.trace-blocked {
+  background: #fff2d7;
+  border-radius: 10px;
+  color: #8c6726;
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 12px 0;
+  padding: 11px 12px;
+}
+
+.trace-publish {
+  margin-top: 14px;
+}
+
+.qr-publication {
+  align-items: center;
+  background: #f2f5ed;
+  border-radius: 14px;
+  display: flex;
+  gap: 18px;
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.qr-publication img {
+  background: #fffdf8;
+  border-radius: 8px;
+}
+
+.qr-publication div {
+  display: grid;
+  gap: 9px;
+}
+
+.qr-publication a,
+.qr-publication button {
+  border: 0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.qr-publication a:first-child {
+  background: var(--forest);
+  color: var(--white);
+}
+
+.qr-publication a:nth-child(2) {
+  border: 1px solid var(--line);
+  color: var(--forest);
+}
+
+.qr-publication button {
+  background: #f5dfdb;
+  color: #8d4134;
+}
+
 .finance-workspace {
   margin: 0 auto;
   max-width: 1240px;
@@ -2506,6 +2583,141 @@ p {
   color: var(--muted);
   font-size: 11px;
   margin-top: 8px;
+}
+
+.traceability-page {
+  background: var(--cream);
+  min-height: 100vh;
+}
+
+.traceability-hero {
+  align-items: start;
+  display: grid;
+  gap: 38px;
+  grid-template-columns: 1fr 295px;
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 72px 32px 42px;
+}
+
+.traceability-hero h1 {
+  color: var(--forest);
+  font-size: clamp(46px, 6vw, 66px);
+  letter-spacing: -0.065em;
+  margin: 14px 0 10px;
+}
+
+.traceability-code {
+  color: var(--leaf);
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.traceability-summary {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.65;
+  max-width: 600px;
+}
+
+.traceability-status {
+  background: var(--forest);
+  border-radius: 22px;
+  color: var(--white);
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 31px 28px;
+}
+
+.traceability-status span {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.traceability-status strong {
+  font-size: 31px;
+  letter-spacing: -0.045em;
+}
+
+.traceability-status small {
+  color: #d9e7d7;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.traceability-card {
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  margin: 0 auto 46px;
+  max-width: 1120px;
+  padding: 34px;
+}
+
+.traceability-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.traceability-grid article {
+  border-bottom: 1px solid var(--line);
+  padding: 0 0 19px;
+}
+
+.traceability-grid span {
+  color: var(--muted);
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  margin-bottom: 9px;
+  text-transform: uppercase;
+}
+
+.traceability-grid strong {
+  color: var(--forest);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.traceability-privacy {
+  background: #e9efe5;
+  border-radius: 16px;
+  margin-top: 26px;
+  padding: 24px;
+}
+
+.traceability-privacy h2 {
+  color: var(--forest);
+  font-size: 21px;
+  margin-bottom: 9px;
+}
+
+.traceability-privacy p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.traceability-cta {
+  align-items: center;
+  display: flex;
+  gap: 26px;
+  justify-content: space-between;
+  margin: 0 auto;
+  max-width: 1120px;
+  padding: 0 32px 70px;
+}
+
+.traceability-cta h2 {
+  color: var(--forest);
+  font-size: clamp(25px, 3vw, 34px);
+  letter-spacing: -0.045em;
 }
 
 .poultry-workspace {
@@ -4201,6 +4413,32 @@ p {
   .dossier-report-kpis,
   .dossier-report-row {
     grid-template-columns: 1fr;
+  }
+
+  .qr-publication,
+  .traceability-cta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .traceability-hero,
+  .traceability-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .traceability-hero {
+    padding: 46px 20px 28px;
+  }
+
+  .traceability-card {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 25px 20px;
+  }
+
+  .traceability-cta {
+    padding: 0 20px 48px;
   }
 
   .analytics-heading {

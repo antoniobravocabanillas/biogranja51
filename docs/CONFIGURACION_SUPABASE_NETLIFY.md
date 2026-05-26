@@ -42,6 +42,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 11. `platform/supabase/migrations/202605250009_commercial_cold_chain_and_sanitary_release.sql`
 12. `platform/supabase/migrations/202605250010_financial_reconciliation_and_order_margin.sql`
 13. `platform/supabase/migrations/202605250011_private_audit_evidence_and_dossiers.sql`
+14. `platform/supabase/migrations/202605250012_public_lot_traceability_qr.sql`
 
 La segunda migracion agrega:
 
@@ -126,6 +127,13 @@ La decimotercera migracion agrega expedientes documentales privados:
 - evidencias asociadas a lote, pedido, cobro o comprobante;
 - anulacion conservando motivo, usuario y bitacora auditable;
 - cobertura documental y reporte imprimible en `/gestion/expedientes`.
+
+La decimocuarta migracion agrega trazabilidad publica por QR:
+
+- token aleatorio y publicacion controlada por lote comercial;
+- publicacion de compras solo tras liberacion sanitaria y evidencia completa;
+- publicacion de producto propio solo con origen productivo enlazado;
+- consulta publica limitada a origen, fechas y estado verificable, sin datos internos.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.

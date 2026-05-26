@@ -35,6 +35,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
   gastos por pedido y margen auditado.
 - Expedientes en `/gestion/expedientes` con evidencias privadas, cobertura
   documental y reporte imprimible para exportar a PDF.
+- Fichas publicas por QR en `/trazabilidad/[token]`, publicadas desde
+  inventario sin exponer documentos, costos ni datos internos.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
 
 La web estatica existente permanece en la raiz del repositorio mientras se

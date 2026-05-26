@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { type FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
@@ -102,6 +103,9 @@ export function InventoryAdmin({
   const [movementType, setMovementType] = useState<"waste" | "adjustment_in">("waste");
   const [movementQuantity, setMovementQuantity] = useState("");
   const [movementReason, setMovementReason] = useState("");
+  const [publicTraceSummary, setPublicTraceSummary] = useState(
+    initialWorkspace.lots[0]?.publicTraceSummary ?? "",
+  );
   const [allocationDrafts, setAllocationDrafts] = useState<
     Record<string, { lotId: string; quantity: string }>
   >({});
@@ -109,6 +113,7 @@ export function InventoryAdmin({
   const selectedLot =
     initialWorkspace.lots.find((lot) => lot.id === selectedId) ?? initialWorkspace.lots[0] ?? null;
   const draftProduct = products.find((product) => product.id === lotDraft.productId);
+  const selectedProduct = products.find((product) => product.id === selectedLot?.productId);
 
   const availableByProduct = useMemo(() => {
     const index = new Map<string, InventoryLot[]>();
@@ -287,6 +292,27 @@ export function InventoryAdmin({
     router.refresh();
   }
 
+  async function updatePublicTraceability(published: boolean) {
+    if (!selectedLot || !editable) return;
+    if (!published && !window.confirm("Ocultar esta ficha publica y desactivar el QR del lote?")) return;
+    setSaving(true);
+    setMessage("");
+    const response = await fetch(`/api/inventario/lotes/${selectedLot.id}/trazabilidad`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ published, publicSummary: publicTraceSummary }),
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setMessage(result.error || "No se pudo actualizar la ficha publica.");
+      setSaving(false);
+      return;
+    }
+    setMessage(published ? "Ficha publica y QR activados para el lote." : "Ficha publica ocultada.");
+    setSaving(false);
+    router.refresh();
+  }
+
   return (
     <section className="inventory-workspace">
       <div className="inventory-kpis">
@@ -331,7 +357,10 @@ export function InventoryAdmin({
                 className={selectedLot?.id === lot.id ? "selected" : ""}
                 key={lot.id}
                 type="button"
-                onClick={() => setSelectedId(lot.id)}
+                onClick={() => {
+                  setSelectedId(lot.id);
+                  setPublicTraceSummary(lot.publicTraceSummary);
+                }}
               >
                 <div>
                   <strong>{lot.code}</strong>
@@ -589,6 +618,66 @@ export function InventoryAdmin({
                   ) : null}
                 </section>
               ) : null}
+              <section className="public-trace-panel">
+                <div className="panel-heading">
+                  <div>
+                    <p className="eyebrow">Etiqueta QR</p>
+                    <h3>Trazabilidad para cliente</h3>
+                  </div>
+                  <span className={`quality-pill quality-${selectedLot.traceabilityPublished ? "approved" : "pending"}`}>
+                    {selectedLot.traceabilityPublished ? "Publicada" : "No publicada"}
+                  </span>
+                </div>
+                <p className="public-trace-note">
+                  La ficha publica muestra origen, fechas y verificacion. No publica
+                  documentos, proveedores, costos ni controles internos detallados.
+                </p>
+                <label className="form-field">
+                  <span>Mensaje visible para el cliente</span>
+                  <textarea
+                    rows={2}
+                    value={publicTraceSummary}
+                    onChange={(event) => setPublicTraceSummary(event.target.value)}
+                    placeholder="Ej. Lote preparado y controlado para entrega fresca en Trujillo."
+                  />
+                </label>
+                {!selectedProduct?.traceable ? (
+                  <p className="trace-blocked">Este producto no esta habilitado para trazabilidad publica.</p>
+                ) : selectedLot.originType !== "own" && selectedLot.sanitaryStatus !== "approved" ? (
+                  <p className="trace-blocked">Libera sanitariamente el lote y adjunta su expediente antes de publicar.</p>
+                ) : null}
+                {selectedLot.traceabilityPublished && selectedLot.publicTraceToken ? (
+                  <div className="qr-publication">
+                    <Image
+                      alt={`QR de trazabilidad ${selectedLot.code}`}
+                      height={154}
+                      src={`/api/trazabilidad/${selectedLot.publicTraceToken}/qr`}
+                      unoptimized
+                      width={154}
+                    />
+                    <div>
+                      <Link href={`/trazabilidad/${selectedLot.publicTraceToken}`} target="_blank">
+                        Abrir ficha publica
+                      </Link>
+                      <a download={`trazabilidad-${selectedLot.code}.svg`} href={`/api/trazabilidad/${selectedLot.publicTraceToken}/qr`}>
+                        Descargar QR
+                      </a>
+                      <button disabled={!editable || saving} onClick={() => updatePublicTraceability(false)} type="button">
+                        Ocultar ficha
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="save-button trace-publish"
+                    disabled={!editable || saving || !selectedProduct?.traceable}
+                    onClick={() => updatePublicTraceability(true)}
+                    type="button"
+                  >
+                    Publicar ficha y generar QR
+                  </button>
+                )}
+              </section>
               <div className="movement-entry">
                 <h3>Registrar movimiento</h3>
                 <div className="field-triple">

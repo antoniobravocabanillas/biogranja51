@@ -158,6 +158,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   trazabilidad incompleta.
 - Expedientes digitales privados con evidencia por lote, cobro y entrega,
   cobertura automatica y reporte imprimible para auditoria.
+- Ficha publica por QR para lotes habilitados, con origen y control verificable
+  sin exponer documentos internos, costos ni identidad del proveedor.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

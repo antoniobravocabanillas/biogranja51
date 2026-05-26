@@ -374,8 +374,26 @@ export type InventoryLot = {
   sourceLayerFlockId: string | null;
   sourceLayerFlockCode: string | null;
   processedUnits: number | null;
+  publicTraceToken: string | null;
+  traceabilityPublished: boolean;
+  publicTraceSummary: string;
+  traceabilityPublishedAt: string | null;
   createdAt: string;
   movements: InventoryMovement[];
+};
+
+export type PublicLotTraceability = {
+  token: string;
+  lotCode: string;
+  productName: string;
+  presentation: string;
+  originType: OriginType;
+  producedOrReceivedAt: string;
+  expiresAt: string | null;
+  sourceLabel: string;
+  verificationLabel: string;
+  publicSummary: string;
+  publishedAt: string;
 };
 
 export type DispatchableOrderItem = {
@@ -621,6 +639,7 @@ export type AuditWorkspace = {
   auditedMargin: number;
   activeEvidenceCount: number;
   documentaryCoveragePercent: number | null;
+  publishedTraceabilityLots: number;
 };
 
 export type CommerceState = {
