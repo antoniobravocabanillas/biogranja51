@@ -1229,11 +1229,17 @@ export async function getCustomerPortalWorkspace(): Promise<CustomerPortalWorksp
 export async function saveCustomerPortalProfile(payload: {
   name: string;
   phone: string;
+  address: string;
+  deliveryZoneId: string;
+  paymentMethodId: string;
 }): Promise<CustomerPortalProfile> {
   const supabase = await createSupabaseClient();
   const { data, error } = await supabase.rpc("upsert_my_customer_profile", {
     p_name: payload.name,
     p_phone: payload.phone,
+    p_address: payload.address,
+    p_delivery_zone_id: payload.deliveryZoneId,
+    p_payment_method_id: payload.paymentMethodId,
   });
   assertDatabaseResult(error, "No se pudo guardar tu perfil");
   return data as CustomerPortalProfile;

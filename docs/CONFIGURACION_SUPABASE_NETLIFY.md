@@ -45,6 +45,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 14. `platform/supabase/migrations/202605250012_public_lot_traceability_qr.sql`
 15. `platform/supabase/migrations/202605250013_delivery_operations_and_cold_chain.sql`
 16. `platform/supabase/migrations/202605250014_customer_accounts_and_order_tracking.sql`
+17. `platform/supabase/migrations/202605260015_customer_checkout_preferences.sql`
 
 La segunda migracion agrega:
 
@@ -152,6 +153,13 @@ La decimosexta migracion agrega portal privado para clientes:
 - consulta privada de pedidos y avance de entrega mediante RPC seguro;
 - proteccion contra apropiacion de pedidos antiguos solo por conocer un celular;
 - base para historial, recompra y futuras suscripciones.
+
+La decimoseptima migracion agrega compra autenticada sin recaptura:
+
+- direccion, zona de entrega y medio de pago preferidos dentro del perfil privado;
+- precarga del cotizador cuando el cliente ya inicio sesion;
+- actualizacion de la preferencia de pago al registrar una nueva compra;
+- validacion de zonas y pagos activos antes de guardar preferencias.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.

@@ -137,6 +137,8 @@ Objetivo: poder sustentar origen, costo y movimiento de cada producto.
   `Implementado en desarrollo`.
 - Portal de cliente con cuenta privada y seguimiento visual del pedido.
   `Implementado en desarrollo`.
+- Perfil cliente con direccion, zona, pago preferido y recompra precargada.
+  `Implementado en desarrollo`.
 
 Criterio de salida: una auditoria puede reconstruir proveedor o produccion,
 costo, calidad, inventario, pedido, pago y entrega sin depender de registros

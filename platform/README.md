@@ -39,8 +39,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
   documental y reporte imprimible para exportar a PDF.
 - Fichas publicas por QR en `/trazabilidad/[token]`, publicadas desde
   inventario sin exponer documentos, costos ni datos internos.
-- Cuenta de cliente en `/cuenta` y portal `/mi-cuenta` con historial privado y
-  seguimiento visual del pedido hasta su entrega.
+- Cuenta de cliente en `/cuenta` y portal `/mi-cuenta` con historial privado,
+  seguimiento visual y datos de compra guardados para checkout precargado.
 - Indicadores operativos iniciales calculados desde los pedidos registrados.
 
 La web estatica existente permanece en la raiz del repositorio mientras se
@@ -63,7 +63,8 @@ Las migraciones de PostgreSQL/Supabase están en `supabase/migrations/` e incluy
 - consolidación de clientes recurrentes por celular y ficha comercial.
 - movimientos de inventario auditables y asignación de lote al despacho.
 - ultima milla controlada con cadena de frio y receptor documentado.
-- perfil autenticado de cliente y lectura privada de sus propios pedidos.
+- perfil autenticado de cliente, preferencias de entrega/pago y lectura privada
+  de sus propios pedidos.
 
 Con Supabase activo, los datos de pedidos y las escrituras del panel requieren
 sesión de un usuario asignado en `staff_assignments`. Las imágenes se guardan

@@ -818,6 +818,53 @@ p {
   font-weight: 750;
 }
 
+.customer-order-prompt.signed-in {
+  background: #e8efe3;
+  color: var(--forest);
+}
+
+.saved-checkout-card {
+  background: #f2efe7;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--forest);
+  margin-bottom: 17px;
+  padding: 14px;
+}
+
+.saved-checkout-card strong,
+.saved-checkout-card span {
+  display: block;
+}
+
+.saved-checkout-card p {
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.saved-checkout-card span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.saved-checkout-card button,
+.restore-saved-checkout {
+  background: transparent;
+  border: 1px solid var(--forest);
+  border-radius: 999px;
+  color: var(--forest);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 750;
+  margin-top: 12px;
+  padding: 9px 12px;
+}
+
+.restore-saved-checkout {
+  margin: 0 0 16px;
+}
+
 .delivery-experience {
   align-items: center;
   border: 1px solid var(--line);
@@ -4361,7 +4408,7 @@ p {
   align-items: start;
   display: grid;
   gap: 20px;
-  grid-template-columns: 315px 1fr;
+  grid-template-columns: 365px 1fr;
   margin: 0 auto;
   max-width: 1160px;
   padding: 0 32px 72px;
@@ -4392,6 +4439,16 @@ p {
   color: var(--muted);
   font-size: 12px;
   margin-bottom: 23px;
+}
+
+.customer-profile-autofill {
+  background: #eff2e9;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+  margin: 2px 0 14px;
+  padding: 10px;
 }
 
 .customer-profile-privacy {

@@ -164,6 +164,8 @@ lograr control empresarial sin asumir el costo operativo de microservicios.
   y recepcion, y evidencia asociada al pedido.
 - Portal autenticado del cliente para consultar pedidos propios, progreso de
   entrega e historial sin exponer informacion de terceros.
+- Perfil privado con direccion, zona y pago preferido para que la recompra
+  autenticada llegue precargada y sea editable por pedido.
 
 El almacenamiento JSON habilita validacion inmediata en desarrollo. Antes de
 despliegue comercial, la aplicacion debe conectar Supabase Auth, PostgreSQL y

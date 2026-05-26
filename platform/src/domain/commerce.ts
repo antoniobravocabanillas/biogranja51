@@ -241,6 +241,8 @@ export type CustomerPortalProfile = {
   phone: string;
   email: string | null;
   lastAddress: string | null;
+  deliveryZoneId: string | null;
+  paymentMethodId: string | null;
 };
 
 export type CustomerPortalOrder = {

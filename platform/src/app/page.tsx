@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { StorefrontCatalog } from "@/components/storefront-catalog";
+import type { CustomerPortalProfile } from "@/domain/commerce";
 import { operatingPillars } from "@/lib/business";
-import { getStorefrontState } from "@/lib/commerce-store";
+import { getCustomerPortalWorkspace, getStorefrontState } from "@/lib/commerce-store";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +14,17 @@ export default async function Home() {
   const commerce = await getStorefrontState();
   const products = commerce.products.filter((product) => product.active);
   const deliveryZones = commerce.deliveryZones.filter((zone) => zone.active);
+  let signedIn = false;
+  let customerProfile: CustomerPortalProfile | null = null;
+
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getClaims();
+    signedIn = Boolean(data?.claims?.sub);
+    if (signedIn) {
+      customerProfile = (await getCustomerPortalWorkspace()).profile;
+    }
+  }
 
   return (
     <main className="public-page">
@@ -101,6 +115,8 @@ export default async function Home() {
           products={products}
           deliveryZones={deliveryZones}
           paymentMethods={commerce.paymentMethods}
+          signedIn={signedIn}
+          customerProfile={customerProfile}
         />
       </section>
 

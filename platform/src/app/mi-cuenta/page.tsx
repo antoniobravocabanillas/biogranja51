@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { CustomerPortal } from "@/components/customer-portal";
 import { SiteHeader } from "@/components/site-header";
-import { getCustomerPortalWorkspace } from "@/lib/commerce-store";
+import { getCustomerPortalWorkspace, getStorefrontState } from "@/lib/commerce-store";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,7 +18,10 @@ export default async function CustomerPortalPage() {
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims?.sub) redirect("/cuenta");
 
-  const workspace = await getCustomerPortalWorkspace();
+  const [workspace, commerce] = await Promise.all([
+    getCustomerPortalWorkspace(),
+    getStorefrontState(),
+  ]);
   return (
     <main className="public-page">
       <SiteHeader />
@@ -33,7 +36,11 @@ export default async function CustomerPortalPage() {
           <button className="button-secondary" type="submit">Cerrar sesión</button>
         </form>
       </section>
-      <CustomerPortal initialWorkspace={workspace} />
+      <CustomerPortal
+        initialWorkspace={workspace}
+        deliveryZones={commerce.deliveryZones.filter((zone) => zone.active)}
+        paymentMethods={commerce.paymentMethods.filter((payment) => payment.active)}
+      />
     </main>
   );
 }

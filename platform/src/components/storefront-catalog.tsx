@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { DeliveryZone, PaymentMethod, Product } from "@/domain/commerce";
+import type { CustomerPortalProfile, DeliveryZone, PaymentMethod, Product } from "@/domain/commerce";
 import {
   formatPrice,
   originLabels,
@@ -14,19 +14,36 @@ type StorefrontCatalogProps = {
   products: Product[];
   deliveryZones: DeliveryZone[];
   paymentMethods: PaymentMethod[];
+  signedIn: boolean;
+  customerProfile: CustomerPortalProfile | null;
 };
 
 export function StorefrontCatalog({
   products,
   deliveryZones,
   paymentMethods,
+  signedIn,
+  customerProfile,
 }: StorefrontCatalogProps) {
+  const savedZone = deliveryZones.find((zone) => zone.id === customerProfile?.deliveryZoneId);
+  const savedPayment = paymentMethods.find(
+    (payment) => payment.id === customerProfile?.paymentMethodId && payment.active,
+  );
+  const hasSavedCheckoutData = Boolean(
+    signedIn &&
+    customerProfile?.name &&
+    customerProfile?.phone &&
+    customerProfile?.lastAddress &&
+    savedZone &&
+    savedPayment,
+  );
   const [cart, setCart] = useState<Record<string, number>>({});
-  const [selectedZone, setSelectedZone] = useState("");
-  const [address, setAddress] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [paymentMethodId, setPaymentMethodId] = useState("");
+  const [selectedZone, setSelectedZone] = useState(customerProfile?.deliveryZoneId ?? "");
+  const [address, setAddress] = useState(customerProfile?.lastAddress ?? "");
+  const [customerName, setCustomerName] = useState(customerProfile?.name ?? "");
+  const [phone, setPhone] = useState(customerProfile?.phone ?? "");
+  const [paymentMethodId, setPaymentMethodId] = useState(customerProfile?.paymentMethodId ?? "");
+  const [editingDelivery, setEditingDelivery] = useState(!hasSavedCheckoutData);
   const [submitting, setSubmitting] = useState(false);
   const [orderFeedback, setOrderFeedback] = useState("");
 
@@ -166,10 +183,23 @@ export function StorefrontCatalog({
           <h3>Tu pedido</h3>
           <span>{cartItems.length} productos</span>
         </div>
-        <p className="customer-order-prompt">
-          <Link href="/cuenta">Ingresa o crea tu cuenta</Link> antes de pedir para
-          seguir preparación y entrega en línea.
-        </p>
+        {signedIn ? (
+          <p className="customer-order-prompt signed-in">
+            {hasSavedCheckoutData ? (
+              <>Tu perfil BioGranja está activo. Usaremos la entrega guardada para este pedido.</>
+            ) : (
+              <>
+                Completa tus datos de compra en <Link href="/mi-cuenta">Mi cuenta</Link> para
+                comprar sin volver a escribirlos.
+              </>
+            )}
+          </p>
+        ) : (
+          <p className="customer-order-prompt">
+            <Link href="/cuenta">Ingresa o crea tu cuenta</Link> antes de pedir para
+            seguir preparación y entrega en línea.
+          </p>
+        )}
 
         {cartItems.length === 0 ? (
           <p className="empty-order">
@@ -209,60 +239,90 @@ export function StorefrontCatalog({
           </div>
         )}
 
-        <label className="form-field">
-          <span>Zona de entrega</span>
-          <select
-            value={selectedZone}
-            onChange={(event) => setSelectedZone(event.target.value)}
+        {hasSavedCheckoutData && !editingDelivery ? (
+          <div className="saved-checkout-card">
+            <strong>Entrega guardada</strong>
+            <p>{address}</p>
+            <span>{savedZone?.name} | {customerName} | {phone}</span>
+            <span>Pago: {savedPayment?.name}</span>
+            <button type="button" onClick={() => setEditingDelivery(true)}>
+              Modificar para este pedido
+            </button>
+          </div>
+        ) : (
+          <>
+            <label className="form-field">
+              <span>Zona de entrega</span>
+              <select
+                value={selectedZone}
+                onChange={(event) => setSelectedZone(event.target.value)}
+              >
+                <option value="">Selecciona tu zona</option>
+                {deliveryZones.map((deliveryZone) => (
+                  <option value={deliveryZone.id} key={deliveryZone.id}>
+                    {deliveryZone.name} - S/ {deliveryZone.baseFee.toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="form-field">
+              <span>Dirección exacta</span>
+              <input
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
+                placeholder="Calle, número y referencia"
+              />
+            </label>
+            <div className="field-pair customer-fields">
+              <label className="form-field">
+                <span>Nombre</span>
+                <input
+                  value={customerName}
+                  onChange={(event) => setCustomerName(event.target.value)}
+                  placeholder="Tu nombre"
+                />
+              </label>
+              <label className="form-field">
+                <span>Celular</span>
+                <input
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="999 999 999"
+                />
+              </label>
+            </div>
+            <label className="form-field">
+              <span>Medio de pago</span>
+              <select
+                value={paymentMethodId}
+                onChange={(event) => setPaymentMethodId(event.target.value)}
+              >
+                <option value="">Selecciona cómo pagar</option>
+                {activePayments.map((payment) => (
+                  <option value={payment.id} key={payment.id}>
+                    {payment.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
+        {hasSavedCheckoutData && editingDelivery ? (
+          <button
+            className="restore-saved-checkout"
+            type="button"
+            onClick={() => {
+              setSelectedZone(customerProfile?.deliveryZoneId ?? "");
+              setAddress(customerProfile?.lastAddress ?? "");
+              setCustomerName(customerProfile?.name ?? "");
+              setPhone(customerProfile?.phone ?? "");
+              setPaymentMethodId(customerProfile?.paymentMethodId ?? "");
+              setEditingDelivery(false);
+            }}
           >
-            <option value="">Selecciona tu zona</option>
-            {deliveryZones.map((deliveryZone) => (
-              <option value={deliveryZone.id} key={deliveryZone.id}>
-                {deliveryZone.name} - S/ {deliveryZone.baseFee.toFixed(2)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="form-field">
-          <span>Dirección exacta</span>
-          <input
-            value={address}
-            onChange={(event) => setAddress(event.target.value)}
-            placeholder="Calle, número y referencia"
-          />
-        </label>
-        <div className="field-pair customer-fields">
-          <label className="form-field">
-            <span>Nombre</span>
-            <input
-              value={customerName}
-              onChange={(event) => setCustomerName(event.target.value)}
-              placeholder="Tu nombre"
-            />
-          </label>
-          <label className="form-field">
-            <span>Celular</span>
-            <input
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="999 999 999"
-            />
-          </label>
-        </div>
-        <label className="form-field">
-          <span>Medio de pago</span>
-          <select
-            value={paymentMethodId}
-            onChange={(event) => setPaymentMethodId(event.target.value)}
-          >
-            <option value="">Selecciona cómo pagar</option>
-            {activePayments.map((payment) => (
-              <option value={payment.id} key={payment.id}>
-                {payment.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            Volver a los datos guardados
+          </button>
+        ) : null}
         {zone ? (
           <p className="zone-detail">
             Cobertura: {zone.neighborhoods}. Tarifa estimada; la ruta final

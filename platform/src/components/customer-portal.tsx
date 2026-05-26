@@ -2,11 +2,19 @@
 
 import { type FormEvent, useState } from "react";
 import Link from "next/link";
-import type { CustomerPortalProfile, CustomerPortalWorkspace, OrderStatus } from "@/domain/commerce";
+import type {
+  CustomerPortalProfile,
+  CustomerPortalWorkspace,
+  DeliveryZone,
+  OrderStatus,
+  PaymentMethod,
+} from "@/domain/commerce";
 import { orderStatusLabels } from "@/domain/commerce";
 
 type CustomerPortalProps = {
   initialWorkspace: CustomerPortalWorkspace;
+  deliveryZones: DeliveryZone[];
+  paymentMethods: PaymentMethod[];
 };
 
 const trackingStages: Array<{ status: OrderStatus; label: string; detail: string }> = [
@@ -29,10 +37,17 @@ function currency(value: number | null): string {
   return value === null ? "Por confirmar" : `S/ ${value.toFixed(2)}`;
 }
 
-export function CustomerPortal({ initialWorkspace }: CustomerPortalProps) {
+export function CustomerPortal({
+  initialWorkspace,
+  deliveryZones,
+  paymentMethods,
+}: CustomerPortalProps) {
   const [profile, setProfile] = useState<CustomerPortalProfile | null>(initialWorkspace.profile);
   const [name, setName] = useState(initialWorkspace.profile?.name ?? "");
   const [phone, setPhone] = useState(initialWorkspace.profile?.phone ?? "");
+  const [address, setAddress] = useState(initialWorkspace.profile?.lastAddress ?? "");
+  const [deliveryZoneId, setDeliveryZoneId] = useState(initialWorkspace.profile?.deliveryZoneId ?? "");
+  const [paymentMethodId, setPaymentMethodId] = useState(initialWorkspace.profile?.paymentMethodId ?? "");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -43,7 +58,7 @@ export function CustomerPortal({ initialWorkspace }: CustomerPortalProps) {
     const response = await fetch("/api/cuenta/perfil", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone }),
+      body: JSON.stringify({ name, phone, address, deliveryZoneId, paymentMethodId }),
     });
     const result = (await response.json()) as CustomerPortalProfile & { error?: string };
     if (!response.ok) {
@@ -71,6 +86,46 @@ export function CustomerPortal({ initialWorkspace }: CustomerPortalProps) {
             <span>Celular</span>
             <input required value={phone} onChange={(event) => setPhone(event.target.value)} />
           </label>
+          <label className="form-field">
+            <span>Dirección de entrega</span>
+            <input
+              required
+              value={address}
+              onChange={(event) => setAddress(event.target.value)}
+              placeholder="Calle, número y referencia"
+            />
+          </label>
+          <label className="form-field">
+            <span>Zona preferida</span>
+            <select
+              required
+              value={deliveryZoneId}
+              onChange={(event) => setDeliveryZoneId(event.target.value)}
+            >
+              <option value="">Selecciona tu zona</option>
+              {deliveryZones.map((zone) => (
+                <option value={zone.id} key={zone.id}>
+                  {zone.name} - S/ {zone.baseFee.toFixed(2)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="form-field">
+            <span>Medio de pago preferido</span>
+            <select
+              required
+              value={paymentMethodId}
+              onChange={(event) => setPaymentMethodId(event.target.value)}
+            >
+              <option value="">Selecciona cómo pagar</option>
+              {paymentMethods.map((payment) => (
+                <option value={payment.id} key={payment.id}>{payment.name}</option>
+              ))}
+            </select>
+          </label>
+          <p className="customer-profile-autofill">
+            Usaremos estos datos automáticamente cuando compres. Siempre podrás cambiarlos.
+          </p>
           {message ? <p className="form-message">{message}</p> : null}
           <button className="save-button" disabled={saving} type="submit">
             {saving ? "Guardando..." : "Guardar perfil"}
