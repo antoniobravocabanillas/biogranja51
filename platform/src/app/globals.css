@@ -1034,26 +1034,68 @@ p {
 }
 
 .management-nav {
-  border-bottom: 1px solid var(--line);
+  background: #fbfaf5;
+  border-right: 1px solid var(--line);
+  bottom: 0;
   display: flex;
-  gap: 26px;
-  margin: 0 auto;
-  max-width: 1240px;
-  padding: 17px 32px;
+  flex-direction: column;
+  gap: 18px;
+  left: 0;
+  overflow-y: auto;
+  padding: 24px 18px 26px;
+  position: fixed;
+  top: 84px;
+  width: 250px;
+  z-index: 12;
 }
 
 .management-nav a {
   color: var(--muted);
+  display: block;
   font-size: 13px;
   font-weight: 700;
+  padding: 10px 12px;
 }
 
-.management-nav a:hover {
+.management-nav a:hover,
+.management-nav a.active {
+  background: #e8efe3;
+  border-radius: 12px;
+  color: var(--forest);
+}
+
+.management-nav-title {
+  border-bottom: 1px solid var(--line);
+  padding: 0 7px 18px;
+}
+
+.management-nav-title p,
+.management-nav-group p {
   color: var(--leaf);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.management-nav-title strong {
+  color: var(--forest);
+  display: block;
+  font-size: 18px;
+  letter-spacing: -0.04em;
+}
+
+.management-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .management-nav form {
-  margin-left: auto;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  padding-top: 18px;
 }
 
 .management-nav form button {
@@ -1062,11 +1104,13 @@ p {
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
-  padding: 0;
+  padding: 10px 12px;
+  text-align: left;
+  width: 100%;
 }
 
 .management-nav form button:hover {
-  color: var(--leaf);
+  color: var(--forest);
 }
 
 .prototype-label {
@@ -1514,7 +1558,7 @@ p {
   align-items: start;
   display: grid;
   gap: 20px;
-  grid-template-columns: 1fr 430px;
+  grid-template-columns: minmax(420px, 0.95fr) minmax(620px, 1.05fr);
   margin: 0 auto;
   max-width: 1240px;
   padding: 0 32px 64px;
@@ -3989,6 +4033,102 @@ p {
   font-size: 12px;
 }
 
+.order-next-step {
+  align-items: center;
+  background: #e9efe5;
+  border: 1px solid rgba(63, 134, 75, 0.16);
+  border-radius: 16px;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin: 18px 0;
+  padding: 16px;
+}
+
+.order-next-step p {
+  color: var(--leaf);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.order-next-step strong,
+.order-next-step span {
+  display: block;
+}
+
+.order-next-step strong {
+  color: var(--forest);
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.order-next-step span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.order-next-step a,
+.order-next-step small {
+  border: 1px solid var(--forest);
+  border-radius: 999px;
+  color: var(--forest);
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.order-next-step a {
+  background: var(--forest);
+  color: var(--white);
+}
+
+.order-flow-status {
+  counter-reset: step;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+
+.order-flow-status li {
+  border-top: 3px solid #dbe1d6;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  padding-top: 12px;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.order-flow-status li::before {
+  background: #dbe1d6;
+  border: 3px solid var(--white);
+  border-radius: 50%;
+  content: "";
+  height: 13px;
+  left: 0;
+  position: absolute;
+  top: -8px;
+  width: 13px;
+}
+
+.order-flow-status li.reached {
+  border-color: var(--leaf);
+  color: var(--forest);
+}
+
+.order-flow-status li.reached::before {
+  background: var(--leaf);
+}
+
 .order-products {
   border-bottom: 1px solid var(--line);
   padding: 7px 0;
@@ -4713,6 +4853,88 @@ p {
   gap: 12px;
 }
 
+.management-page {
+  --management-sidebar-width: 250px;
+}
+
+.management-page .site-header {
+  background: rgba(247, 245, 238, 0.96);
+  margin: 0;
+  max-width: none;
+  padding-left: 32px;
+  padding-right: 42px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.management-page .dashboard-intro,
+.management-page .kpi-grid,
+.management-page .management-content,
+.management-page .admin-page-heading,
+.management-page .admin-editor-grid,
+.management-page .configuration-layout,
+.management-page .orders-layout,
+.management-page .customers-layout,
+.management-page .inventory-workspace,
+.management-page .finance-workspace,
+.management-page .dossier-workspace,
+.management-page .poultry-workspace,
+.management-page .egg-workspace,
+.management-page .mill-workspace,
+.management-page .audit-workspace,
+.management-page .release-strip,
+.management-page .protected-data-panel {
+  margin-left: var(--management-sidebar-width);
+  margin-right: 0;
+  max-width: none;
+  padding-left: 34px;
+  padding-right: 34px;
+}
+
+.management-page .dashboard-intro,
+.management-page .admin-page-heading {
+  padding-top: 38px;
+}
+
+.management-page .kpi-grid {
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+}
+
+.management-page .admin-editor-grid {
+  grid-template-columns: minmax(520px, 1fr) minmax(460px, 0.65fr);
+}
+
+.management-page .configuration-layout {
+  grid-template-columns: minmax(720px, 1fr) minmax(390px, 0.45fr);
+}
+
+.management-page .customers-layout {
+  grid-template-columns: minmax(520px, 0.9fr) minmax(560px, 1.1fr);
+}
+
+.management-page .finance-grid,
+.management-page .dossier-grid {
+  grid-template-columns: minmax(430px, 0.62fr) minmax(620px, 1fr);
+}
+
+.management-page .audit-layout {
+  grid-template-columns: minmax(650px, 1fr) minmax(420px, 0.5fr);
+}
+
+.management-page .inventory-top-grid,
+.management-page .inventory-bottom-grid,
+.management-page .poultry-top-grid,
+.management-page .poultry-bottom-grid,
+.management-page .egg-top-grid,
+.management-page .egg-dashboard-grid,
+.management-page .egg-operations-grid,
+.management-page .mill-top-grid,
+.management-page .mill-bottom-grid,
+.management-page .mill-supply-grid {
+  gap: 20px;
+}
+
 @media (max-width: 980px) {
   .site-nav .nav-secondary {
     display: none;
@@ -5151,5 +5373,119 @@ p {
 
   .dossier-report-row {
     break-inside: avoid;
+  }
+}
+
+@media (max-width: 1180px) {
+  .management-page {
+    --management-sidebar-width: 0px;
+  }
+
+  .management-page .site-header {
+    position: static;
+  }
+
+  .management-nav {
+    border-bottom: 1px solid var(--line);
+    border-right: 0;
+    flex-direction: row;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 14px 24px;
+    position: static;
+    top: auto;
+    white-space: nowrap;
+    width: auto;
+  }
+
+  .management-nav-title,
+  .management-nav-group p {
+    display: none;
+  }
+
+  .management-nav-group {
+    display: contents;
+  }
+
+  .management-nav a {
+    padding: 9px 12px;
+  }
+
+  .management-nav form {
+    border-top: 0;
+    margin-left: auto;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .management-page .dashboard-intro,
+  .management-page .kpi-grid,
+  .management-page .management-content,
+  .management-page .admin-page-heading,
+  .management-page .admin-editor-grid,
+  .management-page .configuration-layout,
+  .management-page .orders-layout,
+  .management-page .customers-layout,
+  .management-page .inventory-workspace,
+  .management-page .finance-workspace,
+  .management-page .dossier-workspace,
+  .management-page .poultry-workspace,
+  .management-page .egg-workspace,
+  .management-page .mill-workspace,
+  .management-page .audit-workspace,
+  .management-page .release-strip,
+  .management-page .protected-data-panel {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1240px;
+  }
+}
+
+@media (max-width: 980px) {
+  .management-page .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .management-page .management-content,
+  .management-page .admin-editor-grid,
+  .management-page .configuration-layout,
+  .management-page .orders-layout,
+  .management-page .customers-layout,
+  .management-page .finance-grid,
+  .management-page .dossier-grid,
+  .management-page .audit-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .management-page .dashboard-intro,
+  .management-page .kpi-grid,
+  .management-page .management-content,
+  .management-page .admin-page-heading,
+  .management-page .admin-editor-grid,
+  .management-page .configuration-layout,
+  .management-page .orders-layout,
+  .management-page .customers-layout,
+  .management-page .inventory-workspace,
+  .management-page .finance-workspace,
+  .management-page .dossier-workspace,
+  .management-page .poultry-workspace,
+  .management-page .egg-workspace,
+  .management-page .mill-workspace,
+  .management-page .audit-workspace,
+  .management-page .release-strip,
+  .management-page .protected-data-panel {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .order-next-step {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .order-flow-status {
+    grid-template-columns: 1fr;
   }
 }

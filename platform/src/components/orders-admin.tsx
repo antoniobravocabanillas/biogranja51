@@ -63,6 +63,81 @@ function deliveryDraft(order: Order | null) {
   };
 }
 
+function nextOrderStep(order: Order) {
+  const hasMissingLot = order.items.some((item) => !item.lotCode);
+
+  if (order.status === "pending_confirmation") {
+    return {
+      title: "Confirmar la venta",
+      detail: "Valida disponibilidad y confirma el pedido para iniciar preparación.",
+      href: null,
+      action: "Usa el botón Marcar: Confirmado",
+    };
+  }
+  if (order.status === "confirmed" && hasMissingLot) {
+    return {
+      title: "Reservar lotes del pedido",
+      detail: "Asigna producto disponible antes de realizar el despacho.",
+      href: "/gestion/inventario",
+      action: "Abrir inventario",
+    };
+  }
+  if ((order.status === "confirmed" || order.status === "preparing") && !order.delivery) {
+    return {
+      title: "Programar la ruta",
+      detail: "Define ventana de entrega y responsable en el control inferior.",
+      href: null,
+      action: "Completa Programar ruta",
+    };
+  }
+  if (order.status === "confirmed") {
+    return {
+      title: "Pasar a preparación",
+      detail: "La ruta puede guardarse aquí; cambia el estado cuando el pedido esté listo.",
+      href: null,
+      action: "Usa el botón Marcar: En preparación",
+    };
+  }
+  if (order.status === "preparing" && hasMissingLot) {
+    return {
+      title: "Asignar stock antes de salir",
+      detail: "El sistema bloqueará el despacho mientras falte lote trazable.",
+      href: "/gestion/inventario",
+      action: "Abrir inventario",
+    };
+  }
+  if (order.status === "preparing") {
+    return {
+      title: "Registrar salida",
+      detail: "Completa temperatura y condición de empaque para despachar.",
+      href: null,
+      action: "Completa Registrar salida",
+    };
+  }
+  if (order.status === "dispatched") {
+    return {
+      title: "Cerrar recepción",
+      detail: "Registra temperatura de llegada y la persona que recibe.",
+      href: null,
+      action: "Completa Confirmar recepción",
+    };
+  }
+  if (order.status === "delivered") {
+    return {
+      title: "Completar el expediente",
+      detail: "Adjunta prueba de entrega y revisa conciliación financiera.",
+      href: "/gestion/expedientes",
+      action: "Adjuntar evidencia",
+    };
+  }
+  return {
+    title: "Pedido cancelado",
+    detail: "No existen acciones logísticas pendientes para esta venta.",
+    href: null,
+    action: "Proceso finalizado",
+  };
+}
+
 export function OrdersAdmin({
   initialOrders,
   deliveryZones,
@@ -82,6 +157,7 @@ export function OrdersAdmin({
   const selected =
     visibleOrders.find((order) => order.id === selectedId) ?? visibleOrders[0] ?? null;
   const [logistics, setLogistics] = useState(() => deliveryDraft(selected));
+  const nextStep = selected ? nextOrderStep(selected) : null;
 
   async function changeStatus(nextStatus: OrderStatus) {
     if (!selected || !editable) {
@@ -229,6 +305,32 @@ export function OrdersAdmin({
               <span>{selected.address}</span>
               <span>{zoneName(selected.deliveryZoneId)} | {paymentName(selected.paymentMethodId)}</span>
             </div>
+            {nextStep ? (
+              <section className="order-next-step">
+                <div>
+                  <p>Próximo paso</p>
+                  <strong>{nextStep.title}</strong>
+                  <span>{nextStep.detail}</span>
+                </div>
+                {nextStep.href ? (
+                  <Link href={nextStep.href}>{nextStep.action}</Link>
+                ) : (
+                  <small>{nextStep.action}</small>
+                )}
+              </section>
+            ) : null}
+            <ol className="order-flow-status" aria-label="Avance del pedido">
+              {["confirmed", "preparing", "dispatched", "delivered"].map((status) => {
+                const index = orderStatuses.indexOf(selected.status);
+                const stepIndex = orderStatuses.indexOf(status as OrderStatus);
+                const reached = selected.status !== "cancelled" && index >= stepIndex;
+                return (
+                  <li className={reached ? "reached" : ""} key={status}>
+                    {orderStatusLabels[status as OrderStatus]}
+                  </li>
+                );
+              })}
+            </ol>
             <div className="order-products">
               {selected.items.map((item) => (
                 <div key={item.productId}>
