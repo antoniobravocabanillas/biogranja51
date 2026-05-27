@@ -4303,6 +4303,7 @@ p {
 }
 
 .delivery-form input,
+.delivery-form select,
 .delivery-form textarea {
   background: var(--white);
   border: 1px solid var(--line);
@@ -4800,6 +4801,69 @@ p {
 .zone-inputs .form-field {
   margin: 0;
   max-width: 155px;
+}
+
+.inline-panel-action {
+  background: var(--forest);
+  border: 0;
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 750;
+  padding: 9px 13px;
+}
+
+.delivery-profile-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.delivery-profile-editor article {
+  border-top: 1px solid var(--line);
+  padding-top: 15px;
+}
+
+.delivery-profile-editor label {
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  font-weight: 750;
+  gap: 6px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.delivery-profile-editor input,
+.delivery-profile-editor textarea {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--forest);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px;
+  text-transform: none;
+}
+
+.delivery-profile-editor textarea {
+  min-height: 58px;
+  resize: vertical;
+}
+
+.delivery-profile-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 0.7fr 1fr;
+}
+
+.delivery-profile-active {
+  align-items: center !important;
+  flex-direction: row !important;
+  margin-bottom: 0 !important;
+  text-transform: none !important;
 }
 
 .settings-side {

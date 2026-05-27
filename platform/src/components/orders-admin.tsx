@@ -4,6 +4,7 @@ import Link from "next/link";
 import { type FormEvent, useMemo, useState } from "react";
 import type {
   DeliveryZone,
+  DeliveryProfile,
   Order,
   OrderStatus,
   PaymentMethod,
@@ -18,6 +19,7 @@ import {
 type OrdersAdminProps = {
   initialOrders: Order[];
   deliveryZones: DeliveryZone[];
+  deliveryProfiles: DeliveryProfile[];
   paymentMethods: PaymentMethod[];
   editable: boolean;
 };
@@ -50,6 +52,7 @@ function deliveryDraft(order: Order | null) {
   return {
     windowStart: inputDate(delivery?.windowStart),
     windowEnd: inputDate(delivery?.windowEnd ?? initialEnd),
+    deliveryProfileId: delivery?.deliveryProfileId ?? "",
     driverName: delivery?.driverName ?? "",
     vehicleReference: delivery?.vehicleReference ?? "",
     planningNotes: delivery?.planningNotes ?? "",
@@ -141,6 +144,7 @@ function nextOrderStep(order: Order) {
 export function OrdersAdmin({
   initialOrders,
   deliveryZones,
+  deliveryProfiles,
   paymentMethods,
   editable,
 }: OrdersAdminProps) {
@@ -220,6 +224,10 @@ export function OrdersAdmin({
 
   function paymentName(id: string): string {
     return paymentMethods.find((payment) => payment.id === id)?.name ?? "Pago no registrado";
+  }
+
+  function deliveryProfileName(id: string): string {
+    return deliveryProfiles.find((profile) => profile.id === id)?.name ?? "Delivery no registrado";
   }
 
   return (
@@ -382,7 +390,8 @@ export function OrdersAdmin({
                 {selected.delivery ? (
                   <dl className="delivery-summary">
                     <div><dt>Ventana</dt><dd>{orderDate(selected.delivery.windowStart)} - {orderDate(selected.delivery.windowEnd)}</dd></div>
-                    <div><dt>Responsable</dt><dd>{selected.delivery.driverName}{selected.delivery.vehicleReference ? ` | ${selected.delivery.vehicleReference}` : ""}</dd></div>
+                    <div><dt>Delivery asignado</dt><dd>{selected.delivery.deliveryProfileId ? deliveryProfileName(selected.delivery.deliveryProfileId) : selected.delivery.driverName}</dd></div>
+                    <div><dt>Contacto / unidad</dt><dd>{selected.delivery.driverName}{selected.delivery.vehicleReference ? ` | ${selected.delivery.vehicleReference}` : ""}</dd></div>
                     {selected.delivery.dispatchTemperatureC !== null ? (
                       <div><dt>Salida</dt><dd>{selected.delivery.dispatchTemperatureC.toFixed(1)} C | {selected.delivery.packagingCondition}</dd></div>
                     ) : null}
@@ -398,22 +407,34 @@ export function OrdersAdmin({
                     onSubmit={(event) => submitLogistics(event, "", "POST", {
                       windowStart: timestamp(logistics.windowStart),
                       windowEnd: timestamp(logistics.windowEnd),
-                      driverName: logistics.driverName,
-                      vehicleReference: logistics.vehicleReference,
+                      deliveryProfileId: logistics.deliveryProfileId,
                       planningNotes: logistics.planningNotes,
                     }, "Ruta de entrega programada.")}
                   >
-                    <strong>Programar ruta</strong>
+                    <strong>{selected.delivery ? "Actualizar programación" : "Programar ruta"}</strong>
                     <div className="delivery-fields two-columns">
                       <label><span>Desde</span><input type="datetime-local" value={logistics.windowStart} onChange={(event) => setLogistics({ ...logistics, windowStart: event.target.value })} required /></label>
                       <label><span>Hasta</span><input type="datetime-local" value={logistics.windowEnd} onChange={(event) => setLogistics({ ...logistics, windowEnd: event.target.value })} required /></label>
                     </div>
-                    <div className="delivery-fields two-columns">
-                      <label><span>Repartidor</span><input value={logistics.driverName} onChange={(event) => setLogistics({ ...logistics, driverName: event.target.value })} required /></label>
-                      <label><span>Vehiculo / placa</span><input value={logistics.vehicleReference} onChange={(event) => setLogistics({ ...logistics, vehicleReference: event.target.value })} /></label>
-                    </div>
+                    <label>
+                      <span>Perfil delivery</span>
+                      <select
+                        value={logistics.deliveryProfileId}
+                        onChange={(event) => setLogistics({ ...logistics, deliveryProfileId: event.target.value })}
+                        required
+                      >
+                        <option value="">Selecciona responsable</option>
+                        {deliveryProfiles.filter((profile) => profile.active).map((profile) => (
+                          <option value={profile.id} key={profile.id}>
+                            {profile.name} | {profile.vehicleReference}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     <label><span>Notas de ruta</span><textarea value={logistics.planningNotes} onChange={(event) => setLogistics({ ...logistics, planningNotes: event.target.value })} /></label>
-                    <button disabled={!editable || saving} type="submit">Guardar programacion</button>
+                    <button disabled={!editable || saving} type="submit">
+                      {selected.delivery ? "Actualizar programación" : "Guardar programación"}
+                    </button>
                   </form>
                 ) : null}
                 {selected.status === "preparing" && selected.delivery?.status === "planned" ? (

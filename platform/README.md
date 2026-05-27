@@ -15,7 +15,8 @@ Nueva plataforma comercial y operativa de BioGranja 51.
 - Panel comercial en `/gestion/pedidos` con estados controlados:
   confirmación, preparación, despacho, entrega o cancelación.
 - Operacion de delivery con ventana horaria, responsable, control de empaque,
-  temperatura de salida y recepcion auditable por pedido.
+  perfil de reparto asignado, control de empaque, temperatura de salida y
+  recepcion auditable por pedido.
 - CRM en `/gestion/clientes` con historial, valor de compra, notas,
   segmentación e interés en suscripción.
 - Crianza en `/gestion/crianza` con ingreso de pollitos vivos, mortalidad,
@@ -63,6 +64,7 @@ Las migraciones de PostgreSQL/Supabase están en `supabase/migrations/` e incluy
 - consolidación de clientes recurrentes por celular y ficha comercial.
 - movimientos de inventario auditables y asignación de lote al despacho.
 - ultima milla controlada con cadena de frio y receptor documentado.
+- perfiles delivery reutilizables para programar responsables sin recaptura.
 - perfil autenticado de cliente, preferencias de entrega/pago y lectura privada
   de sus propios pedidos.
 

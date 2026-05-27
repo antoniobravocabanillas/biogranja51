@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CommerceState, DeliveryZone, PaymentMethod } from "@/domain/commerce";
+import type { CommerceState, DeliveryProfile, DeliveryZone, PaymentMethod } from "@/domain/commerce";
 
 type ConfigurationAdminProps = {
   initialState: CommerceState;
@@ -11,6 +11,7 @@ type ConfigurationAdminProps = {
 export function ConfigurationAdmin({ initialState, editable }: ConfigurationAdminProps) {
   const [zones, setZones] = useState(initialState.deliveryZones);
   const [payments, setPayments] = useState(initialState.paymentMethods);
+  const [deliveryProfiles, setDeliveryProfiles] = useState(initialState.deliveryProfiles);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -28,13 +29,35 @@ export function ConfigurationAdmin({ initialState, editable }: ConfigurationAdmi
     );
   }
 
+  function changeDeliveryProfile(id: string, updates: Partial<DeliveryProfile>) {
+    setDeliveryProfiles((current) =>
+      current.map((profile) => (profile.id === id ? { ...profile, ...updates } : profile)),
+    );
+  }
+
+  function addDeliveryProfile() {
+    const nextIndex = deliveryProfiles.length + 1;
+    setDeliveryProfiles((current) => [
+      ...current,
+      {
+        id: `new-${Date.now()}`,
+        code: `DEL-${String(nextIndex).padStart(2, "0")}`,
+        name: "",
+        phone: "",
+        vehicleReference: "",
+        notes: "",
+        active: true,
+      },
+    ]);
+  }
+
   async function saveConfiguration() {
     setSaving(true);
     setMessage("");
     const response = await fetch("/api/configuracion", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ deliveryZones: zones, paymentMethods: payments }),
+      body: JSON.stringify({ deliveryZones: zones, deliveryProfiles, paymentMethods: payments }),
     });
     const result = (await response.json()) as { error?: string };
     setMessage(
@@ -106,6 +129,76 @@ export function ConfigurationAdmin({ initialState, editable }: ConfigurationAdmi
       </section>
 
       <section className="settings-side">
+        <article className="settings-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Reparto</p>
+              <h2>Perfiles delivery</h2>
+            </div>
+            <button className="inline-panel-action" type="button" onClick={addDeliveryProfile}>
+              Agregar
+            </button>
+          </div>
+          <p className="settings-note">
+            Define responsables o movilidades frecuentes. Al programar un pedido
+            solo eliges el perfil y el sistema copia sus datos a la ruta.
+          </p>
+          <div className="delivery-profile-editor">
+            {deliveryProfiles.map((profile) => (
+              <article key={profile.id}>
+                <label>
+                  <span>Nombre / responsable</span>
+                  <input
+                    value={profile.name}
+                    onChange={(event) => changeDeliveryProfile(profile.id, { name: event.target.value })}
+                    placeholder="Ej. Juan - Moto 1"
+                  />
+                </label>
+                <div className="delivery-profile-grid">
+                  <label>
+                    <span>Código</span>
+                    <input
+                      value={profile.code}
+                      onChange={(event) => changeDeliveryProfile(profile.id, { code: event.target.value })}
+                    />
+                  </label>
+                  <label>
+                    <span>Celular</span>
+                    <input
+                      value={profile.phone ?? ""}
+                      onChange={(event) => changeDeliveryProfile(profile.id, { phone: event.target.value || null })}
+                      placeholder="999 999 999"
+                    />
+                  </label>
+                </div>
+                <label>
+                  <span>Vehículo / placa</span>
+                  <input
+                    value={profile.vehicleReference}
+                    onChange={(event) => changeDeliveryProfile(profile.id, { vehicleReference: event.target.value })}
+                    placeholder="Moto, auto, placa o courier"
+                  />
+                </label>
+                <label>
+                  <span>Notas</span>
+                  <textarea
+                    value={profile.notes}
+                    onChange={(event) => changeDeliveryProfile(profile.id, { notes: event.target.value })}
+                  />
+                </label>
+                <label className="delivery-profile-active">
+                  <input
+                    type="checkbox"
+                    checked={profile.active}
+                    onChange={(event) => changeDeliveryProfile(profile.id, { active: event.target.checked })}
+                  />
+                  Activo para asignar
+                </label>
+              </article>
+            ))}
+          </div>
+        </article>
+
         <article className="settings-panel">
           <p className="eyebrow">Cobros</p>
           <h2>Medios de pago</h2>

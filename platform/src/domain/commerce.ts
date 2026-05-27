@@ -164,6 +164,16 @@ export type DeliveryZone = {
   active: boolean;
 };
 
+export type DeliveryProfile = {
+  id: string;
+  code: string;
+  name: string;
+  phone: string | null;
+  vehicleReference: string;
+  notes: string;
+  active: boolean;
+};
+
 export type PaymentMethod = {
   id: string;
   name: string;
@@ -202,6 +212,7 @@ export type OrderItem = {
 export type OrderDelivery = {
   id: string;
   orderId: string;
+  deliveryProfileId: string | null;
   status: DeliveryOperationStatus;
   windowStart: string;
   windowEnd: string;
@@ -704,6 +715,7 @@ export type AuditWorkspace = {
 export type CommerceState = {
   products: Product[];
   deliveryZones: DeliveryZone[];
+  deliveryProfiles: DeliveryProfile[];
   paymentMethods: PaymentMethod[];
   locations: BusinessLocation[];
   roles: StaffRole[];

@@ -16,18 +16,16 @@ export async function POST(
     const body = (await request.json()) as {
       windowStart?: string;
       windowEnd?: string;
-      driverName?: string;
-      vehicleReference?: string;
+      deliveryProfileId?: string;
       planningNotes?: string;
     };
-    if (!body.windowStart || !body.windowEnd || !body.driverName?.trim()) {
-      return Response.json({ error: "Completa ventana y responsable de entrega." }, { status: 400 });
+    if (!body.windowStart || !body.windowEnd || !body.deliveryProfileId) {
+      return Response.json({ error: "Completa ventana y perfil delivery." }, { status: 400 });
     }
     const updated = await scheduleOrderDelivery(id, {
       windowStart: body.windowStart,
       windowEnd: body.windowEnd,
-      driverName: body.driverName.trim(),
-      vehicleReference: body.vehicleReference?.trim() ?? "",
+      deliveryProfileId: body.deliveryProfileId,
       planningNotes: body.planningNotes?.trim() ?? "",
     });
     revalidatePath("/gestion/pedidos");

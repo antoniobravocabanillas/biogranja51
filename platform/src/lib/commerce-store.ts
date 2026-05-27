@@ -12,6 +12,7 @@ import type {
   CustomerMetrics,
   CustomerPortalProfile,
   CustomerPortalWorkspace,
+  DeliveryProfile,
   DeliveryZone,
   DispatchableOrderItem,
   InventoryLot,
@@ -96,6 +97,16 @@ type PaymentMethodRow = {
   active: boolean;
 };
 
+type DeliveryProfileRow = {
+  id: string;
+  code: string;
+  name: string;
+  phone: string | null;
+  vehicle_reference: string;
+  notes: string;
+  active: boolean;
+};
+
 type LocationRow = {
   id: string;
   name: string;
@@ -141,6 +152,7 @@ type OrderRow = {
 type OrderDeliveryRow = {
   id: string;
   order_id: string;
+  delivery_profile_id: string | null;
   status: OrderDelivery["status"];
   window_start: string;
   window_end: string;
@@ -520,10 +532,23 @@ function paymentFromRow(row: PaymentMethodRow): PaymentMethod {
   };
 }
 
+function deliveryProfileFromRow(row: DeliveryProfileRow): DeliveryProfile {
+  return {
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    phone: row.phone,
+    vehicleReference: row.vehicle_reference,
+    notes: row.notes,
+    active: row.active,
+  };
+}
+
 function orderDeliveryFromRow(row: OrderDeliveryRow): OrderDelivery {
   return {
     id: row.id,
     orderId: row.order_id,
+    deliveryProfileId: row.delivery_profile_id,
     status: row.status,
     windowStart: row.window_start,
     windowEnd: row.window_end,
@@ -944,6 +969,9 @@ async function getSupabaseCommerceState(includeProtected: boolean): Promise<Comm
   const productsRequest = supabase.from("products").select("*").order("name");
   const zonesRequest = supabase.from("delivery_zones").select("*").order("name");
   const paymentsRequest = supabase.from("payment_methods").select("*").order("name");
+  const deliveryProfilesRequest = includeProtected
+    ? supabase.from("delivery_profiles").select("*").order("name")
+    : null;
   const [products, zones, payments] = await Promise.all([
     productsRequest,
     zonesRequest,
@@ -956,19 +984,22 @@ async function getSupabaseCommerceState(includeProtected: boolean): Promise<Comm
   let locations: BusinessLocation[] = [];
   let roles: StaffRole[] = [];
   let orders: Order[] = [];
+  let deliveryProfiles: DeliveryProfile[] = [];
 
   if (includeProtected) {
-    const [locationsResult, rolesResult, ordersResult] = await Promise.all([
+    const [locationsResult, rolesResult, ordersResult, deliveryProfilesResult] = await Promise.all([
       supabase.from("locations").select("*").order("name"),
       supabase.from("staff_roles").select("*").order("name"),
       supabase
         .from("orders")
         .select("*, customers(name, phone), order_items(*, products(name, presentation), inventory_lots(code)), order_deliveries(*)")
         .order("created_at", { ascending: false }),
+      deliveryProfilesRequest!,
     ]);
     assertDatabaseResult(locationsResult.error, "No se pudo leer sedes");
     assertDatabaseResult(rolesResult.error, "No se pudo leer roles");
     assertDatabaseResult(ordersResult.error, "No se pudo leer pedidos");
+    assertDatabaseResult(deliveryProfilesResult.error, "No se pudo leer perfiles delivery");
     locations = (locationsResult.data as LocationRow[]).map((row) => ({
       id: row.id,
       name: row.name,
@@ -983,11 +1014,13 @@ async function getSupabaseCommerceState(includeProtected: boolean): Promise<Comm
       permissions: [],
     }));
     orders = (ordersResult.data as unknown as OrderRow[]).map(orderFromRow);
+    deliveryProfiles = (deliveryProfilesResult.data as DeliveryProfileRow[]).map(deliveryProfileFromRow);
   }
 
   return {
     products: (products.data as ProductRow[]).map(productFromRow),
     deliveryZones: (zones.data as DeliveryZoneRow[]).map(zoneFromRow),
+    deliveryProfiles,
     paymentMethods: (payments.data as PaymentMethodRow[]).map(paymentFromRow),
     locations,
     roles,
@@ -1146,6 +1179,32 @@ export async function updatePaymentMethods(paymentMethods: PaymentMethod[]): Pro
   return paymentMethods;
 }
 
+export async function updateDeliveryProfiles(deliveryProfiles: DeliveryProfile[]): Promise<DeliveryProfile[]> {
+  if (!isSupabaseConfigured()) {
+    const state = await getLocalState();
+    await writeLocalState({ ...state, deliveryProfiles });
+    return deliveryProfiles;
+  }
+
+  const supabase = await createSupabaseClient();
+  for (const profile of deliveryProfiles) {
+    const row = {
+      code: profile.code,
+      name: profile.name,
+      phone: profile.phone,
+      vehicle_reference: profile.vehicleReference,
+      notes: profile.notes,
+      active: profile.active,
+    };
+    const query = profile.id.startsWith("new-")
+      ? supabase.from("delivery_profiles").insert(row)
+      : supabase.from("delivery_profiles").update(row).eq("id", profile.id);
+    const { error } = await query;
+    assertDatabaseResult(error, "No se pudo actualizar perfiles delivery");
+  }
+  return deliveryProfiles;
+}
+
 export async function createOrder(order: Order): Promise<Order> {
   if (isSupabaseConfigured()) {
     throw new Error("Los pedidos productivos deben crearse mediante la función segura.");
@@ -1289,8 +1348,7 @@ async function getOrderWithDelivery(id: string): Promise<Order> {
 export async function scheduleOrderDelivery(id: string, payload: {
   windowStart: string;
   windowEnd: string;
-  driverName: string;
-  vehicleReference: string;
+  deliveryProfileId: string;
   planningNotes: string;
 }): Promise<Order> {
   const supabase = await createSupabaseClient();
@@ -1298,8 +1356,7 @@ export async function scheduleOrderDelivery(id: string, payload: {
     p_order_id: id,
     p_window_start: payload.windowStart,
     p_window_end: payload.windowEnd,
-    p_driver_name: payload.driverName,
-    p_vehicle_reference: payload.vehicleReference,
+    p_delivery_profile_id: payload.deliveryProfileId,
     p_notes: payload.planningNotes,
   });
   assertDatabaseResult(error, "No se pudo programar la entrega");

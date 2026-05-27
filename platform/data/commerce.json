@@ -130,6 +130,17 @@
       "active": true
     }
   ],
+  "deliveryProfiles": [
+    {
+      "id": "del-bio-01",
+      "code": "DEL-01",
+      "name": "Delivery BioGranja",
+      "phone": null,
+      "vehicleReference": "Movilidad por asignar",
+      "notes": "Perfil base para coordinar entregas propias o tercerizadas.",
+      "active": true
+    }
+  ],
   "locations": [
     {
       "id": "loc-tienda-principal",

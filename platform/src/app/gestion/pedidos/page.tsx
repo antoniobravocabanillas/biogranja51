@@ -60,6 +60,7 @@ export default async function PedidosPage() {
         <OrdersAdmin
           initialOrders={state.orders}
           deliveryZones={state.deliveryZones}
+          deliveryProfiles={state.deliveryProfiles}
           paymentMethods={state.paymentMethods}
           editable={editable}
         />

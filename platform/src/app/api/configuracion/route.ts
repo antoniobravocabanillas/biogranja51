@@ -1,10 +1,11 @@
 import { revalidatePath } from "next/cache";
-import type { DeliveryZone, PaymentMethod } from "@/domain/commerce";
+import type { DeliveryProfile, DeliveryZone, PaymentMethod } from "@/domain/commerce";
 import { requireAdminWrites } from "@/lib/admin-guard";
 import {
   getCommerceState,
   getStorefrontState,
   updateDeliveryZones,
+  updateDeliveryProfiles,
   updatePaymentMethods,
 } from "@/lib/commerce-store";
 
@@ -20,6 +21,7 @@ export async function PATCH(request: Request) {
 
   const body = (await request.json()) as {
     deliveryZones?: DeliveryZone[];
+    deliveryProfiles?: DeliveryProfile[];
     paymentMethods?: PaymentMethod[];
   };
 
@@ -37,6 +39,19 @@ export async function PATCH(request: Request) {
       return Response.json({ error: "La configuración de zonas no es válida." }, { status: 400 });
     }
     await updateDeliveryZones(body.deliveryZones);
+  }
+  if (body.deliveryProfiles) {
+    const invalidProfile = body.deliveryProfiles.some(
+      (profile) =>
+        !profile.id ||
+        !profile.code?.trim() ||
+        !profile.name?.trim() ||
+        !profile.vehicleReference?.trim(),
+    );
+    if (invalidProfile) {
+      return Response.json({ error: "La configuración de delivery no es válida." }, { status: 400 });
+    }
+    await updateDeliveryProfiles(body.deliveryProfiles);
   }
   if (body.paymentMethods) {
     const invalidPayment = body.paymentMethods.some(

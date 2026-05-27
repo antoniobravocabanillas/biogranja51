@@ -46,6 +46,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 15. `platform/supabase/migrations/202605250013_delivery_operations_and_cold_chain.sql`
 16. `platform/supabase/migrations/202605250014_customer_accounts_and_order_tracking.sql`
 17. `platform/supabase/migrations/202605260015_customer_checkout_preferences.sql`
+18. `platform/supabase/migrations/202605270016_delivery_profiles.sql`
 
 La segunda migracion agrega:
 
@@ -160,6 +161,13 @@ La decimoseptima migracion agrega compra autenticada sin recaptura:
 - precarga del cotizador cuando el cliente ya inicio sesion;
 - actualizacion de la preferencia de pago al registrar una nueva compra;
 - validacion de zonas y pagos activos antes de guardar preferencias.
+
+La decimoctava migracion agrega perfiles de delivery:
+
+- responsables o movilidades reutilizables para ultima milla;
+- asignacion del perfil al programar la ruta de un pedido;
+- visualizacion clara del delivery asignado dentro del control de entrega;
+- compatibilidad con rutas antiguas migrandolas al perfil base.
 
 Ejecutar solamente las migraciones que aun no se hayan aplicado al proyecto,
 siempre respetando su orden.
