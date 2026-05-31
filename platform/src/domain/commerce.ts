@@ -9,6 +9,7 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 export type DeliveryOperationStatus = "planned" | "dispatched" | "delivered";
+export type AccountType = "staff" | "delivery" | "customer" | "unknown";
 export type CustomerSegment =
   | "hogar"
   | "recurrente"
@@ -172,6 +173,27 @@ export type DeliveryProfile = {
   vehicleReference: string;
   notes: string;
   active: boolean;
+  authUserId: string | null;
+};
+
+export type AccountContext = {
+  accountType: AccountType;
+  destination: string;
+  role?: {
+    code: string;
+    name: string;
+    scope: string;
+  } | null;
+  delivery?: DeliveryProfile | null;
+  customer?: {
+    id: string;
+    name: string;
+    phone: string;
+    email: string | null;
+    lastAddress: string | null;
+    deliveryZoneId: string | null;
+    paymentMethodId: string | null;
+  } | null;
 };
 
 export type PaymentMethod = {
@@ -282,6 +304,46 @@ export type CustomerPortalOrder = {
 export type CustomerPortalWorkspace = {
   profile: CustomerPortalProfile | null;
   orders: CustomerPortalOrder[];
+};
+
+export type DeliveryPortalOrder = {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  orderStatus: OrderStatus;
+  customerName: string;
+  phone: string;
+  address: string;
+  deliveryZoneName: string;
+  paymentMethodName: string;
+  subtotal: number;
+  deliveryFee: number;
+  total: number | null;
+  hasPendingPrice: boolean;
+  createdAt: string;
+  status: DeliveryOperationStatus;
+  windowStart: string;
+  windowEnd: string;
+  planningNotes: string;
+  dispatchedAt: string | null;
+  dispatchTemperatureC: number | null;
+  packagingCondition: string;
+  deliveredAt: string | null;
+  deliveryTemperatureC: number | null;
+  receivedBy: string;
+  deliveryNotes: string;
+  items: Array<{
+    name: string;
+    presentation: string;
+    quantity: number;
+    subtotal: number | null;
+    lotCode: string | null;
+  }>;
+};
+
+export type DeliveryPortalWorkspace = {
+  profile: DeliveryProfile;
+  deliveries: DeliveryPortalOrder[];
 };
 
 export type OrderPayment = {

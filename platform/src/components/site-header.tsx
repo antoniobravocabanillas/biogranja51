@@ -20,13 +20,14 @@ export function SiteHeader({ management = false }: SiteHeaderProps) {
             <Link href="/">Sitio comercial</Link>
             <Link href="/gestion/pedidos">Pedidos</Link>
             <Link href="/gestion/productos">Productos</Link>
-            <Link className="nav-action" href="/gestion">Gestión</Link>
+            <Link className="nav-action" href="/gestion">Gestion</Link>
           </>
         ) : (
           <>
             <a className="nav-secondary" href="#productos">Productos</a>
             <a className="nav-secondary" href="#modelo">Nuestro origen</a>
             <Link className="nav-account" href="/cuenta">Mi cuenta</Link>
+            <Link className="nav-secondary" href="/gestion/login">Equipo</Link>
             <Link className="nav-action" href="/#productos">
               Comprar
             </Link>

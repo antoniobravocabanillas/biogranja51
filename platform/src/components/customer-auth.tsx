@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { AccountContext } from "@/domain/commerce";
 import { createClient } from "@/lib/supabase/client";
 
 type CustomerAuthProps = {
@@ -58,7 +59,11 @@ export function CustomerAuth({ configured }: CustomerAuthProps) {
         setLoading(false);
         return;
       }
-      router.replace("/mi-cuenta");
+      const contextResponse = await fetch("/api/auth/context");
+      const context = contextResponse.ok
+        ? ((await contextResponse.json()) as AccountContext)
+        : { accountType: "customer", destination: "/mi-cuenta" };
+      router.replace(context.destination || "/mi-cuenta");
       router.refresh();
       return;
     }
@@ -87,7 +92,11 @@ export function CustomerAuth({ configured }: CustomerAuthProps) {
       return;
     }
     if (data.session) {
-      router.replace("/mi-cuenta");
+      const contextResponse = await fetch("/api/auth/context");
+      const context = contextResponse.ok
+        ? ((await contextResponse.json()) as AccountContext)
+        : { accountType: "customer", destination: "/mi-cuenta" };
+      router.replace(context.destination || "/mi-cuenta");
       router.refresh();
       return;
     }
@@ -109,6 +118,9 @@ export function CustomerAuth({ configured }: CustomerAuthProps) {
           <span>Ventana de entrega</span>
           <span>Historial de compras</span>
         </div>
+        <Link className="customer-team-link" href="/gestion/login">
+          Acceso para equipo y reparto
+        </Link>
       </div>
       <form className="login-panel customer-login" onSubmit={submit}>
         <div className="customer-auth-tabs" aria-label="Tipo de acceso">

@@ -6,6 +6,7 @@ import type {
   BirdBatch,
   BirdBatchEvent,
   BirdBatchStage,
+  AccountContext,
   PoultryExpenseCategory,
   CommerceState,
   Customer,
@@ -13,6 +14,7 @@ import type {
   CustomerPortalProfile,
   CustomerPortalWorkspace,
   DeliveryProfile,
+  DeliveryPortalWorkspace,
   DeliveryZone,
   DispatchableOrderItem,
   InventoryLot,
@@ -105,6 +107,7 @@ type DeliveryProfileRow = {
   vehicle_reference: string;
   notes: string;
   active: boolean;
+  auth_user_id?: string | null;
 };
 
 type LocationRow = {
@@ -541,6 +544,7 @@ function deliveryProfileFromRow(row: DeliveryProfileRow): DeliveryProfile {
     vehicleReference: row.vehicle_reference,
     notes: row.notes,
     active: row.active,
+    authUserId: row.auth_user_id ?? null,
   };
 }
 
@@ -1195,6 +1199,7 @@ export async function updateDeliveryProfiles(deliveryProfiles: DeliveryProfile[]
       vehicle_reference: profile.vehicleReference,
       notes: profile.notes,
       active: profile.active,
+      auth_user_id: profile.authUserId || null,
     };
     const query = profile.id.startsWith("new-")
       ? supabase.from("delivery_profiles").insert(row)
@@ -1283,6 +1288,55 @@ export async function getCustomerPortalWorkspace(): Promise<CustomerPortalWorksp
   const { data, error } = await supabase.rpc("get_my_customer_portal");
   assertDatabaseResult(error, "No se pudo leer tu cuenta");
   return data as CustomerPortalWorkspace;
+}
+
+export async function getAccountContext(): Promise<AccountContext> {
+  if (!isSupabaseConfigured()) {
+    return { accountType: "staff", destination: "/gestion" };
+  }
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.rpc("my_account_context");
+  assertDatabaseResult(error, "No se pudo resolver el tipo de cuenta");
+  return data as AccountContext;
+}
+
+export async function getDeliveryPortalWorkspace(): Promise<DeliveryPortalWorkspace> {
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.rpc("get_my_delivery_portal");
+  assertDatabaseResult(error, "No se pudo leer tus entregas");
+  return data as DeliveryPortalWorkspace;
+}
+
+export async function dispatchMyDelivery(id: string, payload: {
+  dispatchedAt: string;
+  temperatureC: number;
+  packagingCondition: string;
+}): Promise<void> {
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("dispatch_my_delivery", {
+    p_order_id: id,
+    p_dispatched_at: payload.dispatchedAt,
+    p_temperature_c: payload.temperatureC,
+    p_packaging_condition: payload.packagingCondition,
+  });
+  assertDatabaseResult(error, "No se pudo registrar el despacho");
+}
+
+export async function completeMyDelivery(id: string, payload: {
+  deliveredAt: string;
+  temperatureC: number;
+  receivedBy: string;
+  notes: string;
+}): Promise<void> {
+  const supabase = await createSupabaseClient();
+  const { error } = await supabase.rpc("complete_my_delivery", {
+    p_order_id: id,
+    p_delivered_at: payload.deliveredAt,
+    p_temperature_c: payload.temperatureC,
+    p_received_by: payload.receivedBy,
+    p_notes: payload.notes,
+  });
+  assertDatabaseResult(error, "No se pudo confirmar la entrega");
 }
 
 export async function saveCustomerPortalProfile(payload: {

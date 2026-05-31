@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   const nextParam = request.nextUrl.searchParams.get("next");
   const validNext =
     nextParam !== null &&
-    (nextParam.startsWith("/gestion/") || nextParam === "/mi-cuenta" || nextParam.startsWith("/cuenta/"));
+    (nextParam.startsWith("/gestion/") ||
+      nextParam === "/mi-cuenta" ||
+      nextParam.startsWith("/cuenta/") ||
+      nextParam.startsWith("/reparto"));
   const next = validNext ? nextParam : "/gestion/restablecer";
   const destination = new URL(next, request.url);
 

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { AccountContext } from "@/domain/commerce";
 import { createClient } from "@/lib/supabase/client";
 
 type AdminLoginProps = {
@@ -48,7 +49,11 @@ export function AdminLogin({ configured }: AdminLoginProps) {
       setLoading(false);
       return;
     }
-    router.replace("/gestion");
+    const contextResponse = await fetch("/api/auth/context");
+    const context = contextResponse.ok
+      ? ((await contextResponse.json()) as AccountContext)
+      : { accountType: "unknown", destination: "/gestion/login" };
+    router.replace(context.accountType === "customer" ? "/mi-cuenta" : context.destination || "/gestion");
     router.refresh();
   }
 
@@ -71,8 +76,8 @@ export function AdminLogin({ configured }: AdminLoginProps) {
   return (
     <form className="login-panel" onSubmit={signIn}>
       <p className="eyebrow">Centro de gestión</p>
-      <h1>Acceso de equipo</h1>
-      <p>Ingresa con tu cuenta autorizada para administrar pedidos, productos y entregas.</p>
+      <h1>Acceso operativo</h1>
+      <p>Ingresa con tu cuenta autorizada. El sistema te llevara a gestion o reparto segun tu perfil.</p>
       <label className="form-field">
         <span>Correo</span>
         <input

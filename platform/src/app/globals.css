@@ -115,9 +115,17 @@ p {
 
 .site-nav a:not(.nav-action):hover {
   color: var(--forest);
+  color: white;
 }
 
 .nav-action {
+  background: var(--forest);
+  border-radius: 999px;
+  color: white;
+  padding: 13px 23px;
+}
+
+.nav-account {
   background: var(--forest);
   border-radius: 999px;
   color: var(--white);
@@ -4756,6 +4764,311 @@ p {
   font-weight: 750;
 }
 
+.customer-team-link {
+  color: var(--forest);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  margin-top: 28px;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+
+.delivery-dashboard-heading {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 54px 32px 28px;
+}
+
+.delivery-dashboard-heading h1 {
+  color: var(--forest);
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 45px;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  margin-bottom: 9px;
+}
+
+.delivery-dashboard-heading p:not(.eyebrow) {
+  color: var(--muted);
+}
+
+.delivery-portal {
+  align-items: start;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: 340px 1fr;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 0 32px 72px;
+}
+
+.delivery-portal-sidebar,
+.delivery-task-card,
+.delivery-empty {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 21px;
+  padding: 25px;
+}
+
+.delivery-portal-sidebar {
+  position: sticky;
+  top: 18px;
+}
+
+.delivery-portal-sidebar h2 {
+  color: var(--forest);
+  font-size: 23px;
+  letter-spacing: -0.04em;
+  margin-bottom: 7px;
+}
+
+.delivery-portal-sidebar > p:not(.eyebrow),
+.delivery-portal-sidebar > span {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.outline-button {
+  background: transparent;
+  border: 1px solid var(--forest);
+  border-radius: 999px;
+  color: var(--forest);
+  font-size: 12px;
+  font-weight: 800;
+  margin: 15px 0 20px;
+  padding: 11px 14px;
+  width: 100%;
+}
+
+.delivery-route-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.delivery-route-list button {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+  text-align: left;
+}
+
+.delivery-route-list button.selected {
+  background: #f2f5ed;
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.delivery-route-list strong,
+.delivery-route-list small,
+.delivery-route-list span {
+  display: block;
+}
+
+.delivery-route-list strong {
+  color: var(--forest);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.delivery-route-list small {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 7px;
+}
+
+.delivery-route-list span {
+  color: var(--leaf);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.delivery-task-card header {
+  align-items: start;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 20px;
+}
+
+.delivery-task-card header h1,
+.delivery-empty h1 {
+  color: var(--forest);
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  margin-bottom: 8px;
+}
+
+.delivery-task-card header span,
+.delivery-empty p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.delivery-task-card header > strong {
+  color: var(--forest);
+  font-size: 22px;
+}
+
+.delivery-task-grid {
+  display: grid;
+  gap: 13px;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 20px 0;
+}
+
+.delivery-task-grid div {
+  background: #f5f3ed;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.delivery-task-grid span,
+.delivery-task-grid strong,
+.delivery-task-grid small {
+  display: block;
+}
+
+.delivery-task-grid span {
+  color: var(--leaf);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.delivery-task-grid strong {
+  color: var(--forest);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 5px;
+}
+
+.delivery-task-grid small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.delivery-route-note,
+.delivery-complete {
+  background: #e9efe5;
+  border-radius: 13px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  padding: 13px;
+}
+
+.delivery-items {
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  margin-bottom: 18px;
+  padding: 8px 0;
+}
+
+.delivery-items div {
+  align-items: center;
+  display: grid;
+  gap: 4px 12px;
+  grid-template-columns: 1fr 90px;
+  padding: 10px 0;
+}
+
+.delivery-items span {
+  color: var(--forest);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.delivery-items small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.delivery-items strong {
+  color: var(--forest);
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  text-align: right;
+}
+
+.delivery-action-form {
+  background: #f5f3ed;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.delivery-action-form h3 {
+  color: var(--forest);
+  font-size: 18px;
+}
+
+.delivery-action-form label {
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  font-weight: 750;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.delivery-action-form input,
+.delivery-action-form textarea {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--forest);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px;
+  text-transform: none;
+}
+
+.delivery-action-form textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.delivery-action-form button {
+  background: var(--forest);
+  border: 0;
+  border-radius: 999px;
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 13px;
+}
+
+.delivery-action-form button:disabled {
+  opacity: 0.55;
+}
+
+.delivery-complete strong,
+.delivery-complete span {
+  display: block;
+}
+
+.delivery-complete strong {
+  color: var(--forest);
+  margin-bottom: 4px;
+}
+
 .settings-note {
   color: var(--muted);
   font-size: 13px;
@@ -5013,6 +5326,7 @@ p {
   .commerce-grid,
   .customer-access,
   .customer-portal,
+  .delivery-portal,
   .admin-editor-grid,
   .configuration-layout,
   .orders-layout,
@@ -5060,6 +5374,14 @@ p {
 
   .customer-profile-card {
     position: static;
+  }
+
+  .delivery-portal-sidebar {
+    position: static;
+  }
+
+  .delivery-task-grid {
+    grid-template-columns: 1fr;
   }
 
   .subscription,

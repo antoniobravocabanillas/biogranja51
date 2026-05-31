@@ -47,6 +47,7 @@ export function ConfigurationAdmin({ initialState, editable }: ConfigurationAdmi
         vehicleReference: "",
         notes: "",
         active: true,
+        authUserId: null,
       },
     ]);
   }
@@ -178,6 +179,19 @@ export function ConfigurationAdmin({ initialState, editable }: ConfigurationAdmi
                     onChange={(event) => changeDeliveryProfile(profile.id, { vehicleReference: event.target.value })}
                     placeholder="Moto, auto, placa o courier"
                   />
+                </label>
+                <label>
+                  <span>Usuario Supabase Auth</span>
+                  <input
+                    value={profile.authUserId ?? ""}
+                    onChange={(event) =>
+                      changeDeliveryProfile(profile.id, { authUserId: event.target.value.trim() || null })
+                    }
+                    placeholder="UUID del usuario de reparto"
+                  />
+                  <small>
+                    Crea el usuario en Supabase Auth y pega aqui su ID para activar el portal /reparto.
+                  </small>
                 </label>
                 <label>
                   <span>Notas</span>

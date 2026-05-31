@@ -138,7 +138,8 @@
       "phone": null,
       "vehicleReference": "Movilidad por asignar",
       "notes": "Perfil base para coordinar entregas propias o tercerizadas.",
-      "active": true
+      "active": true,
+      "authUserId": null
     }
   ],
   "locations": [

@@ -47,6 +47,7 @@ Desde Supabase SQL Editor, ejecutar en orden:
 16. `platform/supabase/migrations/202605250014_customer_accounts_and_order_tracking.sql`
 17. `platform/supabase/migrations/202605260015_customer_checkout_preferences.sql`
 18. `platform/supabase/migrations/202605270016_delivery_profiles.sql`
+19. `platform/supabase/migrations/202605270017_account_routing_and_delivery_portal.sql`
 
 La segunda migracion agrega:
 
@@ -193,6 +194,19 @@ where role.code = 'ADMIN'
 
 El acceso administrativo queda disponible en `/gestion/login`.
 
+### Tipos De Cuenta
+
+Todos usan Supabase Auth, pero el sistema clasifica internamente cada sesion:
+
+- Cliente: se registra solo desde `/cuenta` y entra a `/mi-cuenta`.
+- Gestion: se crea en Supabase Auth y se vincula con `staff_assignments`.
+- Delivery: se crea en Supabase Auth y se vincula desde `/gestion/configuracion`
+  pegando su `User UID` en el perfil delivery.
+
+El login operativo `/gestion/login` detecta el tipo de cuenta y redirige:
+gestion va a `/gestion`, delivery va a `/reparto` y cliente vuelve a
+`/mi-cuenta`. El login publico `/cuenta` queda separado para clientes.
+
 ## 4. Variables En Netlify
 
 El repositorio incluye `netlify.toml` en la raiz. Esta configuracion dirige el
@@ -219,6 +233,8 @@ Site URL: https://biogranja51.com
 Redirect URL: https://**--biogranja51.netlify.app/**
 Redirect URL: http://localhost:3100/**
 Redirect URL: https://biogranja51.com/gestion/restablecer
+Redirect URL: https://biogranja51.com/reparto
+Redirect URL: https://biogranja51.com/reparto/login
 Redirect URL: https://biogranja51.com/mi-cuenta
 Redirect URL: https://biogranja51.com/cuenta/restablecer
 Redirect URL: https://biogranja51.com/**
@@ -273,11 +289,14 @@ desde Netlify.
 - La tienda publica lista productos y calcula delivery.
 - Un pedido real queda registrado antes de abrir WhatsApp.
 - `/gestion` redirige a `/gestion/login` sin sesion.
+- `/cuenta` redirige a `/mi-cuenta`, `/gestion` o `/reparto` si la sesion ya existe.
 - El enlace `Olvidaste tu contrasena` envia correo y permite establecer una
   nueva clave en `/gestion/restablecer`.
 - El administrador puede editar precios e imagenes.
 - Una imagen subida retorna URL publica de Supabase Storage.
 - Un pedido avanza por confirmacion, preparacion, despacho y entrega.
+- Un perfil delivery vinculado a Auth entra en `/reparto`, ve solo sus rutas,
+  registra despacho y cierra entrega.
 - `/gestion/clientes` muestra recurrencia y permite registrar preferencias comerciales.
 - `/gestion/inventario` permite recibir lotes, registrar mermas y asignar stock a pedidos.
 - `/gestion/crianza` registra pollitos vivos, grafica su evolucion, calcula costos y genera inventario solo al registrar faena.
